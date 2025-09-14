@@ -1,0 +1,51 @@
+{
+  "title": "订阅管理",
+  "description": "管理你的订阅计划和账单详情。",
+  "credits": {
+    "title": "积分余额",
+    "description": "你的可用积分和使用情况。",
+    "totalCredits": "总积分",
+    "subscriptionCredits": "订阅积分",
+    "lifetimeCredits": "永久积分",
+    "monthlyAllowanceTitle": "每月积分配额",
+    "monthlyAllowanceDescription": "当前订阅计划每月为你提供 {credits} 积分。",
+    "yearlyResetTitle": "每月积分重置（年付计划）",
+    "yearlyResetDescription": "你的 {credits} 积分每月自动重置",
+    "nextResetDate": "下次重置时间：{date}",
+    "remainingMonths": "年付订阅剩余 {months} 个月"
+  },
+  "subscriptionDetails": {
+    "title": "订阅详情",
+    "description": "你的当前订阅计划和账单信息。",
+    "currentPlan": "当前计划",
+    "status": "状态",
+    "billingCycle": "计费周期",
+    "currentPeriod": "当前周期",
+    "monthly": "按月",
+    "yearly": "按年",
+    "subscriptionEndingTitle": "订阅即将结束",
+    "subscriptionEndingDescription": "你的订阅将在当前计费周期结束时取消。"
+  },
+  "management": {
+    "title": "订阅管理",
+    "description": "访问 Stripe 客户门户来管理你的订阅、更新付款方式和查看账单历史。",
+    "manageButton": "管理订阅和账单",
+    "redirectNotice": "你将被安全地重定向到 Stripe 来管理你的订阅详情。"
+  },
+  "noSubscription": {
+    "title": "暂无有效订阅",
+    "description": "你目前没有订阅任何计划。升级订阅以解锁高级功能并获得更多积分。",
+    "upgradeButton": "升级计划"
+  },
+  "status": {
+    "active": "有效",
+    "trialing": "试用中",
+    "past_due": "逾期",
+    "canceled": "已取消",
+    "inactive_period_ended": "已过期",
+    "unknown": "未知"
+  },
+  "common": {
+    "notSet": "未设置"
+  }
+}

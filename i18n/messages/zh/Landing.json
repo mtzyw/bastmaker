@@ -1,0 +1,68 @@
+{
+  "Hero": {
+    "badge": "AI图像生成器",
+    "title": "Flux Kontext AI图像生成器 & 编辑器",
+    "description": "探索专业的AI图像编辑，理解上下文。编辑单张图像或结合多张照片，使用简单的文本提示。无需设计技能 - 只需描述你想要的内容。",
+    "getStarted": "开始创作",
+    "getFreeTrial": "免费试用"
+  },
+  "Features": {
+    "title": "专业AI图像编辑，<highlight>化繁为简</highlight>",
+    "description": "多个强大的AI工具，理解上下文并提供专业结果，用智能图像处理技术改变你的创作工作流程。",
+    "credits": "积分",
+    "tryNow": "立即试用"
+  },
+  "FAQ": {
+    "title": "常见问题",
+    "titleHighlight": "问题",
+    "description": "关于Nexty AI Image和我们AI驱动的编辑平台，你需要了解的一切。",
+    "items": [
+      {
+        "question": "Nexty AI Image与其他AI图像编辑器有什么不同？",
+        "answer": "Nexty AI Image使用先进的上下文感知AI，理解空间关系、光照和风格一致性。这比其他平台产生更自然、更专业的编辑效果。"
+      },
+      {
+        "question": "图像处理需要多长时间？",
+        "answer": "大多数编辑在10-30秒内完成。我们优化的AI流水线比竞争平台快8倍，同时保持卓越品质。"
+      },
+      {
+        "question": "支持哪些文件格式？",
+        "answer": "我们支持JPG、PNG和WEBP格式输入。你可以导出PNG或JPG格式的结果。每张图片最大文件大小为5MB。"
+      },
+      {
+        "question": "我可以进行的编辑次数有限制吗？",
+        "answer": "只要你有积分，就可以进行无限次编辑。每次单图编辑需要10积分，多图融合也需要10积分。"
+      },
+      {
+        "question": "我可以将图片用于商业用途吗？",
+        "answer": "是的！用Nexty AI Image创建的所有图片都包含完整的商业使用权限。非常适合企业、营销和专业项目。"
+      },
+      {
+        "question": "我上传的图片有多安全？",
+        "answer": "我们重视你的隐私和安全。所有图片都经过安全处理，并采用企业级保护存储。只有你可以访问你的图片。"
+      }
+    ]
+  },
+  "UseCases": {
+    "title": "创意洞察",
+    "description": "走进我们的世界，看看我们的团队如何在充满灵感的空间中将创意变为现实"
+  },
+  "Testimonials": {
+    "title": "用户好评如潮",
+    "description": "看看全世界的创作者如何使用Flux Kontext来改变他们的图像编辑工作流程。"
+  },
+  "CTA": {
+    "badge": "准备好变革您的工作流程了吗？",
+    "title": "准备好变换你的图片了吗？",
+    "titleHighlight": "变换你的图片",
+    "description": "加入数千名使用AI驱动图像编辑的创作者。免费30积分开始 - 无需信用卡。",
+    "primaryButton": "免费开始创作",
+    "secondaryButton": "查看示例",
+    "trustIndicators": [
+      "30免费积分",
+      "无需信用卡",
+      "专业结果",
+      "10,000+满意用户"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Image Jobs",
+  "description": "Manage image jobs and set public status.",
+  "fetchError": "Failed to fetch image jobs: {error}",
+  "List": {
+    "failedToFetch": "Failed to fetch image jobs",
+    "searchPlaceholder": "Search by provider job ID or seed"
+  }
+}

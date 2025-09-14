@@ -1,0 +1,209 @@
+{
+  "metadata": {
+    "title": "Flux Kontext Multi-Image Editor",
+    "description": "Professional Flux Kontext Pro multi-image editor that seamlessly combines two photos into stunning compositions. The most advanced dual-image AI fusion technology for e-commerce, marketing, and creative projects. Try Flux Kontext free with 30 credits."
+  },
+  "hero": {
+    "badge": "Professional AI Image Combiner",
+    "title": "Flux Kontext Multi-Image Pro - Advanced Dual Photo Fusion with AI",
+    "description": "Our advanced multi-image editor uses the latest Flux Kontext AI to intelligently combine two separate photos into stunning, context-aware compositions perfect for business and creative applications.",
+    "features": [
+      "30 Free Credits to Start",
+      "Blend Two Photos Instantly",
+      "Professional Quality Results"
+    ]
+  },
+  "client": {
+    "upload": {
+      "dragActive": "Drop the image here",
+      "dragInactive": "Click to upload an image or drag and drop",
+      "supportedFormats": "Support JPG, PNG, WEBP up to {size}MB each",
+      "uploading": "Uploading...",
+      "uploadingSubtext": "Please wait while we process your image",
+      "validationError": "Please upload a valid image file",
+      "sizeError": "File size must be less than {size}MB",
+      "uploadError": "Failed to upload image. Please try again.",
+      "firstImage": "First Image",
+      "secondImage": "Second Image",
+      "bothImagesRequired": "Both images are required for fusion"
+    },
+    "form": {
+      "promptLabel": "Prompt",
+      "promptPlaceholder": "Describe how you want to combine these two images...",
+      "outputFormatLabel": "Output Format",
+      "seedLabel": "Seed (Optional)",
+      "seedPlaceholder": "Random seed",
+      "submitValidation": "Please upload both images and describe how to combine them",
+      "uploadInProgress": "Image upload is still in progress",
+      "advancedSettings": "Advanced Settings",
+      "maxQualityLabel": "Enable MAX Quality Model",
+      "maxQualityDescription": "Better results, costs {credits} credits per image."
+    },
+    "processing": {
+      "processing": "Creating your fusion...",
+      "transformButton": "Combine Images ({credits} credits)",
+      "processingFailed": "Image combination failed: {error}",
+      "insufficientCredits": "Insufficient credits. Please purchase more credits to continue.",
+      "getCreditsAction": "Get Credits",
+      "submitError": "Failed to start image combination"
+    }
+  },
+  "examples": {
+    "title": "Real Flux Kontext Multi-Image Results from Nexty AI Image Users",
+    "description": "See what's actually possible when you combine two photos with our platform. From travel bloggers placing themselves in dream destinations to marketers creating eye-catching product shots, discover how Flux kontext multi-image technology on Nexty AI Image delivers results that look naturally stunning, not artificially assembled.",
+    "labels": {
+      "image1": "IMAGE 1",
+      "image2": "IMAGE 2",
+      "result": "COMBINED RESULT",
+      "promptUsed": "Prompt"
+    },
+    "items": {
+      "portraitBackground": {
+        "title": "Travel & Lifestyle Magic",
+        "description": "Perfect for travel content creators and lifestyle brands. Place yourself or your subjects in any location while maintaining natural lighting and realistic shadows that fool the eye."
+      },
+      "objectComposition": {
+        "title": "Creative Storytelling",
+        "description": "Ideal for artists and marketers who need to tell visual stories. Combine elements that would be impossible to capture in a single shot, creating compelling narratives through imagery."
+      }
+    }
+  },
+  "whatMakesDifferent": {
+    "title": "Why Nexty AI Image's Flux Kontext Multi-Image Beats Other Tools",
+    "description": "Most photo editors force you to manually mask, blend, and color-match—taking hours to get right. Our Flux kontext multi-image technology on Nexty AI Image does the heavy lifting automatically, understanding how two images should naturally work together instead of just slapping them side by side.",
+    "features": {
+      "dualImageIntelligence": {
+        "title": "Smart Relationship Recognition",
+        "description": "While other tools treat images as separate layers, our AI actually understands how lighting, shadows, and perspectives should interact between your two photos, creating combinations that pass the 'reality check.'"
+      },
+      "intelligentFusion": {
+        "title": "Automatic Professional Polish",
+        "description": "No more struggling with blend modes and opacity settings. Our algorithms handle the tedious technical work of matching color temperatures, adjusting contrast, and harmonizing visual styles automatically."
+      },
+      "creativeFlexibility": {
+        "title": "From Realistic to Surreal",
+        "description": "Whether you need a believable product placement or want to create impossible artistic visions, our technology adapts to your creative intent with the same professional quality."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "steps": [
+        "Upload your two photos",
+        "AI analyzes both images for optimal fusion",
+        "Tell us how you want them combined",
+        "Get your professional result in seconds"
+      ]
+    }
+  },
+  "features": {
+    "title": "Nexty AI Image's Flux Kontext Multi-Image Features That Actually Matter",
+    "description": "Forget complicated software with hundreds of buttons you'll never use. Our Flux kontext multi-image platform focuses on what creators actually need: powerful AI that's simple to use, fast results that look professional, and the flexibility to bring any creative vision to life.",
+    "items": {
+      "dualInputProcessing": {
+        "title": "Drop & Go Simplicity",
+        "description": "Upload any two images and our AI immediately gets to work understanding their relationship. No technical knowledge required—just drag, drop, and describe what you want."
+      },
+      "contextualFusion": {
+        "title": "Naturally Intelligent Blending",
+        "description": "Our AI doesn't just overlay images—it actually thinks about how they should interact. Shadows fall naturally, lighting matches realistically, and the final result looks like it was shot that way originally."
+      },
+      "creativeComposition": {
+        "title": "Plain English Control",
+        "description": "Forget complex menus and sliders. Just tell our AI what you want in normal language: 'put the dog in the kitchen' or 'make it look like sunset lighting.' It understands and delivers."
+      },
+      "professionalOutput": {
+        "title": "Client-Ready Quality",
+        "description": "Every output is high-resolution and professionally polished, ready for social media, presentations, marketing materials, or anywhere else you need to make a great impression."
+      },
+      "versatileApplications": {
+        "title": "Works for Everything",
+        "description": "Whether you're a content creator, small business owner, marketer, or just someone who wants cooler photos, our technology adapts to your specific needs and style."
+      },
+      "seamlessIntegration": {
+        "title": "Minutes, Not Hours",
+        "description": "What used to take graphic designers hours in Photoshop now happens in under a minute. Get professional results without the professional learning curve or price tag."
+      }
+    }
+  },
+  "useCases": {
+    "title": "How People Are Using Nexty AI Image's Flux Kontext Multi-Image Technology",
+    "description": "From small business owners to creative agencies, people are discovering that Flux kontext multi-image on Nexty AI Image solves real problems they face every day. Here's how different types of users are putting our technology to work in their daily workflows.",
+    "footer": "All these results come from real users leveraging Nexty AI Image's Flux kontext multi-image technology to solve creative challenges faster and more affordably than traditional methods.",
+    "items": {
+      "styleTransfer": {
+        "title": "Consistent Brand Aesthetics",
+        "description": "Small businesses use our technology to apply their brand's visual style across different types of content, ensuring everything looks cohesive without hiring expensive designers."
+      },
+      "textEditing": {
+        "title": "Custom Graphics in Minutes",
+        "description": "Content creators combine text elements from different sources to create unique headers, social media graphics, and branded content that stands out in crowded feeds."
+      },
+      "backgroundReplacement": {
+        "title": "Professional Product Photos",
+        "description": "E-commerce sellers and startups create studio-quality product shots by combining item photos with professional backgrounds, eliminating the need for expensive photo shoots."
+      },
+      "fashionModification": {
+        "title": "Try Before You Design",
+        "description": "Fashion designers and stylists visualize concepts by combining clothing pieces from different photos, helping clients see ideas before committing to production or purchases."
+      },
+      "photographyEnhancement": {
+        "title": "Perfect Shot Combining",
+        "description": "Wedding photographers and portrait artists merge the best elements from multiple shots—perfect expressions with ideal lighting—creating images that exceed what any single capture could achieve."
+      },
+      "characterConsistency": {
+        "title": "Brand Character Development",
+        "description": "Marketing teams maintain visual consistency for mascots and brand characters across different campaigns and contexts, building stronger brand recognition and customer connection."
+      },
+      "creativeContent": {
+        "title": "Viral-Worthy Social Content",
+        "description": "Influencers and social media managers create scroll-stopping content by combining unexpected elements, generating the kind of posts that get shared and remembered."
+      },
+      "professionalWorkflows": {
+        "title": "Agency-Level Results",
+        "description": "Marketing agencies and design studios use our platform to deliver high-quality work faster, allowing them to take on more clients while maintaining their reputation for excellence."
+      }
+    }
+  },
+  "faq": {
+    "title": "Common Questions About Nexty AI Image",
+    "items": [
+      {
+        "question": "How is this different from using Photoshop or other photo editors?",
+        "answer": "Traditional photo editors require you to manually mask, blend, and color-match images—skills that take years to master. Nexty AI Image's Flux kontext multi-image AI does all this technical work automatically. You just describe what you want, and our AI handles the complex parts like matching lighting and perspective."
+      },
+      {
+        "question": "What types of photo combinations work best with your AI?",
+        "answer": "Our Flux kontext multi-image technology excels at everything from realistic combinations (like placing people in new locations) to creative mashups (like combining objects from different scenes). It works great for both practical business needs and artistic projects."
+      },
+      {
+        "question": "How quickly can I get my results?",
+        "answer": "Most combinations complete in 15-45 seconds. The AI needs time to analyze both images and figure out how they should naturally work together, but it's still much faster than manual editing."
+      },
+      {
+        "question": "What file types can I upload?",
+        "answer": "We support PNG, JPG, and WEBP files. Your final image can be downloaded in either PNG or JPG format, whichever works better for your needs."
+      },
+      {
+        "question": "How much does it cost to create combinations?",
+        "answer": "Each combination costs 10 credits. New users get 30 free credits to try the service—that's 3 full combinations to see if Nexty AI Image works for your needs before spending anything."
+      },
+      {
+        "question": "Can I use the results for business or commercial projects?",
+        "answer": "Absolutely! You own the rights to images you create with Nexty AI Image. Just make sure your original input images don't violate anyone else's copyrights, since you're responsible for what you upload."
+      },
+      {
+        "question": "How do I write good prompts for better results?",
+        "answer": "Be specific about what you want: describe which elements should combine, how they should relate to each other, and the overall mood you're after. For example: 'Place the woman from image 1 in the mountain scene from image 2, with warm evening lighting.'"
+      },
+      {
+        "question": "What if I don't like how my combination turned out?",
+        "answer": "You can always try again with a different description or slightly different images. Our AI learns from more detailed prompts, so being more specific about lighting, positioning, or style usually improves results. Each attempt uses credits, but you can keep refining your approach."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ready to Create Something Amazing?",
+    "description": "Join thousands of creators, businesses, and individuals who've discovered what's possible when you combine any two images with AI. Get your 30 free credits and see what Nexty AI Image's Flux kontext multi-image technology can do for your creative projects.",
+    "button": "Start Creating Free"
+  }
+}

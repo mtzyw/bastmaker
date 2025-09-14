@@ -1,0 +1,269 @@
+{
+  "LanguageDetection": {
+    "title": "言語の提案",
+    "description": "ブラウザの言語設定が現在のサイト言語と異なっています。いつでも言語を切り替えることができます。",
+    "countdown": "閉じるまで {countdown} 秒",
+    "switchTo": "に切り替える"
+  },
+  "Header": {
+    "links": [
+      {
+        "name": "機能特性",
+        "href": "/#features"
+      },
+      {
+        "id": "pricing",
+        "name": "料金プラン",
+        "href": "/#pricing"
+      },
+      {
+        "name": "Flux Image",
+        "href": "/flux-kontext-pro"
+      },
+      {
+        "name": "Multi-Image",
+        "href": "/multi-image-kontext-pro"
+      }
+    ]
+  },
+  "Footer": {
+    "Copyright": "著作権所有 © {year} {name} 全著作権保有。",
+    "PrivacyPolicy": "プライバシーポリシー",
+    "TermsOfService": "利用規約",
+    "Links": {
+      "groups": [
+        {
+          "title": "製品",
+          "links": [
+            {
+              "name": "機能特性",
+              "href": "/#features"
+            },
+            {
+              "id": "pricing",
+              "name": "料金プラン",
+              "href": "/#pricing"
+            },
+            {
+              "name": "Flux Image",
+              "href": "/flux-kontext-pro"
+            },
+            {
+              "name": "Multi-Image",
+              "href": "/multi-image-kontext-pro"
+            }
+          ]
+        },
+        {
+          "title": "サポート",
+          "links": [
+            {
+              "href": "mailto:hi@nexty.dev",
+              "name": "お問い合わせ"
+            }
+          ]
+        },
+        {
+          "title": "言語",
+          "links": [
+            {
+              "href": "/en",
+              "name": "English",
+              "useA": true
+            },
+            {
+              "href": "/zh",
+              "name": "中文",
+              "useA": true
+            },
+            {
+              "href": "/ja",
+              "name": "日本語",
+              "useA": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Home": {
+    "title": "Nexty AI Image",
+    "tagLine": "Flux Kontext Pro搭載のAI画像編集ツール",
+    "description": "Photoshopの代替となるFlux AI画像編集ツール。テキスト入力だけで写真編集が可能 - 文字消去、背景変更、モックアップ作成。Flux.1 Pro搭載で高品質。"
+  },
+  "Login": {
+    "title": "おかえりなさい",
+    "description": "以下の方法でログインしていただけます",
+    "Toast": {
+      "Email": {
+        "successTitle": "メールを送信しました",
+        "successDescription": "ログインリンクをメールでお送りしましたので、ご確認ください。",
+        "errorTitle": "エラーが発生しました",
+        "errorDescription": "メールの送信に失敗しました。お手数ですが、再度お試しください。"
+      },
+      "Google": {
+        "errorTitle": "エラーが発生しました",
+        "errorDescription": "Googleアカウントでのログインに失敗しました。お手数ですが、再度お試しください。"
+      },
+      "Github": {
+        "errorTitle": "エラーが発生しました",
+        "errorDescription": "GitHubアカウントでのログインに失敗しました。お手数ですが、再度お試しください。"
+      }
+    },
+    "signInMethods": {
+      "or": "または",
+      "signInWithGoogle": "Googleアカウントでログイン",
+      "signInWithGithub": "GitHubアカウントでログイン",
+      "signInWithEmail": "メールアドレスでログイン"
+    },
+    "Button": {
+      "signIn": "ログイン",
+      "signOut": "ログアウト"
+    },
+    "UserMenus": [
+      {
+        "name": "設定",
+        "href": "/dashboard/settings",
+        "icon": "Settings"
+      },
+      {
+        "name": "サブスクリプション",
+        "href": "/dashboard/subscription",
+        "icon": "WalletCards"
+      },
+      {
+        "name": "クレジット履歴",
+        "href": "/dashboard/credit-history",
+        "icon": "Coins"
+      },
+      {
+        "name": "画像履歴",
+        "href": "/dashboard/image-history",
+        "icon": "Image"
+      }
+    ],
+    "AdminMenus": [
+      {
+        "name": "概要",
+        "href": "/dashboard/overview",
+        "icon": "LayoutDashboard"
+      },
+      {
+        "name": "ユーザー管理",
+        "href": "/dashboard/users",
+        "icon": "Users"
+      },
+      {
+        "name": "注文管理",
+        "href": "/dashboard/orders",
+        "icon": "ShoppingCart"
+      },
+      {
+        "name": "料金プラン管理",
+        "href": "/dashboard/prices",
+        "icon": "DollarSign"
+      },
+      {
+        "name": "ブログ管理",
+        "href": "/dashboard/blogs",
+        "icon": "Rss"
+      },
+      {
+        "name": "画像ジョブ",
+        "href": "/dashboard/image-jobs",
+        "icon": "Image"
+      },
+      {
+        "name": "R2リソース",
+        "href": "/dashboard/r2-resources",
+        "icon": "FileBox"
+      }
+    ]
+  },
+  "Blogs": {
+    "title": "ブログ記事",
+    "description": "Next.jsエコシステムとNexty.devテンプレートの最新情報をお届けします。",
+    "emptyState": {
+      "title": "記事がありません",
+      "description": "現在コンテンツを作成中です。もうしばらくお待ちください！"
+    },
+    "loadMorePostsFailed": "記事の読み込みに失敗しました",
+    "loadMorePosts": "記事を読み込み中...",
+    "filterPostsFailed": "記事の読み込みに失敗しました",
+    "noPostsFoundForThisTag": "このタグの記事は見つかりませんでした",
+    "reachedTheEnd": "すべての記事を表示しました",
+    "BlogDetail": {
+      "featured": "特集記事",
+      "accessRestricted": "アクセス制限",
+      "unauthorized": "この記事はログインユーザーのみ閲覧できます",
+      "premium": "プレミアムコンテンツ",
+      "premiumContent": "この記事は有料会員限定です",
+      "signIn": "ログイン",
+      "upgrade": "アップグレード",
+      "backToBlogs": "ブログ一覧に戻る",
+      "notFound": "記事が見つかりません"
+    }
+  },
+  "About": {
+    "title": "サイトについて",
+    "description": "サイトについて"
+  },
+  "TermsOfService": {
+    "title": "サービス利用規約",
+    "description": "サービス利用規約"
+  },
+  "PrivacyPolicy": {
+    "title": "プライバシーポリシー",
+    "description": "プライバシーポリシー"
+  },
+  "ErrorPage": {
+    "403": {
+      "title": "403 - アクセスが拒否されました",
+      "description": "このページにアクセスする権限がありません。",
+      "button": {
+        "label": "ホームに戻る",
+        "href": "/"
+      }
+    },
+    "RedirectError": {
+      "title": "リダイレクトエラー",
+      "description": "認証過程でエラーが発生しました。",
+      "goToHome": "ホームに戻る",
+      "goToLogin": "ログイン画面に戻る",
+      "invalid_params": {
+        "title": "パラメータエラー",
+        "description": "リクエストに必要なパラメータが不足しています。"
+      },
+      "invalid_redirect": {
+        "title": "重定向エラー",
+        "description": "提供されたリダイレクトURLが許可されていません。"
+      },
+      "token_expired": {
+        "title": "トークン期限切れ",
+        "description": "検証トークンが期限切れになりました。再度ログインしてください。"
+      },
+      "invalid_token": {
+        "title": "トークンエラー",
+        "description": "提供された検証トークンが無効です。"
+      },
+      "invalid_link_or_expired": {
+        "title": "リンクエラー",
+        "description": "メール検証リンクが無効または期限切れです。"
+      },
+      "server_error": {
+        "title": "サーバーエラー",
+        "description": "認証中にサーバーで予期せぬエラーが発生しました。"
+      },
+      "unknown": {
+        "title": "認証エラー",
+        "description": "認証中に未知のエラーが発生しました。"
+      }
+    },
+    "StripeError": {
+      "goToHome": "ホームに戻る",
+      "goToDashboard": "ダッシュボードに戻る",
+      "title": "Payment Portal Error",
+      "description": "支払い情報にエラーが発生しました。"
+    }
+  }
+}

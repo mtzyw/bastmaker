@@ -1,0 +1,9 @@
+{
+  "title": "Image Jobs",
+  "description": "管理 AI 图片任务",
+  "fetchError": "获取图片任务失败: {error}",
+  "List": {
+    "failedToFetch": "获取图片任务失败",
+    "searchPlaceholder": "搜索 Provider Job ID 或 Seed"
+  }
+}

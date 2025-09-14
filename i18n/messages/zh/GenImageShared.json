@@ -1,0 +1,56 @@
+{
+  "aspectRatioSelector": {
+    "label": "图片比例"
+  },
+  "recentImagesGallery": {
+    "title": "最近的图片",
+    "emptyState": "还没有图片呢～创建你的第一张图片就会显示在这里！",
+    "status": {
+      "failed": "失败",
+      "processing": "处理中...",
+      "noImage": "暂无图片"
+    },
+    "showingImages": "显示最近 {count} 张图片，",
+    "viewAllLink": "在控制台查看全部",
+    "errorMessages": {
+      "failedToLoadImages": "图片加载失败"
+    }
+  },
+  "imageResultDisplay": {
+    "defaultTitle": "处理结果",
+    "processing": {
+      "message": "AI正在处理你的图片...",
+      "subMessage": "通常需要30-60秒完成"
+    },
+    "placeholder": {
+      "message": "处理完成的图片将在这里显示",
+      "description": "你的AI编辑图片将在此展示"
+    },
+    "altText": "AI生成结果",
+    "buttons": {
+      "download": "下载图片",
+      "edit": "继续编辑"
+    },
+    "status": {
+      "succeeded": "处理成功",
+      "failed": "处理失败",
+      "processing": "处理中",
+      "starting": "启动中",
+      "canceled": "已取消"
+    }
+  },
+  "api": {
+    "errors": {
+      "replicateNotInitialized": "AI服务尚未初始化",
+      "jobNotFound": "未找到任务ID '{jobId}'",
+      "insufficientCredits": "积分余额不足，请购买更多积分后继续使用",
+      "paymentProcessingFailed": "积分扣除失败，请重试",
+      "jobCreationFailed": "创建新任务失败",
+      "jobCancellationFailed": "取消任务失败",
+      "jobStatusFetchFailed": "获取任务状态失败",
+      "featureNotFound": "未找到功能ID '{featureId}'",
+      "invalidParameters": "参数错误：{error}",
+      "failedToLoadImages": "图片加载失败"
+    }
+  }
+}

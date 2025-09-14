@@ -1,0 +1,81 @@
+{
+  "title": "Plans & Pricing",
+  "description": "Choose the plan that fits your creative needs. Every new user gets free credits to get started.",
+  "annual": "Annual",
+  "monthly": "Monthly",
+  "saveTip": "Save 50%",
+  "SubscriptionTitle": "Subscription Plans",
+  "SubscriptionDescription": "Choose monthly or annual plans for the best value.",
+  "oneTimeTitle": "Credit Packs",
+  "oneTimeDescription": "Buy credits once and use them whenever you need.",
+  "smartBanner": {
+    "newUser": {
+      "title": "New User Exclusive - 48-Hour Decision Window",
+      "description": "As a new user, you have 48 hours to subscribe to our annual plan at the best price, save 50% compared to monthly",
+      "urgency": "New User Offer Countdown",
+      "ctaText": "Get New User Price Now",
+      "badge": "New User Exclusive",
+      "urgencyText": "48-hour exclusive new user pricing",
+      "socialProof1": "Designed for new users",
+      "socialProof2": "New user priority"
+    },
+    "returning": {
+      "title": "Today's Special - Annual Plan Discount",
+      "description": "Choose annual plan and enjoy the best price all year round, great deals every day",
+      "urgency": "Today's Special Countdown",
+      "ctaText": "Choose Annual Plan",
+      "badge": "Daily Special",
+      "urgencyText": "Daily special, best price all year",
+      "socialProof1": "Daily updated specials",
+      "socialProof2": "User's choice"
+    },
+    "referral": {
+      "title": "Love {siteName}? Share with Friends!",
+      "description": "Help your friends discover {siteName} and unlock amazing AI-powered image generation together",
+      "urgency": "Spread the Word",
+      "ctaText": "Share with Friends",
+      "badge": "Share",
+      "urgencyText": "Help friends discover the power of AI",
+      "shareText": "Check out {siteName} - amazing AI image generation tool!"
+    },
+    "common": {
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "noCode": "No coupon needed - discount applied at checkout"
+    }
+  },
+  "faq": {
+    "badge": "Pricing FAQ",
+    "title": "Pricing Questions Answered",
+    "description": "Everything you need to know about our transparent pricing, flexible plans, and billing options.",
+    "items": [
+      {
+        "question": "Can I try the service for free before purchasing?",
+        "answer": "Absolutely! {siteName} gives every new user {welcomeCredits} free credits to test our AI image generation capabilities. No credit card required - just sign up and start creating amazing images right away."
+      },
+      {
+        "question": "Do all credits work with every feature on the platform?",
+        "answer": "Yes! Whether you get credits from a subscription or buy them as one-time packs, they all work the same way. You can use any credits for any AI image generation feature - no restrictions, no limitations."
+      },
+      {
+        "question": "Do one-time credit purchases ever expire?",
+        "answer": "Never! Your one-time credit purchases are yours forever. Take your time, create at your own pace - there's no pressure or expiration dates to worry about."
+      },
+      {
+        "question": "How do annual subscription credits get delivered?",
+        "answer": "We deliver your annual subscription credits monthly, so you get a fresh allowance each month throughout your subscription. Each plan has different monthly amounts - check the pricing cards above to see exactly what you'll get."
+      },
+      {
+        "question": "Can I buy extra credits if I'm already on a subscription?",
+        "answer": "Of course! Sometimes you need more credits for big projects. You can purchase additional one-time credit packs anytime, even with an active subscription. Perfect for those busy creative months!"
+      }
+    ],
+    "contact": {
+      "title": "Still Have Pricing Questions?",
+      "description": "Need help choosing the perfect plan for your creative projects? Our friendly community and support team are here to help you succeed.",
+      "discord": "Join Discord Community",
+      "email": "Contact Support Team"
+    }
+  }
+}

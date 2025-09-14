@@ -1,0 +1,41 @@
+{
+  "title": "Account Settings",
+  "description": "Manage your account settings and personal information.",
+  "sections": {
+    "account": "Account Information",
+    "accountDescription": "Your basic account information and contact details.",
+    "profile": "Profile",
+    "profileDescription": "Your personal profile information and preferences."
+  },
+  "form": {
+    "emailLabel": "Email Address",
+    "emailHint": "Your email address cannot be changed.",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "fullNameHint": "Your display name. Maximum {maxLength} characters.",
+    "avatarLabel": "Profile Picture",
+    "avatarHint": "Maximum file size: {maxSizeInMB}MB. Supported formats: {allowedTypes}.",
+    "avatarSelected": "New profile picture selected. Save changes to apply.",
+    "resetButton": "Reset Changes",
+    "updateButton": "Save Changes",
+    "updatingButton": "Saving..."
+  },
+  "toast": {
+    "fullNameLengthError": "Full name must be less than {maxLength} characters",
+    "fullNameInvalidCharactersError": "Full name contains invalid characters",
+    "errorInvalidFileType": "Invalid file type for avatar. Only {allowedTypes} are allowed.",
+    "errorInvalidFileTypeDescription": "Please upload a file smaller than {maxSizeInMB} MB.",
+    "errorFileSizeExceeded": "Avatar size exceeds the {maxSizeInMB} MB limit.",
+    "errorFileSizeExceededDescription": "Please upload a file smaller than {maxSizeInMB} MB.",
+    "errorInvalidFullName": "Invalid full name provided.",
+    "errorFullNameRequired": "Full name is required.",
+    "updateSuccessTitle": "Profile Updated",
+    "updateSuccessDescription": "Your profile has been updated successfully.",
+    "updateErrorTitle": "Update Failed",
+    "updateErrorDescription": "Failed to update settings. Please try again later.",
+    "errorDeleteOldAvatar": "Failed to delete old avatar.",
+    "errorUploadAvatar": "Failed to upload avatar.",
+    "errorUpdateAuthUser": "Failed to update auth user.",
+    "errorUpdateUserProfile": "Failed to update user profile."
+  }
+}

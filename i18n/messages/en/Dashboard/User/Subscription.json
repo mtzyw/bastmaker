@@ -1,0 +1,51 @@
+{
+  "title": "Subscription",
+  "description": "Manage your subscription plan and billing details.",
+  "credits": {
+    "title": "Credit Balance",
+    "description": "Your available credits and usage information.",
+    "totalCredits": "Total Credits",
+    "subscriptionCredits": "Subscription Credits",
+    "lifetimeCredits": "Lifetime Credits",
+    "monthlyAllowanceTitle": "Monthly Credit Allowance",
+    "monthlyAllowanceDescription": "You receive {credits} credits each month with your current plan.",
+    "yearlyResetTitle": "Monthly Credit Reset (Yearly Plan)",
+    "yearlyResetDescription": "Your {credits} credits reset automatically every month",
+    "nextResetDate": "Next reset: {date}",
+    "remainingMonths": "{months} months remaining in your yearly subscription"
+  },
+  "subscriptionDetails": {
+    "title": "Subscription Details",
+    "description": "Your current subscription plan and billing information.",
+    "currentPlan": "Current Plan",
+    "status": "Status",
+    "billingCycle": "Billing Cycle",
+    "currentPeriod": "Current Period",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "subscriptionEndingTitle": "Subscription Ending",
+    "subscriptionEndingDescription": "Your subscription will be canceled at the end of the current billing cycle."
+  },
+  "management": {
+    "title": "Subscription Management",
+    "description": "Access your Stripe customer portal to manage your subscription, update payment methods, and view billing history.",
+    "manageButton": "Manage Subscription & Billing",
+    "redirectNotice": "You will be securely redirected to Stripe to manage your subscription details."
+  },
+  "noSubscription": {
+    "title": "No Active Subscription",
+    "description": "You are not currently subscribed to any plan. Upgrade to unlock premium features and get more credits.",
+    "upgradeButton": "Upgrade Plan"
+  },
+  "status": {
+    "active": "Active",
+    "trialing": "Trial",
+    "past_due": "Past Due",
+    "canceled": "Canceled",
+    "inactive_period_ended": "Expired",
+    "unknown": "Unknown"
+  },
+  "common": {
+    "notSet": "Not set"
+  }
+}

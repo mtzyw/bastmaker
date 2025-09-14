@@ -1,0 +1,209 @@
+{
+  "metadata": {
+    "title": "Flux Kontext 多图合成",
+    "description": "专业AI双图片合成工具，使用Flux Kontext Pro技术智能融合两张照片，打造完美图像作品。领先的双图AI融合技术，适用于电商、营销和创意设计。免费试用30积分。"
+  },
+  "hero": {
+    "badge": "专业AI图片合成器",
+    "title": "Flux Kontext 双图融合 - 领先的AI智能图片合成技术",
+    "description": "我们的高级多图编辑器运用最新Flux Kontext AI算法，智能分析并融合两张独立照片，创造出令人惊艳的上下文感知合成作品，完美适配商业和创意应用场景。",
+    "features": [
+      "30免费积分开始",
+      "瞬间融合两张照片",
+      "专业品质效果"
+    ]
+  },
+  "client": {
+    "upload": {
+      "dragActive": "拖放图片到此处",
+      "dragInactive": "点击上传图片或拖拽到此处",
+      "supportedFormats": "支持JPG、PNG、WEBP格式，每张图片最大{size}MB",
+      "uploading": "上传中...",
+      "uploadingSubtext": "正在处理你的图片，请稍候",
+      "validationError": "请上传有效的图片文件",
+      "sizeError": "文件大小不能超过{size}MB",
+      "uploadError": "图片上传失败，请重试",
+      "firstImage": "第一张图片",
+      "secondImage": "第二张图片",
+      "bothImagesRequired": "需要上传两张图片才能进行合成"
+    },
+    "form": {
+      "promptLabel": "Prompt",
+      "promptPlaceholder": "描述你希望如何合成这两张图片...",
+      "outputFormatLabel": "输出格式",
+      "seedLabel": "随机种子（可选）",
+      "seedPlaceholder": "随机种子",
+      "submitValidation": "请上传两张图片并描述合成方式",
+      "uploadInProgress": "图片仍在上传中",
+      "advancedSettings": "高级设置",
+      "maxQualityLabel": "启用 MAX 高质量模型",
+      "maxQualityDescription": "效果更好，每张图片消耗 {credits} 积分。"
+    },
+    "processing": {
+      "processing": "正在创建合成效果...",
+      "transformButton": "开始合成({credits}积分)",
+      "processingFailed": "图片合成失败：{error}",
+      "insufficientCredits": "积分不足，请购买更多积分继续使用",
+      "getCreditsAction": "获取积分",
+      "submitError": "启动图片合成失败"
+    }
+  },
+  "examples": {
+    "title": "Nexty AI Image的Flux kontext multi-image真实案例展示",
+    "description": "看看真实用户都创作出了什么惊艳作品！从旅游博主的梦想目的地打卡照，到电商卖家的爆款产品图，体验Nexty AI Image的Flux kontext multi-image技术如何让合成效果自然到让人惊叹，毫无PS痕迹。",
+    "labels": {
+      "image1": "图片1",
+      "image2": "图片2",
+      "result": "合成结果",
+      "promptUsed": "Prompt"
+    },
+    "items": {
+      "portraitBackground": {
+        "title": "旅拍大片轻松搞定",
+        "description": "专为旅游博主和生活方式品牌打造。保持自然光照和真实阴影，让你仿佛真的在那个梦想之地拍摄，朋友圈点赞收割机。"
+      },
+      "objectComposition": {
+        "title": "创意视觉故事",
+        "description": "艺术家和营销人的最爱。将现实中无法同框的元素完美融合，创造出让人印象深刻的视觉冲击力，一图胜千言。"
+      }
+    }
+  },
+  "whatMakesDifferent": {
+    "title": "为什么Nexty AI Image的Flux kontext multi-image比其他工具更牛",
+    "description": "别的修图软件需要你手动抠图、调色、融合，一张图搞几个小时还不一定自然。Nexty AI Image的Flux kontext multi-image技术让AI自动理解两张图该怎么完美融合，省时省力，效果还更好。",
+    "features": {
+      "dualImageIntelligence": {
+        "title": "智能理解图片关系",
+        "description": "其他工具只是简单叠加图层，我们的AI真正理解光照、阴影、视角在两张照片间应该如何自然配合，做出来的效果经得起仔细看。"
+      },
+      "intelligentFusion": {
+        "title": "自动专业级处理",
+        "description": "告别复杂的混合模式和透明度调节。色温匹配、对比度调整、视觉风格统一这些烦人的技术活，算法全自动搞定。"
+      },
+      "creativeFlexibility": {
+        "title": "从写实到超现实随心切换",
+        "description": "无论你要做逼真的产品展示，还是天马行空的艺术创作，我们的技术都能以同样的专业水准满足你的创意需求。"
+      }
+    },
+    "howItWorks": {
+      "title": "使用方法",
+      "steps": [
+        "上传您的两张照片",
+        "AI分析两张图片以实现最佳融合",
+        "告诉我们您希望如何组合它们",
+        "几秒钟内获得专业效果"
+      ]
+    }
+  },
+  "features": {
+    "title": "Nexty AI Image的Flux kontext multi-image核心功能 - 只做你真正需要的",
+    "description": "忘掉那些功能复杂到让人头大的专业软件吧。Nexty AI Image的Flux kontext multi-image平台专注于创作者真正需要的：好用的强大AI、快速出图、专业效果，让任何创意想法都能轻松实现。",
+    "items": {
+      "dualInputProcessing": {
+        "title": "拖拽即用，简单到极致",
+        "description": "上传任意两张图片，AI立即开始分析它们的关系。不需要专业知识 - 拖进来，描述想法，就这么简单。"
+      },
+      "contextualFusion": {
+        "title": "自然到让人怀疑人生的融合效果",
+        "description": "我们的AI不是简单粗暴地叠加图片，而是真正思考它们应该如何互动。阴影自然投射，光线真实匹配，最终效果就像原本就是这样拍的。"
+      },
+      "creativeComposition": {
+        "title": "用人话控制AI",
+        "description": "忘掉复杂菜单和各种滑条吧。用最自然的中文告诉AI你的想法：'把狗放到厨房里'、'调成夕阳的光线'，AI秒懂并执行。"
+      },
+      "professionalOutput": {
+        "title": "直接可交付的专业品质",
+        "description": "每张输出都是高分辨率的专业级作品，直接用于社交媒体、商业展示、营销物料等任何需要留下好印象的场合。"
+      },
+      "versatileApplications": {
+        "title": "万金油般的适用性",
+        "description": "无论你是内容创作者、小企业主、营销人员，还是只是想要更酷照片的普通人，我们的技术都能适应你的具体需求和风格。"
+      },
+      "seamlessIntegration": {
+        "title": "分钟级，不是小时级",
+        "description": "以前平面设计师在Photoshop里要搞几小时的活，现在不到一分钟搞定。专业效果，但没有专业的学习门槛和价格门槛。"
+      }
+    }
+  },
+  "useCases": {
+    "title": "看看大家都在用Nexty AI Image的Flux kontext multi-image做什么",
+    "description": "从小商家到创意公司，大家都发现Nexty AI Image的Flux kontext multi-image能解决他们每天遇到的实际问题。来看看不同类型的用户是如何在日常工作中运用这项技术的。",
+    "footer": "这些都是真实用户利用Nexty AI Image的Flux kontext multi-image技术，以比传统方法更快更经济的方式解决创意挑战的真实成果。",
+    "items": {
+      "styleTransfer": {
+        "title": "品牌视觉统一不求人",
+        "description": "小企业主用我们的技术将品牌视觉风格应用到不同类型的内容上，确保所有东西看起来协调一致，不用花大钱请设计师。"
+      },
+      "textEditing": {
+        "title": "几分钟搞定定制图形",
+        "description": "内容创作者将不同来源的文字元素组合，创造出在信息流中脱颖而出的独特头图、社交媒体图形和品牌内容。"
+      },
+      "backgroundReplacement": {
+        "title": "电商产品图专业到飞起",
+        "description": "电商卖家和创业者将产品照片与专业背景结合，制作出影棚级的产品图，省掉昂贵的专业拍摄费用。"
+      },
+      "fashionModification": {
+        "title": "设计前先预览效果",
+        "description": "服装设计师和造型师将不同照片中的服装单品组合，可视化概念设计，让客户在投入生产或购买前就能看到效果。"
+      },
+      "photographyEnhancement": {
+        "title": "完美瞬间的组合艺术",
+        "description": "婚礼摄影师和人像艺术家融合多张照片的最佳元素——完美表情配上理想光线——创造出单次拍摄无法达到的惊艳效果。"
+      },
+      "characterConsistency": {
+        "title": "品牌形象一致性管理",
+        "description": "营销团队在不同活动和场景中保持吉祥物和品牌角色的视觉一致性，建立更强的品牌识别度和客户连接。"
+      },
+      "creativeContent": {
+        "title": "爆款社交内容制造机",
+        "description": "网红和社媒运营者通过组合意想不到的元素创造停止滚动的内容，产出那种会被疯狂转发和记住的爆款帖子。"
+      },
+      "professionalWorkflows": {
+        "title": "代理商级别的交付水准",
+        "description": "营销代理和设计工作室用我们的平台更快交付高质量作品，在维护卓越声誉的同时接下更多客户。"
+      }
+    }
+  },
+  "faq": {
+    "title": "关于Nexty AI Image的常见问题",
+    "items": [
+      {
+        "question": "和Photoshop这些修图软件有啥不同？",
+        "answer": "传统修图软件需要你手动抠图、调色、融合，技术门槛很高，学会得好几年。Nexty AI Image的Flux kontext multi-image AI把这些技术活全自动化了。你只要说出想法，AI就负责处理光照匹配、视角调整这些复杂部分。"
+      },
+      {
+        "question": "什么类型的照片组合效果最好？",
+        "answer": "我们的Flux kontext multi-image技术在各种组合上都很出色：真实场景合成（比如把人放到新地点）到创意混搭（比如组合不同场景的物体）。实用商业需求和艺术创作都能搞定。"
+      },
+      {
+        "question": "多快能出结果？",
+        "answer": "大部分合成在15-45秒内完成。AI需要时间分析两张图片并找出最自然的融合方式，但比手动修图快太多了。"
+      },
+      {
+        "question": "支持什么文件格式？",
+        "answer": "支持PNG、JPG、WEBP文件。最终图片可以选择PNG或JPG格式下载，看你的需要。"
+      },
+      {
+        "question": "合成一次要多少钱？",
+        "answer": "每次合成消耗10积分。新用户注册送30免费积分，可以做3次完整合成来体验效果，确认Nexty AI Image适合你的需求再考虑付费。"
+      },
+      {
+        "question": "合成的图片可以商用吗？",
+        "answer": "当然可以！你用Nexty AI Image创作的图片版权归你所有。只要确保你上传的原始图片没有侵犯他人版权就行，上传内容你自己负责。"
+      },
+      {
+        "question": "怎么写描述才能得到更好的效果？",
+        "answer": "把你的想法说具体：要组合哪些元素，它们应该如何关联，希望什么样的整体氛围。比如：'把图片1的女孩放到图片2的山景里，要有温暖的夕阳光线。'"
+      },
+      {
+        "question": "对合成结果不满意怎么办？",
+        "answer": "可以随时用不同的描述或稍作调整的图片重新尝试。我们的AI会从更详细的描述中学习，所以对光照、位置、风格说得更具体通常会改善效果，每次尝试都会用积分，但你可以不断优化方法。"
+      }
+    ]
+  },
+  "cta": {
+    "title": "准备好创作惊艳作品了吗？",
+    "description": "加入成千上万发现AI图像组合无限可能的创作者、企业和个人。获取30免费积分，亲身体验Nexty AI Image的Flux kontext multi-image技术能为你的创意项目带来什么惊喜。",
+    "button": "立即免费体验"
+  }
+}

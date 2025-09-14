@@ -1,0 +1,41 @@
+{
+  "title": "アカウント設定",
+  "description": "アカウント設定と個人情報を管理します。",
+  "sections": {
+    "account": "アカウント情報",
+    "accountDescription": "基本的なアカウント情報と連絡先詳細です。",
+    "profile": "プロフィール",
+    "profileDescription": "個人プロフィール情報と設定です。"
+  },
+  "form": {
+    "emailLabel": "メールアドレス",
+    "emailHint": "メールアドレスは変更できません。",
+    "fullNameLabel": "氏名",
+    "fullNamePlaceholder": "氏名を入力してください",
+    "fullNameHint": "表示名です。最大{maxLength}文字まで入力できます。",
+    "avatarLabel": "プロフィール画像",
+    "avatarHint": "最大ファイルサイズ：{maxSizeInMB}MB。対応形式：{allowedTypes}",
+    "avatarSelected": "新しいプロフィール画像が選択されました。変更を保存してください。",
+    "resetButton": "変更をリセット",
+    "updateButton": "変更を保存",
+    "updatingButton": "保存中..."
+  },
+  "toast": {
+    "fullNameLengthError": "お名前は{maxLength}文字以内でご入力ください",
+    "fullNameInvalidCharactersError": "お名前に使用できない文字が含まれています",
+    "errorInvalidFileType": "対応していないファイル形式です。{allowedTypes}のみ対応しています。",
+    "errorInvalidFileTypeDescription": "{maxSizeInMB}MB以下のファイルをアップロードしてください。",
+    "errorFileSizeExceeded": "ファイルサイズが上限（{maxSizeInMB}MB）を超えています。",
+    "errorFileSizeExceededDescription": "{maxSizeInMB}MB以下のファイルを選択してください。",
+    "errorInvalidFullName": "入力されたお名前が無効です。",
+    "errorFullNameRequired": "お名前は必須項目です。",
+    "updateSuccessTitle": "更新完了",
+    "updateSuccessDescription": "設定が正常に更新されました。",
+    "updateErrorTitle": "更新エラー",
+    "updateErrorDescription": "設定の更新に失敗しました。お手数ですが、再度お試しください。",
+    "errorDeleteOldAvatar": "前のプロフィール画像の削除に失敗しました。",
+    "errorUploadAvatar": "画像のアップロードに失敗しました。",
+    "errorUpdateAuthUser": "認証情報の更新に失敗しました。",
+    "errorUpdateUserProfile": "プロフィール情報の更新に失敗しました。"
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "title": "Flux Kontext Pro - AI智能修图工具 | 上下文感知图像编辑器",
+    "description": "Flux Kontext AI智能修图神器，专业级图像编辑工具。支持AI换背景、智能抠图、文字去除、风格转换。上下文感知技术，让AI理解图片内容，精准编辑不变形。免费30积分，商用级品质。"
+  },
+  "hero": {
+    "badge": "AI智能修图神器",
+    "title": "Flux Kontext Pro - 懂图片的AI修图工具",
+    "description": "革命性的Flux Kontext AI技术，让人工智能真正理解图片内容和上下文关系。无论是换背景、去文字、还是风格转换，都能保持画面自然协调，告别生硬的AI修图效果。",
+    "features": [
+      "新用户免费30积分",
+      "上下文智能识别",
+      "商用级输出品质"
+    ]
+  },
+  "client": {
+    "upload": {
+      "dragActive": "释放鼠标上传图片",
+      "dragInactive": "点击上传图片或直接拖拽到这里",
+      "supportedFormats": "支持 JPG、PNG、WEBP 格式，最大 {size}MB",
+      "uploading": "正在上传...",
+      "uploadingSubtext": "请稍候，正在处理你的图片",
+      "validationError": "请上传有效的图片文件",
+      "sizeError": "文件大小不能超过 {size}MB",
+      "uploadError": "图片上传失败，请重试"
+    },
+    "form": {
+      "promptLabel": "修图指令",
+      "promptPlaceholder": "告诉AI你想对这张图片做什么处理？",
+      "outputFormatLabel": "输出格式",
+      "seedLabel": "随机种子（可选）",
+      "seedPlaceholder": "随机数种子",
+      "submitValidation": "请上传图片并输入修图指令",
+      "uploadInProgress": "图片还在上传中，请稍候",
+      "advancedSettings": "高级设置",
+      "maxQualityLabel": "启用 MAX 高质量模型",
+      "maxQualityDescription": "效果更好，每张图片消耗 {credits} 积分。"
+    },
+    "processing": {
+      "processing": "AI正在处理中...",
+      "transformButton": "开始AI修图（消耗{credits}积分）",
+      "processingFailed": "处理失败：{error}",
+      "insufficientCredits": "积分不足，请购买更多积分继续使用",
+      "getCreditsAction": "购买积分",
+      "submitError": "启动处理失败，请重试"
+    }
+  },
+  "examples": {
+    "title": "Flux Kontext AI修图应用场景",
+    "description": "从风格转换到场景替换，Flux Kontext AI在各种图像处理需求中都能提供专业级的效果，让创意工作更高效。",
+    "labels": {
+      "before": "修图前",
+      "after": "修图后",
+      "promptUsed": "Prompt"
+    },
+    "items": {
+      "cartoonify": {
+        "title": "人像卡通化",
+        "description": "将真实人像转换为卡通风格，保持面部特征和构图美感，适合头像制作和创意设计。",
+        "prompt": "转换为宫崎骏动画风格"
+      },
+      "textRemoval": {
+        "title": "智能去除文字",
+        "description": "精准去除图片中的文字和标识，同时完美保持背景完整，适合产品图处理和版权清理。",
+        "prompt": "去除图片中的所有文字，保持背景完整"
+      },
+      "backgroundChange": {
+        "title": "AI换背景",
+        "description": "智能替换背景场景，保持主体不变，光影自然融合，适合产品摄影和人像美化。",
+        "prompt": "将背景替换为远处的自由女神像景观"
+      },
+      "restoreImage": {
+        "title": "老照片修复",
+        "description": "修复老旧照片的划痕损伤，AI智能上色增强细节，让珍贵回忆重获新生。",
+        "prompt": "修复并上色这张照片，去除划痕和损伤"
+      }
+    }
+  },
+  "whatMakesDifferent": {
+    "title": "为什么选择Flux Kontext AI？",
+    "description": "Flux Kontext Pro代表了AI图像编辑的技术突破，拥有前所未有的上下文理解能力，远超简单的风格转换或基础修改工具。",
+    "features": {
+      "contextIntelligence": {
+        "title": "上下文智能理解",
+        "description": "与传统AI修图工具不同，Flux Kontext AI能够理解图像中物体的关系、光影、透视和风格，实现更自然协调的图像变换效果。"
+      },
+      "preciseControl": {
+        "title": "精准局部控制",
+        "description": "Flux Kontext Pro支持精确的局部修改，既能改变背景、修饰物体，又能变换风格，同时保持原图的整体完整性。"
+      },
+      "professionalResults": {
+        "title": "专业商用品质",
+        "description": "基于Black Forest Labs前沿技术构建，Flux Kontext AI输出商业级品质结果，适用于专业摄影、市场营销和创意项目。"
+      }
+    },
+    "howItWorks": {
+      "title": "Flux Kontext AI工作原理",
+      "steps": [
+        "AI分析图像内容和物体关系",
+        "理解你的自然语言修图指令",
+        "应用智能的上下文感知修改",
+        "输出专业级品质结果"
+      ]
+    }
+  },
+  "features": {
+    "title": "Flux Kontext Pro核心功能",
+    "description": "探索让Flux Kontext AI成为全球专业人士和创意工作者首选工具的强大功能。",
+    "items": {
+      "contextUnderstanding": {
+        "title": "智能上下文理解",
+        "description": "Flux Kontext AI分析空间关系、光照条件和物体交互，做出智能编辑决策，保持图像的整体协调性。"
+      },
+      "fastProcessing": {
+        "title": "闪电般处理速度",
+        "description": "体验Flux Kontext Pro优化的处理流水线，在几秒内完成高质量图像变换，大幅提升工作效率。"
+      },
+      "flexibleAspectRatios": {
+        "title": "灵活的画面比例",
+        "description": "支持任意需要的图像格式，Flux Kontext AI能无缝适应不同宽高比，同时保持视觉质量和构图美感。"
+      },
+      "professionalQuality": {
+        "title": "专业级输出品质",
+        "description": "使用Flux Kontext Pro生成令人惊艳的高分辨率图像，完美适用于商业用途、营销活动和专业摄影。"
+      },
+      "securePrivate": {
+        "title": "安全隐私保护",
+        "description": "你的图像经过安全处理和存储，仅你的账户可以访问。Flux Kontext AI优先保护用户隐私和数据安全。"
+      },
+      "intuitiveInterface": {
+        "title": "简洁易用界面",
+        "description": "用户友好的设计让Flux Kontext Pro既适合新手也适合专业人士，无需技术专长即可获得惊人效果。"
+      }
+    }
+  },
+  "useCases": {
+    "title": "Flux Kontext Pro AI修图专业应用场景",
+    "description": "了解Flux Kontext Pro如何通过领先的文本驱动图像编辑能力，变革各行业的创意工作流程。从风格转换到背景替换，用AI驱动的精准技术解锁商业级效果。",
+    "footer": "所有应用场景均由Flux Kontext Pro先进AI技术驱动，提供商业级品质效果，出色的指令跟随能力和一致的输出质量，适用于商业和创意应用。",
+    "items": {
+      "styleTransfer": {
+        "title": "风格转换与艺术创作",
+        "description": "将照片转换为水彩画、油画、素描、数字艺术等各种艺术风格。完美打造独特视觉内容，让作品脱颖而出。"
+      },
+      "textEditing": {
+        "title": "文字标识编辑",
+        "description": "精准替换和修改标牌、海报、标签和营销素材中的文字。保持原有字体和版式，轻松更新不同活动的宣传信息。"
+      },
+      "backgroundReplacement": {
+        "title": "背景替换与场景变换",
+        "description": "更换背景和环境的同时完美保留主体。适用于产品摄影、人像拍摄，为不同市场创造场景化图像。"
+      },
+      "fashionModification": {
+        "title": "时尚造型修改",
+        "description": "修改发型、添加配饰、改变服装颜色、更新时尚元素。电商、时尚品牌和生活方式摄影的必备工具。"
+      },
+      "photographyEnhancement": {
+        "title": "专业摄影增强",
+        "description": "增强光照条件、调整构图比例、优化摄影元素，获得专业级效果。适用于商业摄影和营销活动。"
+      },
+      "characterConsistency": {
+        "title": "角色一致性与身份保持",
+        "description": "在多次编辑和变化中保持角色身份一致。适用于品牌吉祥物、角色开发和创建一致的视觉叙事。"
+      },
+      "creativeContent": {
+        "title": "创意内容生成",
+        "description": "为社交媒体、广告和数字营销生成独特创意内容。将现有图像转换为新鲜、引人注目的视觉素材。"
+      },
+      "professionalWorkflows": {
+        "title": "专业修图工作流程",
+        "description": "用AI驱动的精准技术简化专业编辑工作流程。缩短编辑时间的同时保持高质量效果，适合代理商、工作室和创意专业人士。"
+      }
+    }
+  },
+  "faq": {
+    "title": "Flux Kontext Pro常见问题",
+    "items": [
+      {
+        "question": "什么是Flux Kontext AI，它是如何工作的？",
+        "answer": "Flux Kontext AI是由Black Forest Labs开发的先进图像编辑模型，能够理解图像上下文和关系。与传统AI编辑器不同，它分析空间关系、光照和物体交互，做出智能编辑决策，保持图像的连贯性和真实感。"
+      },
+      {
+        "question": "Flux Kontext Pro与其他AI修图工具有什么区别？",
+        "answer": "Flux Kontext Pro具备卓越的上下文理解能力，能够进行更精确、更自然的编辑。它可以进行有针对性的修改，同时保持原图的完整性，非常适合对质量和准确性要求很高的专业应用。"
+      },
+      {
+        "question": "我能获得多少积分，每次编辑需要多少积分？",
+        "answer": "新用户注册即可获得30积分。使用Flux Kontext Pro进行图像变换每次消耗10积分，初始积分可以创建3张图像。"
+      },
+      {
+        "question": "Flux Kontext Pro支持哪些文件格式和大小？",
+        "answer": "Flux Kontext Pro支持PNG、JPG和WEBP格式的输入图像。输出格式可以选择PNG或JPG。每次上传的最大文件大小为5MB，以确保最佳的处理速度和质量。"
+      },
+      {
+        "question": "使用Flux Kontext AI处理一张图片需要多长时间？",
+        "answer": "Flux Kontext AI通常在10-30秒内完成图像处理，具体时间取决于指令的复杂程度和当前服务器负载。我们优化的基础设施确保专业工作流程的快速可靠处理。"
+      },
+      {
+        "question": "Flux Kontext Pro生成的图像可以用于商业用途吗？",
+        "answer": "是的，使用Flux Kontext Pro生成的图像可以用于商业用途。但请确保你上传的输入图像不违反任何版权法，因为你对上传和编辑的内容负责。"
+      },
+      {
+        "question": "如何为Flux Kontext AI编写有效的修图指令？",
+        "answer": "有效的指令应该具体描述所需的更改。包括风格、情绪、颜色、光照和具体修改的详细信息。例如：'将背景更改为现代办公室环境，同时保持原有的光照和透视效果。'"
+      },
+      {
+        "question": "Flux Kontext Pro如何保护我的数据安全？",
+        "answer": "我们优先考虑用户隐私和数据安全。你上传和生成的图像都经过安全存储，只有你可以通过账户访问。我们使用行业标准的安全措施来保护你的数据并确保完全隐私。"
+      }
+    ]
+  },
+  "cta": {
+    "title": "体验专业AI修图技术",
+    "description": "加入数千名专业人士，使用Flux Kontext AI满足图像编辑需求。新用户登录即可获得30免费积分，开始使用Flux Kontext Pro创作。",
+    "button": "免费试用"
+  }
+}

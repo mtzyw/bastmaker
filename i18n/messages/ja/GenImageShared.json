@@ -1,0 +1,56 @@
+{
+  "aspectRatioSelector": {
+    "label": "画面比率"
+  },
+  "recentImagesGallery": {
+    "title": "最近の画像",
+    "emptyState": "まだ画像がありません。最初の画像を作成してみましょう！",
+    "status": {
+      "failed": "失敗",
+      "processing": "処理中...",
+      "noImage": "画像なし"
+    },
+    "showingImages": "最新 {count} 件の画像を表示中、",
+    "viewAllLink": "ダッシュボードですべて表示",
+    "errorMessages": {
+      "failedToLoadImages": "画像の読み込みに失敗しました"
+    }
+  },
+  "imageResultDisplay": {
+    "defaultTitle": "処理結果",
+    "processing": {
+      "message": "画像を処理中です...",
+      "subMessage": "通常30〜60秒で完了します"
+    },
+    "placeholder": {
+      "message": "処理完了後の画像がここに表示されます",
+      "description": "AI編集された画像がここに表示されます"
+    },
+    "altText": "AI生成結果",
+    "buttons": {
+      "download": "画像をダウンロード",
+      "edit": "編集を続ける"
+    },
+    "status": {
+      "succeeded": "処理完了",
+      "failed": "処理失敗",
+      "processing": "処理中",
+      "starting": "開始中",
+      "canceled": "キャンセル済み"
+    }
+  },
+  "api": {
+    "errors": {
+      "replicateNotInitialized": "AIサービスが初期化されていません",
+      "jobNotFound": "ジョブID '{jobId}' が見つかりません",
+      "insufficientCredits": "クレジット残高が不足しています。追加でクレジットを購入してください。",
+      "paymentProcessingFailed": "クレジット消費に失敗しました。再度お試しください。",
+      "jobCreationFailed": "新しいジョブの作成に失敗しました",
+      "jobCancellationFailed": "ジョブのキャンセルに失敗しました",
+      "jobStatusFetchFailed": "ジョブステータスの取得に失敗しました",
+      "featureNotFound": "機能ID '{featureId}' が見つかりません",
+      "invalidParameters": "パラメータエラー：{error}",
+      "failedToLoadImages": "画像の読み込みに失敗しました"
+    }
+  }
+}

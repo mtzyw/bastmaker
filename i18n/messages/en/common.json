@@ -1,0 +1,269 @@
+{
+  "LanguageDetection": {
+    "title": "Language Suggestion",
+    "description": "We noticed your browser language differs from the current site language. You can switch languages anytime.",
+    "countdown": "Closing in {countdown} seconds",
+    "switchTo": "Switch to"
+  },
+  "Header": {
+    "links": [
+      {
+        "name": "Features",
+        "href": "/#features"
+      },
+      {
+        "id": "pricing",
+        "name": "Pricing",
+        "href": "/#pricing"
+      },
+      {
+        "name": "Flux Image",
+        "href": "/flux-kontext-pro"
+      },
+      {
+        "name": "Multi-Image",
+        "href": "/multi-image-kontext-pro"
+      }
+    ]
+  },
+  "Footer": {
+    "Copyright": "Copyright © {year} {name} All rights reserved.",
+    "PrivacyPolicy": "Privacy Policy",
+    "TermsOfService": "Terms of Service",
+    "Links": {
+      "groups": [
+        {
+          "title": "Products",
+          "links": [
+            {
+              "name": "Features",
+              "href": "/#features"
+            },
+            {
+              "id": "pricing",
+              "name": "Pricing",
+              "href": "/#pricing"
+            },
+            {
+              "name": "Flux Image",
+              "href": "/flux-kontext-pro"
+            },
+            {
+              "name": "Multi-Image",
+              "href": "/multi-image-kontext-pro"
+            }
+          ]
+        },
+        {
+          "title": "Support",
+          "links": [
+            {
+              "href": "mailto:hi@nexty.dev",
+              "name": "Contact Us"
+            }
+          ]
+        },
+        {
+          "title": "Languages",
+          "links": [
+            {
+              "href": "/en",
+              "name": "English",
+              "useA": true
+            },
+            {
+              "href": "/zh",
+              "name": "中文",
+              "useA": true
+            },
+            {
+              "href": "/ja",
+              "name": "日本語",
+              "useA": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Home": {
+    "title": "Nexty AI Image",
+    "tagLine": "AI Image Editor Powered by Flux Kontext Pro",
+    "description": "Flux AI image editor that alternates Photoshop. Edit photos using text - remove text, change backgrounds, create mockups. Powered by Flux.1 Pro."
+  },
+  "Login": {
+    "title": "Welcome back",
+    "description": "Sign in with the following methods",
+    "Toast": {
+      "Email": {
+        "successTitle": "Magic link sent!",
+        "successDescription": "Please check your email for the login link.",
+        "errorTitle": "Error",
+        "errorDescription": "Failed to send magic link. Please try again."
+      },
+      "Google": {
+        "errorTitle": "Error",
+        "errorDescription": "Failed to sign in with Google. Please try again."
+      },
+      "Github": {
+        "errorTitle": "Error",
+        "errorDescription": "Failed to sign in with Github. Please try again."
+      }
+    },
+    "signInMethods": {
+      "or": "Or continue with",
+      "signInWithGoogle": "Continue with Google",
+      "signInWithGithub": "Continue with Github",
+      "signInWithEmail": "Continue with Email"
+    },
+    "Button": {
+      "signIn": "Sign In",
+      "signOut": "Sign Out"
+    },
+    "UserMenus": [
+      {
+        "name": "Settings",
+        "href": "/dashboard/settings",
+        "icon": "Settings"
+      },
+      {
+        "name": "Subscription",
+        "href": "/dashboard/subscription",
+        "icon": "WalletCards"
+      },
+      {
+        "name": "Credit History",
+        "href": "/dashboard/credit-history",
+        "icon": "Coins"
+      },
+      {
+        "name": "Image History",
+        "href": "/dashboard/image-history",
+        "icon": "Image"
+      }
+    ],
+    "AdminMenus": [
+      {
+        "name": "Overview",
+        "href": "/dashboard/overview",
+        "icon": "LayoutDashboard"
+      },
+      {
+        "name": "Users",
+        "href": "/dashboard/users",
+        "icon": "Users"
+      },
+      {
+        "name": "Orders",
+        "href": "/dashboard/orders",
+        "icon": "ShoppingCart"
+      },
+      {
+        "name": "Prices",
+        "href": "/dashboard/prices",
+        "icon": "DollarSign"
+      },
+      {
+        "name": "Blogs",
+        "href": "/dashboard/blogs",
+        "icon": "Rss"
+      },
+      {
+        "name": "Image Jobs",
+        "href": "/dashboard/image-jobs",
+        "icon": "Image"
+      },
+      {
+        "name": "R2 Files",
+        "href": "/dashboard/r2-resources",
+        "icon": "FileBox"
+      }
+    ]
+  },
+  "Blogs": {
+    "title": "Blog Posts",
+    "description": "Insights on Next.js ecosystem and Nexty.dev template updates.",
+    "emptyState": {
+      "title": "No blog posts",
+      "description": "We are creating exciting content, please stay tuned!"
+    },
+    "loadMorePostsFailed": "Failed to load more posts",
+    "loadMorePosts": "Loading more posts...",
+    "filterPostsFailed": "Failed to load posts",
+    "noPostsFoundForThisTag": "No posts found with this tag",
+    "reachedTheEnd": "You've reached the end of all posts",
+    "BlogDetail": {
+      "featured": "Featured Post",
+      "accessRestricted": "Access Restricted",
+      "unauthorized": "This article is only available to logged-in users",
+      "premium": "Premium Content",
+      "premiumContent": "This article is exclusive to subscribers",
+      "signIn": "Sign In",
+      "upgrade": "Upgrade",
+      "backToBlogs": "Back to Blog List",
+      "notFound": "Article Not Found"
+    }
+  },
+  "About": {
+    "title": "About",
+    "description": "About the site"
+  },
+  "TermsOfService": {
+    "title": "Terms of Service",
+    "description": "Terms of Service"
+  },
+  "PrivacyPolicy": {
+    "title": "Privacy Policy",
+    "description": "Privacy Policy"
+  },
+  "ErrorPage": {
+    "403": {
+      "title": "403 - Access Denied",
+      "description": "You don't have permission to access this page.",
+      "button": {
+        "label": "Back to homepage",
+        "href": "/"
+      }
+    },
+    "RedirectError": {
+      "title": "Redirect Error",
+      "description": "An error occurred during the authentication process.",
+      "goToHome": "Go to Home",
+      "goToLogin": "Go to Login",
+      "invalid_params": {
+        "title": "Invalid Parameters",
+        "description": "Required parameters are missing in the request."
+      },
+      "invalid_redirect": {
+        "title": "Invalid Redirect URL",
+        "description": "The redirect URL provided is not allowed."
+      },
+      "token_expired": {
+        "title": "Token Expired",
+        "description": "Your verification token has expired. Please try logging in again."
+      },
+      "invalid_token": {
+        "title": "Invalid Token",
+        "description": "The verification token provided is invalid."
+      },
+      "invalid_link_or_expired": {
+        "title": "Invalid or Expired Link",
+        "description": "The email verification link is invalid or has expired."
+      },
+      "server_error": {
+        "title": "Server Error",
+        "description": "An unexpected error occurred on the server during authentication."
+      },
+      "unknown": {
+        "title": "Authentication Error",
+        "description": "An unknown error occurred during the authentication process."
+      }
+    },
+    "StripeError": {
+      "title": "Payment Portal Error",
+      "description": "An error occurred with your payment information.",
+      "goToHome": "Go to Home",
+      "goToDashboard": "Go to Dashboard"
+    }
+  }
+}

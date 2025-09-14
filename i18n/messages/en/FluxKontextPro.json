@@ -1,0 +1,213 @@
+{
+  "metadata": {
+    "title": "Flux Kontext Pro Image Generator",
+    "description": "Transform images with intelligent context understanding using Flux Kontext AI. Professional-grade Flux Kontext Pro image editing tool powered by advanced AI. Upload, edit, and enhance images with precise text prompts. Get 30 credits to start creating with Flux Kontext Pro."
+  },
+  "hero": {
+    "badge": "Advanced AI Image Editor",
+    "title": "Flux Kontext Image Generator - Edit Images with Flux.1 Kontext Pro",
+    "description": "Transform your images with Flux Kontext AI's revolutionary context understanding technology. Our Flux Kontext Pro editor delivers professional-grade results by intelligently analyzing image content and applying precise modifications based on natural language prompts.",
+    "features": [
+      "30 Credits for New Users",
+      "Context-Aware Processing",
+      "Professional Quality Output"
+    ]
+  },
+  "client": {
+    "upload": {
+      "dragActive": "Drop the image here",
+      "dragInactive": "Click to upload an image or drag and drop",
+      "supportedFormats": "Support JPG, PNG, WEBP up to {size}MB",
+      "uploading": "Uploading...",
+      "uploadingSubtext": "Please wait while we process your image",
+      "validationError": "Please upload a valid image file",
+      "sizeError": "File size must be less than {size}MB",
+      "uploadError": "Failed to upload image. Please try again."
+    },
+    "form": {
+      "promptLabel": "Prompt",
+      "promptPlaceholder": "What do you want to create with this image?",
+      "outputFormatLabel": "Output Format",
+      "seedLabel": "Seed (Optional)",
+      "seedPlaceholder": "Random seed",
+      "submitValidation": "Please upload an image and enter a prompt",
+      "uploadInProgress": "Image upload is still in progress",
+      "advancedSettings": "Advanced Settings",
+      "maxQualityLabel": "Enable MAX Quality Model",
+      "maxQualityDescription": "Better results, costs {credits} credits per image."
+    },
+    "processing": {
+      "processing": "Processing...",
+      "transformButton": "Transform Image ({credits} credits)",
+      "processingFailed": "Processing failed: {error}",
+      "insufficientCredits": "Insufficient credits. Please purchase more credits to continue.",
+      "getCreditsAction": "Get Credits",
+      "submitError": "Failed to start processing"
+    }
+  },
+  "examples": {
+    "title": "Flux Kontext Application Scenarios",
+    "description": "Discover Flux Kontext's versatility - from style transformations to scene modifications, Flux Kontext delivers professional-quality editing outcomes across diverse creative projects.",
+    "labels": {
+      "before": "BEFORE",
+      "after": "AFTER",
+      "promptUsed": "Prompt"
+    },
+    "items": {
+      "cartoonify": {
+        "title": "Flux Kontext Apps - Cartoonify",
+        "description": "Transform classic portraits into modern cartoon style while preserving facial features and artistic composition."
+      },
+      "textRemoval": {
+        "title": "Flux Kontext Apps - Text Removal",
+        "description": "Remove unwanted text and logos from product packaging while maintaining perfect image quality and context."
+      },
+      "backgroundChange": {
+        "title": "Flux Kontext Apps - Background Change",
+        "description": "Modify hairstyles and hair colors with natural-looking results that blend seamlessly with the original image."
+      },
+      "restoreImage": {
+        "title": "Flux Kontext Apps - Restore Image",
+        "description": "Restore and enhance vintage photographs with AI-powered colorization and detail enhancement technology."
+      }
+    }
+  },
+  "whatMakesDifferent": {
+    "title": "What Makes Flux Kontext AI Different?",
+    "description": "Flux Kontext Pro represents a breakthrough in AI image editing, offering unprecedented context understanding that goes beyond simple style transfer or basic modifications.",
+    "features": {
+      "contextIntelligence": {
+        "title": "Context Intelligence",
+        "description": "Unlike traditional AI editors, Flux Kontext AI understands the relationships between objects, lighting, perspective, and style within your image, enabling more natural and coherent transformations."
+      },
+      "preciseControl": {
+        "title": "Precise Control",
+        "description": "Flux Kontext Pro allows you to make specific, targeted changes while preserving the integrity of the original image. Edit backgrounds, modify objects, or change styles with surgical precision."
+      },
+      "professionalResults": {
+        "title": "Professional Results",
+        "description": "Built on Black Forest Labs' cutting-edge technology, Flux Kontext AI delivers commercial-grade results suitable for professional photography, marketing, and creative projects."
+      }
+    },
+    "howItWorks": {
+      "title": "How Flux Kontext Works",
+      "steps": [
+        "AI analyzes image context and relationships",
+        "Understands your natural language prompt",
+        "Applies intelligent, context-aware modifications",
+        "Delivers professional-quality results"
+      ]
+    }
+  },
+  "features": {
+    "title": "Flux Kontext Pro Features",
+    "description": "Discover the advanced capabilities that make Flux Kontext AI the preferred choice for professionals and creatives worldwide.",
+    "items": {
+      "contextUnderstanding": {
+        "title": "Advanced Context Understanding",
+        "description": "Flux Kontext AI analyzes spatial relationships, lighting conditions, and object interactions to make intelligent editing decisions that maintain image coherence."
+      },
+      "fastProcessing": {
+        "title": "Lightning Fast Processing",
+        "description": "Experience rapid image transformation with Flux Kontext Pro's optimized processing pipeline, delivering high-quality results in seconds."
+      },
+      "flexibleAspectRatios": {
+        "title": "Flexible Aspect Ratios",
+        "description": "Create images in any format you need. Flux Kontext AI adapts seamlessly to different aspect ratios while maintaining visual quality and composition."
+      },
+      "professionalQuality": {
+        "title": "Professional Quality Output",
+        "description": "Generate stunning, high-resolution images with Flux Kontext Pro. Perfect for commercial use, marketing campaigns, and professional photography."
+      },
+      "securePrivate": {
+        "title": "Secure & Private",
+        "description": "Your images are processed and stored securely with private access only to your account. Flux Kontext AI prioritizes user privacy and data protection."
+      },
+      "intuitiveInterface": {
+        "title": "Intuitive Interface",
+        "description": "User-friendly design makes Flux Kontext Pro accessible to both beginners and professionals. No technical expertise required to achieve amazing results."
+      }
+    }
+  },
+  "useCases": {
+    "title": "Professional Use Cases for Flux Kontext Pro AI Image Editing",
+    "description": "Discover how Flux Kontext Pro transforms creative workflows across industries with state-of-the-art text-based image editing capabilities. From style transfer to background replacement, unlock professional-grade results with AI-powered precision.",
+    "footer": "All use cases are powered by Flux Kontext Pro's advanced AI technology, delivering professional-quality results with excellent prompt following and consistent outputs for commercial and creative applications.",
+    "items": {
+      "styleTransfer": {
+        "title": "Style Transfer & Artistic Conversion",
+        "description": "Transform photographs into stunning art styles including watercolor paintings, oil paintings, sketches, and digital art. Perfect for creating unique visual content that stands out."
+      },
+      "textEditing": {
+        "title": "Text & Typography Editing",
+        "description": "Replace and modify text in signs, posters, labels, and marketing materials with precision. Maintain original fonts and layouts while updating messaging for different campaigns."
+      },
+      "backgroundReplacement": {
+        "title": "Background Replacement & Environment Swapping",
+        "description": "Change backgrounds and environments while perfectly preserving subjects. Ideal for product photography, portrait sessions, and creating contextual imagery for different markets."
+      },
+      "fashionModification": {
+        "title": "Fashion & Clothing Modifications",
+        "description": "Modify hairstyles, add accessories, change clothing colors, and update fashion elements. Essential for e-commerce, fashion brands, and lifestyle photography."
+      },
+      "photographyEnhancement": {
+        "title": "Professional Photography Enhancement",
+        "description": "Enhance lighting conditions, adjust compositions, and refine photographic elements for professional-grade results. Perfect for commercial photography and marketing campaigns."
+      },
+      "characterConsistency": {
+        "title": "Character Consistency & Identity Preservation",
+        "description": "Maintain character identity across multiple edits and variations. Ideal for brand mascots, character development, and creating consistent visual narratives."
+      },
+      "creativeContent": {
+        "title": "Creative Content Generation",
+        "description": "Generate unique creative content for social media, advertising, and digital marketing. Transform existing images into fresh, engaging visuals that capture audience attention."
+      },
+      "professionalWorkflows": {
+        "title": "Professional Image Editing Workflows",
+        "description": "Streamline professional editing workflows with AI-powered precision. Reduce editing time while maintaining high-quality results for agencies, studios, and creative professionals."
+      }
+    }
+  },
+  "faq": {
+    "title": "Flux Kontext Pro FAQs",
+    "items": [
+      {
+        "question": "What is Flux Kontext AI and how does it work?",
+        "answer": "Flux Kontext AI is an advanced image editing model developed by Black Forest Labs that understands image context and relationships. Unlike traditional AI editors, it analyzes spatial relationships, lighting, and object interactions to make intelligent editing decisions that maintain image coherence and realism."
+      },
+      {
+        "question": "How is Flux Kontext Pro different from other AI image editors?",
+        "answer": "Flux Kontext Pro offers superior context understanding, allowing for more precise and natural-looking edits. It can make targeted modifications while preserving the integrity of the original image, making it ideal for professional applications where quality and accuracy are paramount."
+      },
+      {
+        "question": "How many credits do I get and how much does each edit cost?",
+        "answer": "New users receive 30 credits upon registration. Each image transformation with Flux Kontext Pro costs 10 credits, allowing you to create 3 images with your initial credit allocation."
+      },
+      {
+        "question": "What file formats and sizes does Flux Kontext Pro support?",
+        "answer": "Flux Kontext Pro supports PNG, JPG, and WEBP image formats for input. You can choose between PNG and JPG for your output format. Maximum file size is 5MB per upload to ensure optimal processing speed and quality."
+      },
+      {
+        "question": "How long does it take to process an image with Flux Kontext AI?",
+        "answer": "Flux Kontext AI typically processes images within 10-30 seconds, depending on the complexity of your prompt and current server load. Our optimized infrastructure ensures fast and reliable processing for professional workflows."
+      },
+      {
+        "question": "Can I use Flux Kontext Pro images for commercial purposes?",
+        "answer": "Yes, images generated with Flux Kontext Pro can be used for commercial purposes. However, please ensure your input images don't violate any copyright laws, as you're responsible for the content you upload and edit."
+      },
+      {
+        "question": "What makes an effective prompt for Flux Kontext AI?",
+        "answer": "Effective prompts are descriptive and specific about the desired changes. Include details about style, mood, colors, lighting, and specific modifications. For example: 'Change the background to a modern office setting while maintaining the original lighting and perspective.'"
+      },
+      {
+        "question": "How secure is my data with Flux Kontext Pro?",
+        "answer": "We prioritize user privacy and data security. Your uploaded and generated images are securely stored and only accessible to you through your account. We use industry-standard security measures to protect your data and ensure complete privacy."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Experience Professional AI Image Editing",
+    "description": "Join thousands of professionals using Flux Kontext AI for their image editing needs. Get 30 credits to start creating with Flux Kontext Pro today.",
+    "button": "Try for Free"
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "title": "Flux Kontext Pro - AI画像編集ツール | コンテキスト認識写真加工",
+    "description": "Flux Kontext AI画像編集ツール。高精度な写真加工、背景変更、テキスト除去、スタイル変換に対応。コンテキスト認識技術で自然な仕上がりを実現。新規ユーザー30クレジット無料。プロ品質の出力。"
+  },
+  "hero": {
+    "badge": "高精度AI画像編集",
+    "title": "Flux Kontext Pro - 写真を理解するAI画像編集ツール",
+    "description": "革新的なFlux Kontext AI技術により、人工知能が画像の内容とコンテキストを深く理解。背景変更、テキスト除去、スタイル変換など、どんな編集でも自然で違和感のない仕上がりを実現します。",
+    "features": [
+      "新規ユーザー30クレジット無料",
+      "コンテキスト認識処理",
+      "プロフェッショナル品質出力"
+    ]
+  },
+  "client": {
+    "upload": {
+      "dragActive": "ここに画像をドロップ",
+      "dragInactive": "画像をアップロードまたはドラッグ&ドロップ",
+      "supportedFormats": "JPG、PNG、WEBP対応（最大{size}MB）",
+      "uploading": "アップロード中...",
+      "uploadingSubtext": "画像を処理中です、しばらくお待ちください",
+      "validationError": "有効な画像ファイルをアップロードしてください",
+      "sizeError": "ファイルサイズは{size}MB以下にしてください",
+      "uploadError": "画像のアップロードに失敗しました。再度お試しください"
+    },
+    "form": {
+      "promptLabel": "編集指示",
+      "promptPlaceholder": "この画像にどのような加工を施しますか？",
+      "outputFormatLabel": "出力形式",
+      "seedLabel": "シード値（オプション）",
+      "seedPlaceholder": "ランダムシード",
+      "submitValidation": "画像をアップロードし、編集指示を入力してください",
+      "uploadInProgress": "画像のアップロードがまだ完了していません",
+      "advancedSettings": "詳細設定",
+      "maxQualityLabel": "MAX Quality Modelを有効にする",
+      "maxQualityDescription": "より良い結果、1枚あたり{credits}クレジット消費"
+    },
+    "processing": {
+      "processing": "AI処理中...",
+      "transformButton": "画像変換開始（{credits}クレジット消費）",
+      "processingFailed": "処理に失敗しました：{error}",
+      "insufficientCredits": "クレジットが不足しています。追加でクレジットを購入してください",
+      "getCreditsAction": "クレジット購入",
+      "submitError": "処理の開始に失敗しました"
+    }
+  },
+  "examples": {
+    "title": "Flux Kontext AI画像編集の活用事例",
+    "description": "スタイル変換からシーン変更まで、Flux Kontext AIは多様な画像処理ニーズに対してプロフェッショナルな品質を提供し、クリエイティブワークを効率化します。",
+    "labels": {
+      "before": "編集前",
+      "after": "編集後",
+      "promptUsed": "Prompt"
+    },
+    "items": {
+      "cartoonify": {
+        "title": "ポートレートのアニメ化",
+        "description": "リアルな人物写真をアニメ風に変換。顔の特徴と構図の美しさを保持しながら、アバター作成やクリエイティブデザインに最適。",
+        "prompt": "スタジオジブリ風のアニメスタイルに変換"
+      },
+      "textRemoval": {
+        "title": "テキスト・ロゴ除去",
+        "description": "画像内の不要なテキストやロゴを精密に除去し、背景を完璧に保持。商品画像処理や著作権クリアランスに対応。",
+        "prompt": "画像内のすべてのテキストを除去し、背景を完全に保持"
+      },
+      "backgroundChange": {
+        "title": "AI背景変更",
+        "description": "背景シーンをインテリジェントに置換し、被写体を保持。光と影の自然な融合で、商品撮影やポートレート美化に最適。",
+        "prompt": "背景を遠景の自由の女神像に変更"
+      },
+      "restoreImage": {
+        "title": "古い写真の復元",
+        "description": "古い写真の傷や損傷を修復し、AI着色で細部を強化。大切な思い出の写真を新しい生命で甦らせます。",
+        "prompt": "この写真を修復・着色し、傷や損傷を除去"
+      }
+    }
+  },
+  "whatMakesDifferent": {
+    "title": "Flux Kontext AIが選ばれる理由",
+    "description": "Flux Kontext ProはAI画像編集の技術的ブレークスルーを表し、従来のスタイル転送や基本的な修正ツールを遥かに超える、前例のないコンテキスト理解能力を提供します。",
+    "features": {
+      "contextIntelligence": {
+        "title": "コンテキスト・インテリジェンス",
+        "description": "従来のAI編集ツールとは異なり、Flux Kontext AIは画像内のオブジェクトの関係性、照明、遠近法、スタイルを理解し、より自然で一貫性のある変換効果を実現します。"
+      },
+      "preciseControl": {
+        "title": "精密局所制御",
+        "description": "Flux Kontext Proは元画像の整合性を保持しながら、特定のターゲット変更を可能にします。背景編集、オブジェクト修正、スタイル変更を外科手術のような精密さで実行。"
+      },
+      "professionalResults": {
+        "title": "プロフェッショナル品質",
+        "description": "Black Forest Labsの最先端技術に基づき、Flux Kontext AIはプロフェッショナル写真、マーケティング、クリエイティブプロジェクトに適した商業グレードの結果を提供します。"
+      }
+    },
+    "howItWorks": {
+      "title": "Flux Kontext AIの動作原理",
+      "steps": [
+        "AIが画像コンテキストと関係性を分析",
+        "自然言語プロンプトを理解",
+        "インテリジェントなコンテキスト認識修正を適用",
+        "プロフェッショナル品質の結果を出力"
+      ]
+    }
+  },
+  "features": {
+    "title": "Flux Kontext Pro主要機能",
+    "description": "Flux Kontext AIが世界中のプロフェッショナルとクリエイターから選ばれる理由となる高度な機能をご紹介します。",
+    "items": {
+      "contextUnderstanding": {
+        "title": "高度なコンテキスト理解",
+        "description": "Flux Kontext AIは空間関係、照明条件、オブジェクトの相互作用を分析し、画像の一貫性を保つインテリジェントな編集判断を行います。"
+      },
+      "fastProcessing": {
+        "title": "高速処理",
+        "description": "Flux Kontext Proの最適化された処理パイプラインで、秒単位で高品質な画像変換を体験。作業効率を大幅に向上させます。"
+      },
+      "flexibleAspectRatios": {
+        "title": "柔軟なアスペクト比",
+        "description": "必要な画像フォーマットに対応。Flux Kontext AIは視覚品質と構図を保持しながら、異なるアスペクト比にシームレスに適応します。"
+      },
+      "professionalQuality": {
+        "title": "プロフェッショナル品質出力",
+        "description": "Flux Kontext Proで驚異的な高解像度画像を生成。商業用途、マーケティングキャンペーン、プロ写真に完璧に適用。"
+      },
+      "securePrivate": {
+        "title": "セキュア・プライベート",
+        "description": "画像は安全に処理・保存され、あなたのアカウントのみがアクセス可能。Flux Kontext AIはユーザープライバシーとデータ保護を最優先します。"
+      },
+      "intuitiveInterface": {
+        "title": "直感的インターフェース",
+        "description": "ユーザーフレンドリーなデザインで、Flux Kontext Proは初心者からプロまで使いやすく、技術的専門知識なしで素晴らしい結果を実現。"
+      }
+    }
+  },
+  "useCases": {
+    "title": "Flux Kontext Pro AI画像編集のプロフェッショナル活用場面",
+    "description": "最先端のテキストベース画像編集機能により、Flux Kontext Proが各業界のクリエイティブワークフローをどのように変革するかをご紹介。スタイル転送から背景置換まで、AI駆動の精密技術でプロフェッショナルグレードの効果を実現。",
+    "footer": "すべての活用事例はFlux Kontext Proの先進AI技術により駆動され、優れたプロンプト追従能力と一貫した出力品質でプロフェッショナル品質の結果を提供し、商業・クリエイティブ用途に対応します。",
+    "items": {
+      "styleTransfer": {
+        "title": "スタイル転送・芸術変換",
+        "description": "写真を水彩画、油絵、スケッチ、デジタルアートなど多様な芸術スタイルに変換。独特な視覚コンテンツの作成で作品を際立たせます。"
+      },
+      "textEditing": {
+        "title": "テキスト・タイポグラフィ編集",
+        "description": "看板、ポスター、ラベル、マーケティング素材のテキストを精密に置換・修正。元のフォントとレイアウトを保持しながら、異なるキャンペーンのメッセージを更新。"
+      },
+      "backgroundReplacement": {
+        "title": "背景置換・環境スワップ",
+        "description": "被写体を完璧に保持しながら背景と環境を変更。商品撮影、ポートレートセッション、異なる市場向けのコンテキスト画像作成に最適。"
+      },
+      "fashionModification": {
+        "title": "ファッション・服装修正",
+        "description": "ヘアスタイル修正、アクセサリー追加、服装色変更、ファッション要素更新。eコマース、ファッションブランド、ライフスタイル写真の必須ツール。"
+      },
+      "photographyEnhancement": {
+        "title": "プロフェッショナル写真強化",
+        "description": "照明条件強化、構図調整、写真要素精緻化でプロフェッショナルグレードの結果を実現。商業写真とマーケティングキャンペーンに最適。"
+      },
+      "characterConsistency": {
+        "title": "キャラクター一貫性・アイデンティティ保持",
+        "description": "複数の編集とバリエーション間でキャラクターアイデンティティを維持。ブランドマスコット、キャラクター開発、一貫した視覚的物語作成に最適。"
+      },
+      "creativeContent": {
+        "title": "クリエイティブコンテンツ生成",
+        "description": "ソーシャルメディア、広告、デジタルマーケティング向けのユニークなクリエイティブコンテンツを生成。既存画像を新鮮で魅力的な視覚素材に変換。"
+      },
+      "professionalWorkflows": {
+        "title": "プロフェッショナル画像編集ワークフロー",
+        "description": "AI駆動の精密技術でプロフェッショナル編集ワークフローを合理化。編集時間を短縮しながら高品質結果を維持、代理店、スタジオ、クリエイティブプロフェッショナルに対応。"
+      }
+    }
+  },
+  "faq": {
+    "title": "Flux Kontext Pro よくある質問",
+    "items": [
+      {
+        "question": "Flux Kontext AIとは何ですか？どのように動作しますか？",
+        "answer": "Flux Kontext AIは、Black Forest Labsが開発した画像コンテキストと関係性を理解する先進的な画像編集モデルです。従来のAI編集器とは異なり、空間関係、照明、オブジェクトの相互作用を分析し、画像の一貫性と現実感を保つインテリジェントな編集判断を行います。"
+      },
+      {
+        "question": "Flux Kontext Proは他のAI画像編集ツールとどう違いますか？",
+        "answer": "Flux Kontext Proは優れたコンテキスト理解能力を提供し、より精密で自然な編集を可能にします。元画像の整合性を保持しながらターゲット修正を行うことができ、品質と精度が最重要なプロフェッショナル用途に最適です。"
+      },
+      {
+        "question": "クレジット数と編集コストを教えてください",
+        "answer": "新規ユーザーは登録時に30クレジットを受け取ります。Flux Kontext Proでの画像変換は1回につき10クレジット消費し、初期クレジットで3枚の画像を作成できます。"
+      },
+      {
+        "question": "Flux Kontext Proはどのファイル形式とサイズに対応していますか？",
+        "answer": "Flux Kontext ProはPNG、JPG、WEBP形式の入力画像に対応。出力形式はPNGまたはJPGから選択可能。最適な処理速度と品質を確保するため、アップロード最大ファイルサイズは5MBです。"
+      },
+      {
+        "question": "Flux Kontext AIでの画像処理時間はどのくらいですか？",
+        "answer": "Flux Kontext AIは通常10-30秒で画像処理を完了します。時間はプロンプトの複雑さと現在のサーバー負荷によって異なります。最適化されたインフラストラクチャで、プロフェッショナルワークフローの高速で信頼性の高い処理を保証します。"
+      },
+      {
+        "question": "Flux Kontext Pro生成画像は商業利用できますか？",
+        "answer": "はい、Flux Kontext Proで生成された画像は商業利用可能です。ただし、入力画像が著作権法に違反していないことを確認してください。アップロードと編集するコンテンツに対する責任はお客様にあります。"
+      },
+      {
+        "question": "Flux Kontext AIの効果的なプロンプトの書き方を教えてください",
+        "answer": "効果的なプロンプトは希望する変更について具体的で詳細である必要があります。スタイル、ムード、色、照明、具体的な修正の詳細を含めてください。例：「元の照明と遠近法を保持しながら、背景をモダンなオフィス環境に変更」"
+      },
+      {
+        "question": "Flux Kontext Proのデータセキュリティはどうなっていますか？",
+        "answer": "ユーザープライバシーとデータセキュリティを最優先にしています。アップロードと生成された画像は安全に保存され、お客様のアカウントからのみアクセス可能です。業界標準のセキュリティ対策でデータを保護し、完全なプライバシーを確保しています。"
+      }
+    ]
+  },
+  "cta": {
+    "title": "プロフェッショナルAI画像編集を体験",
+    "description": "画像編集ニーズにFlux Kontext AIを使用する数千のプロフェッショナルに参加してください。今すぐ30クレジットを取得し、Flux Kontext Proでの創作を開始しましょう。",
+    "button": "無料で試す"
+  }
+}

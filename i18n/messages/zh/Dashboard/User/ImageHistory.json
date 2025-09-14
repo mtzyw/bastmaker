@@ -1,0 +1,9 @@
+{
+  "title": "图片历史",
+  "description": "你的生成图片历史",
+  "fetchError": "获取图片历史失败: {error}",
+  "List": {
+    "failedToFetch": "获取图片历史失败",
+    "searchPlaceholder": "搜索提供者任务ID或种子"
+  }
+}

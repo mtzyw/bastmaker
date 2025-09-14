@@ -1,0 +1,51 @@
+{
+  "title": "サブスクリプション",
+  "description": "サブスクリプションプランと請求詳細を管理します。",
+  "credits": {
+    "title": "クレジット残高",
+    "description": "利用可能なクレジットと使用状況です。",
+    "totalCredits": "総クレジット",
+    "subscriptionCredits": "サブスクリプションクレジット",
+    "lifetimeCredits": "永続クレジット",
+    "monthlyAllowanceTitle": "月間クレジット配分",
+    "monthlyAllowanceDescription": "現在のプランでは毎月 {credits} クレジットが付与されます。",
+    "yearlyResetTitle": "月次クレジットリセット（年額プラン）",
+    "yearlyResetDescription": "{credits} クレジットが毎月自動的にリセットされます",
+    "nextResetDate": "次回リセット：{date}",
+    "remainingMonths": "年額サブスクリプション残り {months} ヶ月"
+  },
+  "subscriptionDetails": {
+    "title": "サブスクリプション詳細",
+    "description": "現在のサブスクリプションプランと請求情報です。",
+    "currentPlan": "現在のプラン",
+    "status": "ステータス",
+    "billingCycle": "請求サイクル",
+    "currentPeriod": "現在の期間",
+    "monthly": "月額",
+    "yearly": "年額",
+    "subscriptionEndingTitle": "サブスクリプション終了予定",
+    "subscriptionEndingDescription": "現在の請求サイクル終了時にサブスクリプションがキャンセルされます。"
+  },
+  "management": {
+    "title": "サブスクリプション管理",
+    "description": "Stripe カスタマーポータルにアクセスして、サブスクリプションの管理、支払い方法の更新、請求履歴の確認を行えます。",
+    "manageButton": "サブスクリプションと請求を管理",
+    "redirectNotice": "Stripe に安全にリダイレクトされ、サブスクリプション詳細を管理できます。"
+  },
+  "noSubscription": {
+    "title": "有効なサブスクリプションがありません",
+    "description": "現在、プランにご契約いただいておりません。アップグレードしてプレミアム機能とより多くのクレジットをご利用ください。",
+    "upgradeButton": "プランをアップグレード"
+  },
+  "status": {
+    "active": "有効",
+    "trialing": "試用中",
+    "past_due": "支払い遅延",
+    "canceled": "キャンセル済み",
+    "inactive_period_ended": "期限切れ",
+    "unknown": "不明"
+  },
+  "common": {
+    "notSet": "未設定"
+  }
+}

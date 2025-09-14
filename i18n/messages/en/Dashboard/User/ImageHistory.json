@@ -1,0 +1,9 @@
+{
+  "title": "Image History",
+  "description": "Your generated images.",
+  "fetchError": "Failed to fetch image history: {error}",
+  "List": {
+    "failedToFetch": "Failed to fetch image history",
+    "searchPlaceholder": "Search by provider job ID or seed"
+  }
+}

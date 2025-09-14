@@ -1,0 +1,59 @@
+{
+  "Hero": {
+    "badge": "AI Image Generator",
+    "title": "Flux Kontext AI Image Generator & Editor",
+    "description": "Explore professional AI image editing that understands context. Edit single images or combine multiple photos with simple text prompts. No design skills needed - just describe what you want.",
+    "getStarted": "Start Creating",
+    "getFreeTrial": "Free Trial (30 Cr)"
+  },
+  "Features": {
+    "title": "Professional AI Image Editing <highlight>Made Simple</highlight>",
+    "description": "Two powerful AI tools that understand context and deliver professional results. Transform your creative workflow with intelligent image processing.",
+    "credits": "Credits",
+    "tryNow": "Try Now"
+  },
+  "FAQ": {
+    "title": "Frequently Asked Questions",
+    "description": "Everything you need to know about Nexty AI Image and our AI-powered editing platform.",
+    "items": [
+      {
+        "question": "What makes Nexty AI Image different from other AI image editors?",
+        "answer": "Nexty AI Image uses advanced context-aware AI that understands spatial relationships, lighting, and style consistency. This results in more natural, professional-looking edits compared to other platforms."
+      },
+      {
+        "question": "How long does image processing take?",
+        "answer": "Most edits are completed in 10-30 seconds. Our optimized AI pipeline is up to 8x faster than competing platforms while maintaining superior quality."
+      },
+      {
+        "question": "What file formats are supported?",
+        "answer": "We support JPG, PNG, and WEBP formats for input. You can export your results in PNG or JPG format. Maximum file size is 5MB per image."
+      },
+      {
+        "question": "Is there a limit to how many edits I can make?",
+        "answer": "You can make unlimited edits as long as you have credits. Each single image edit costs 10 credits, and multi-image fusion also costs 10 credits."
+      },
+      {
+        "question": "Can I use the images for commercial purposes?",
+        "answer": "Yes! All images created with Nexty AI Image include full commercial usage rights. Perfect for businesses, marketing, and professional projects."
+      },
+      {
+        "question": "How secure are my uploaded images?",
+        "answer": "We prioritize your privacy and security. All images are processed securely and stored with enterprise-grade protection. Only you have access to your images."
+      }
+    ]
+  },
+  "UseCases": {
+    "title": "Creative Insights",
+    "description": "Step into our world and see how our team brings ideas to life in inspiring workspaces"
+  },
+  "Testimonials": {
+    "title": "What Users Are Saying",
+    "description": "See how creators around the world are using Flux Kontext to transform their image editing workflow."
+  },
+  "CTA": {
+    "badge": "Ready to Transform Your Workflow?",
+    "title": "Ready to <highlight>Transform Your Images</highlight>?",
+    "description": "Join thousands of creators using Flux Kontext AI Image Generator & Editor. Start with 30 free credits - no credit card required.",
+    "primaryButton": "Start Creating Free"
+  }
+}

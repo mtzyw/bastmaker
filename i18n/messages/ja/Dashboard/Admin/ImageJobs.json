@@ -1,0 +1,9 @@
+{
+  "title": "Image Jobs",
+  "description": "AI 画像ジョブを管理します",
+  "fetchError": "画像ジョブの取得に失敗しました: {error}",
+  "List": {
+    "failedToFetch": "画像ジョブの取得に失敗しました",
+    "searchPlaceholder": "Provider Job ID または Seed で検索"
+  }
+}

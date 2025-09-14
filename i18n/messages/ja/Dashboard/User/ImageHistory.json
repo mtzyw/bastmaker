@@ -1,0 +1,9 @@
+{
+  "title": "画像履歴",
+  "description": "あなたが生成した画像",
+  "fetchError": "画像履歴の取得に失敗しました: {error}",
+  "List": {
+    "failedToFetch": "画像履歴の取得に失敗しました",
+    "searchPlaceholder": "提供者のタスクIDまたはシードで検索"
+  }
+}

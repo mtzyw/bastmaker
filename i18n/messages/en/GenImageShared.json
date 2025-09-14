@@ -1,0 +1,56 @@
+{
+  "aspectRatioSelector": {
+    "label": "Aspect Ratio"
+  },
+  "recentImagesGallery": {
+    "title": "Recent Images",
+    "emptyState": "No images yet. Create your first image and it will appear here!",
+    "status": {
+      "failed": "Failed",
+      "processing": "Processing...",
+      "noImage": "No Image"
+    },
+    "showingImages": "Showing recent {count} images,",
+    "viewAllLink": "View all in Dashboard",
+    "errorMessages": {
+      "failedToLoadImages": "Failed to load images"
+    }
+  },
+  "imageResultDisplay": {
+    "defaultTitle": "Result",
+    "processing": {
+      "message": "Processing your image...",
+      "subMessage": "This usually takes 30-60 seconds"
+    },
+    "placeholder": {
+      "message": "Your processed image will appear here",
+      "description": "Your AI-edited image will be displayed here"
+    },
+    "altText": "AI generated result",
+    "buttons": {
+      "download": "Download Image",
+      "edit": "Continue Editing"
+    },
+    "status": {
+      "succeeded": "completed",
+      "failed": "failed",
+      "processing": "processing",
+      "starting": "starting",
+      "canceled": "canceled"
+    }
+  },
+  "api": {
+    "errors": {
+      "replicateNotInitialized": "AI service is not initialized",
+      "jobNotFound": "Job with ID '{jobId}' not found",
+      "insufficientCredits": "Insufficient credits. Please purchase more credits to continue.",
+      "paymentProcessingFailed": "Failed to deduct credits. Please try again.",
+      "jobCreationFailed": "Failed to create a new job",
+      "jobCancellationFailed": "Failed to cancel job",
+      "jobStatusFetchFailed": "Failed to fetch job status",
+      "featureNotFound": "Feature with ID '{featureId}' not found",
+      "invalidParameters": "Invalid parameters: {error}",
+      "failedToLoadImages": "Failed to load images"
+    }
+  }
+}
