@@ -21,16 +21,30 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { UserInfo } from "./UserInfo";
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+  hideHrefs?: string[];
+  hideIds?: string[];
+}
+
+export default function MobileMenu({ hideHrefs, hideIds }: MobileMenuProps) {
   const t = useTranslations("Home");
   const tHeader = useTranslations("Header");
   const { user } = useAuth();
 
-  const headerLinks: HeaderLink[] = tHeader.raw("links");
+  let headerLinks: HeaderLink[] = tHeader.raw("links");
   const pricingLink = headerLinks.find((link) => link.name === "Pricing");
   if (pricingLink) {
     pricingLink.href = process.env.NEXT_PUBLIC_PRICING_PATH!;
   }
+
+  // filter links if requested
+  const hideHrefSet = new Set((hideHrefs || []).map((h) => h.toLowerCase()));
+  const hideIdSet = new Set(hideIds || []);
+  headerLinks = headerLinks.filter((link) => {
+    if (link.id && hideIdSet.has(link.id)) return false;
+    if (link.href && hideHrefSet.has(link.href.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <div className="flex items-center">

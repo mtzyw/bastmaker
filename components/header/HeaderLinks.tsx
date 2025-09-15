@@ -10,21 +10,34 @@ interface HeaderLinksProps {
   className?: string;
   linkClassName?: string;
   activeLinkClassName?: string;
+  hideHrefs?: string[];
+  hideIds?: string[];
 }
 
 const HeaderLinks = ({
   className,
   linkClassName,
   activeLinkClassName,
+  hideHrefs,
+  hideIds,
 }: HeaderLinksProps) => {
   const tHeader = useTranslations("Header");
   const pathname = usePathname();
 
-  const headerLinks: HeaderLink[] = tHeader.raw("links");
+  let headerLinks: HeaderLink[] = tHeader.raw("links");
   const pricingLink = headerLinks.find((link) => link.id === "pricing");
   if (pricingLink) {
     pricingLink.href = process.env.NEXT_PUBLIC_PRICING_PATH!;
   }
+
+  // filter links if requested
+  const hideHrefSet = new Set((hideHrefs || []).map((h) => h.toLowerCase()));
+  const hideIdSet = new Set(hideIds || []);
+  headerLinks = headerLinks.filter((link) => {
+    if (link.id && hideIdSet.has(link.id)) return false;
+    if (link.href && hideHrefSet.has(link.href.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <div

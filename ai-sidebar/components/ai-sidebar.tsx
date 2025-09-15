@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,6 +21,7 @@ interface MenuSection {
 }
 
 export function AISidebar({ className }: { className?: string }) {
+  const router = useRouter()
 
   const menuSections: MenuSection[] = [
     {
@@ -115,10 +117,15 @@ export function AISidebar({ className }: { className?: string }) {
 
   const handleItemClick = (itemId: string) => {
     setActiveId(itemId)
+    // Route mapping for relevant items
+    if (itemId === "text-to-image") router.push("/text-to-image")
+    if (itemId === "image-to-image") router.push("/image-to-image")
+    if (itemId === "text-to-video") router.push("/text-to-video")
+    if (itemId === "image-to-video") router.push("/image-to-video")
   }
 
   return (
-    <div className={cn("w-64 text-white flex flex-col min-h-screen", className ? className : "bg-gray-900") }>
+    <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
       {/* Sidebar Content */}
       <div className="flex-1 py-7">
         {menuSections.map((section, sectionIndex) => (
@@ -176,15 +183,7 @@ export function AISidebar({ className }: { className?: string }) {
         ))}
       </div>
 
-      {/* Login Button */}
-      <div className="p-7 border-t border-gray-700">
-        <Button
-          className="w-full h-11 text-base bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-          size="lg"
-        >
-          登录
-        </Button>
-      </div>
+      {/* Bottom CTA removed to avoid duplicate login button */}
     </div>
   )
 }

@@ -9,7 +9,12 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-const Header = () => {
+interface HeaderProps {
+  hideHeaderHrefs?: string[];
+  hideHeaderIds?: string[];
+}
+
+const Header = ({ hideHeaderHrefs, hideHeaderIds }: HeaderProps) => {
   const t = useTranslations("Home");
 
   return (
@@ -38,6 +43,8 @@ const Header = () => {
             className="text-white"
             linkClassName="hover:bg-accent-foreground/10 hover:text-white"
             activeLinkClassName="text-white"
+            hideHrefs={hideHeaderHrefs}
+            hideIds={hideHeaderIds}
           />
         </div>
 
@@ -51,7 +58,7 @@ const Header = () => {
 
           {/* Mobile */}
           <div className="flex lg:hidden">
-            <MobileMenu />
+            <MobileMenu hideHrefs={hideHeaderHrefs} hideIds={hideHeaderIds} />
           </div>
         </div>
       </nav>

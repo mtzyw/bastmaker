@@ -37,35 +37,43 @@ export default function PureFourSections({
   leftWidth = "13",
   section2Split = "25/75",
   sections,
+  withSidebar = true,
 }: {
   leftWidth?: WidthPreset;
   section2Split?: SplitPreset;
   sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig];
+  withSidebar?: boolean;
 }) {
   const [s1, s2, s3, s4] = sections;
   return (
     <div className="relative w-full">
-      {/* Desktop fixed left column (never moves) */}
-      <div
-        className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40"
-        style={{ width: leftWidthValue(leftWidth), backgroundColor: s1.bg }}
-      >
-        <AISidebar className="bg-transparent" />
-      </div>
-
-      {/* Mobile Section 1 in normal flow */}
-      <section
-        className="w-full min-h-screen flex items-center justify-center lg:hidden"
-        style={{ backgroundColor: s1.bg, color: s1.fg }}
-      >
-        <div className="max-w-sm w-full px-4">
+      {/* Desktop fixed left column (never moves) - only when embedded */}
+      {withSidebar && (
+        <div
+          className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40"
+          style={{ width: leftWidthValue(leftWidth), backgroundColor: s1.bg }}
+        >
           <AISidebar className="bg-transparent" />
         </div>
-      </section>
+      )}
+
+      {/* Mobile Section 1 in normal flow - only when embedded */}
+      {withSidebar && (
+        <section
+          className="w-full min-h-screen flex items-center justify-center lg:hidden"
+          style={{ backgroundColor: s1.bg, color: s1.fg }}
+        >
+          <div className="max-w-sm w-full px-4">
+            <AISidebar className="bg-transparent" />
+          </div>
+        </section>
+      )}
 
       {/* Grid with left placeholder and right content */}
-      <div className={`grid grid-cols-1 ${leftWidthClass(leftWidth)} w-full relative z-0`}>
-        <div className="hidden lg:block pointer-events-none" aria-hidden="true" />
+      <div className={`grid grid-cols-1 ${withSidebar ? leftWidthClass(leftWidth) : ""} w-full relative z-0`}>
+        {withSidebar && (
+          <div className="hidden lg:block pointer-events-none" aria-hidden="true" />
+        )}
         <div className="w-full">
         {/* Section 2 split left/right */}
         <section className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)]">

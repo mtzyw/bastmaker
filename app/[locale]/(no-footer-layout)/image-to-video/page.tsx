@@ -15,11 +15,11 @@ export async function generateMetadata({
   const { locale } = await params;
 
   return constructMetadata({
-    page: "TextToImage",
-    title: "Text to Image",
+    page: "ImageToVideo",
+    title: "Image to Video",
     description: "Pure color layout with Footer inside Section 4.",
     locale: locale as Locale,
-    path: `/text-to-image`,
+    path: `/image-to-video`,
   });
 }
 
@@ -30,8 +30,9 @@ const sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig] = [
   { id: "s4", bg: "#0F172A", fg: "#ffffff", title: "Section 4" },
 ];
 
-export default function TextToImagePage() {
+export default function ImageToVideoPage() {
   return (
     <PureFourSections leftWidth="13" section2Split="25/75" sections={sections} withSidebar={false} />
   );
 }
+
