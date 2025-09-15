@@ -10,15 +10,10 @@ function leftWidthClass(_preset: WidthPreset) {
   return "lg:grid-cols-[256px_minmax(0,1fr)]";
 }
 
-function section2SplitClass(preset: SplitPreset) {
-  switch (preset) {
-    case "20/80":
-      return "md:[grid-template-columns:20%_80%]";
-    case "25/75":
-      return "md:[grid-template-columns:25%_75%]";
-    case "30/70":
-      return "md:[grid-template-columns:30%_70%]";
-  }
+function section2SplitClass(_preset: SplitPreset) {
+  // Use a fixed-width left column and flexible right column on md+ screens
+  // This keeps Section 2 Left static while Section 2 Right scales.
+  return "md:[grid-template-columns:380px_minmax(0,1fr)]";
 }
 
 function leftWidthValue(_preset: WidthPreset) {
@@ -38,11 +33,15 @@ export default function PureFourSections({
   section2Split = "25/75",
   sections,
   withSidebar = true,
+  section2Left,
+  section2Right,
 }: {
   leftWidth?: WidthPreset;
   section2Split?: SplitPreset;
   sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig];
   withSidebar?: boolean;
+  section2Left?: React.ReactNode;
+  section2Right?: React.ReactNode;
 }) {
   const [s1, s2, s3, s4] = sections;
   return (
@@ -82,18 +81,30 @@ export default function PureFourSections({
               style={{ backgroundColor: s2.bg, color: s2.fg }}
               className="min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center"
             >
-              <div className="container mx-auto px-4 md:px-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Left</h2>
-                <p className="text-sm opacity-80">Pure color block.</p>
+              <div className="container mx-auto px-4 md:px-8 w-full">
+                {section2Left ? (
+                  section2Left
+                ) : (
+                  <>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Left</h2>
+                    <p className="text-sm opacity-80">Pure color block.</p>
+                  </>
+                )}
               </div>
             </div>
             <div
               style={{ backgroundColor: "#0D1526", color: s2.fg }}
               className="min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center"
             >
-              <div className="container mx-auto px-4 md:px-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Right</h2>
-                <p className="text-sm opacity-80">Pure color block.</p>
+              <div className="container mx-auto px-4 md:px-8 w-full">
+                {section2Right ? (
+                  section2Right
+                ) : (
+                  <>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Right</h2>
+                    <p className="text-sm opacity-80">Pure color block.</p>
+                  </>
+                )}
               </div>
             </div>
           </div>

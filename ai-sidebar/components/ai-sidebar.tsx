@@ -20,7 +20,7 @@ interface MenuSection {
   items: MenuItem[]
 }
 
-export function AISidebar({ className }: { className?: string }) {
+export function AISidebar({ className, onNavigate }: { className?: string, onNavigate?: () => void }) {
   const router = useRouter()
 
   const menuSections: MenuSection[] = [
@@ -118,10 +118,10 @@ export function AISidebar({ className }: { className?: string }) {
   const handleItemClick = (itemId: string) => {
     setActiveId(itemId)
     // Route mapping for relevant items
-    if (itemId === "text-to-image") router.push("/text-to-image")
-    if (itemId === "image-to-image") router.push("/image-to-image")
-    if (itemId === "text-to-video") router.push("/text-to-video")
-    if (itemId === "image-to-video") router.push("/image-to-video")
+    if (itemId === "text-to-image") { router.push("/text-to-image"); onNavigate && onNavigate(); }
+    if (itemId === "image-to-image") { router.push("/image-to-image"); onNavigate && onNavigate(); }
+    if (itemId === "text-to-video") { router.push("/text-to-video"); onNavigate && onNavigate(); }
+    if (itemId === "image-to-video") { router.push("/image-to-video"); onNavigate && onNavigate(); }
   }
 
   return (

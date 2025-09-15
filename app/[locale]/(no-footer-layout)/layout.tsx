@@ -10,14 +10,9 @@ export default function NoFooterGroupLayout({
   return (
     <div className="min-h-screen w-full">
       {/* Global header */}
-      <Header hideHeaderHrefs={["/#features", "/#pricing", "/flux-kontext-pro", "/multi-image-kontext-pro"]} hideHeaderIds={["pricing"]} />
+      <Header hideHeaderHrefs={["/#features", "/#pricing", "/flux-kontext-pro", "/multi-image-kontext-pro"]} hideHeaderIds={["pricing"]} enableSidebarSheet />
 
-      {/* Mobile: sidebar on top, below header */}
-      <aside className="lg:hidden sticky top-16 z-40">
-        <div className="max-w-sm w-full mx-auto px-4">
-          <AISidebar />
-        </div>
-      </aside>
+      {/* Mobile: sidebar hidden; use Header menu to open floating sheet */}
 
       {/* Desktop: fixed left sidebar below header; content shifted right */}
       <aside
