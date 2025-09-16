@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface MenuItem {
   id: string
@@ -126,8 +127,9 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
 
   return (
     <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
-      {/* Sidebar Content */}
-      <div className="flex-1 py-7">
+      {/* Scrollable menu content */}
+      <ScrollArea className="flex-1">
+        <div className="py-7">
         {menuSections.map((section, sectionIndex) => (
           <div
             key={sectionIndex}
@@ -170,20 +172,17 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
                 </button>
               ))}
             </nav>
-            {/* Inline login button directly under the Assets section */}
-            {section.items.some((it) => it.id === "assets") && (
-              <div className="px-6 mt-4">
-                <Button className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white">登录</Button>
-              </div>
-            )}
             {sectionIndex < menuSections.length - 1 && section.title && (
               <div className="mx-6 mt-5 border-t border-gray-700" />
             )}
           </div>
         ))}
+        </div>
+      </ScrollArea>
+      {/* Fixed bottom login */}
+      <div className="p-4 border-t border-gray-800">
+        <Button className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white">登录</Button>
       </div>
-
-      {/* Bottom CTA removed to avoid duplicate login button */}
     </div>
   )
 }

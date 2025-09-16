@@ -1,0 +1,134 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ImageGridUploader from "@/components/ai/ImageGridUploader";
+import { Coins, Sparkles } from "lucide-react";
+
+const MAX_IMAGES = 8;
+
+export default function ImageToImageLeftPanel({
+  excludeModels,
+}: {
+  excludeModels?: string[];
+}) {
+  const [prompt, setPrompt] = useState("");
+  const [translatePrompt, setTranslatePrompt] = useState(false);
+  const [model, setModel] = useState("Nano Banana Free");
+  const [images, setImages] = useState<File[]>([]);
+
+  const allModels = [
+    "Nano Banana Free",
+    "Flux Dev",
+    "Hyperflux",
+    "Google Imagen4",
+    "Seedream 4",
+    "Seedream 4 Edit",
+  ];
+  const models = allModels.filter((m) => !(excludeModels ?? []).includes(m));
+  useEffect(() => {
+    if (!models.includes(model)) setModel(models[0] ?? "Nano Banana Free");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [models.join("|")]);
+
+  return (
+    <div className="w-full h-full min-h-0 text-white flex flex-col">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="pr-1">
+          {/* Title */}
+          <h1 className="text-2xl font-semibold mb-4">Image to Image</h1>
+
+          {/* Model */}
+          <div className="mb-2 text-sm">Model</div>
+          <div className="mb-6">
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-blue-500 flex items-center justify-center">
+                    <span className="text-white text-[10px] leading-none font-bold">G</span>
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <SelectValue placeholder="Select a model" />
+                    <span className="text-[11px] text-white/60">Ultra-high character consistency</span>
+                  </div>
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Images */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm">Images</div>
+            <div className="text-xs text-white/60">{images.length}/{MAX_IMAGES}</div>
+          </div>
+          <ImageGridUploader
+            className="mb-6"
+            onChange={(files) => setImages(files.slice(0, MAX_IMAGES))}
+          />
+
+          {/* Prompt */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-sm">Prompt</div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <span>Translate Prompt</span>
+              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
+            </div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+            <div className="p-3">
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="What do you want to create?"
+                className="min-h-[180px] resize-none bg-transparent text-white placeholder:text-white/50"
+                maxLength={2000}
+              />
+            </div>
+            <div className="flex items-center justify-between px-3 pb-3 text-xs text-white/70">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Generate with AI
+              </div>
+              <div>{prompt.length} / 2000</div>
+            </div>
+          </div>
+
+          {/* Output + credits */}
+          <div className="mt-6">
+            <div className="mb-2 text-sm">Output Image Number</div>
+            <div className="flex items-center justify-between text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-pink-400" />
+                Credits required:
+              </div>
+              <div>4 Credits</div>
+            </div>
+          </div>
+        </div>
+      </ScrollArea>
+
+      {/* Bottom button */}
+      <div className="pt-2 pb-5 shrink-0">
+        <Button
+          className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90"
+          disabled={!prompt.trim()}
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          Create
+        </Button>
+      </div>
+    </div>
+  );
+}
+

@@ -1,4 +1,5 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
+import TextToVideoLeftPanel from "@/components/ai/TextToVideoLeftPanel";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { Metadata } from "next";
@@ -32,7 +33,12 @@ const sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig] = [
 
 export default function TextToVideoPage() {
   return (
-    <PureFourSections leftWidth="13" section2Split="25/75" sections={sections} withSidebar={false} />
+    <PureFourSections
+      leftWidth="13"
+      section2Split="25/75"
+      sections={sections}
+      withSidebar={false}
+      section2Left={<TextToVideoLeftPanel />}
+    />
   );
 }
-

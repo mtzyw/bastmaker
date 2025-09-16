@@ -74,14 +74,14 @@ export default function PureFourSections({
           <div className="hidden lg:block pointer-events-none" aria-hidden="true" />
         )}
         <div className="w-full">
-        {/* Section 2 split left/right */}
-        <section className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)]">
-          <div className={`grid grid-cols-1 ${section2SplitClass(section2Split)} h-full`}>
+        {/* Section 2 split left/right (fixed viewport height below header) */}
+        <section className="w-full h-[calc(100vh-4rem)]">
+          <div className={`grid grid-cols-1 ${section2SplitClass(section2Split)} h-full min-h-0`}>
             <div
               style={{ backgroundColor: s2.bg, color: s2.fg }}
-              className="min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center"
+              className="h-full min-h-0 flex items-start pt-4"
             >
-              <div className="container mx-auto px-4 md:px-8 w-full">
+              <div className="container mx-auto px-4 md:px-6 w-full h-full min-h-0 flex flex-col">
                 {section2Left ? (
                   section2Left
                 ) : (
@@ -94,9 +94,9 @@ export default function PureFourSections({
             </div>
             <div
               style={{ backgroundColor: "#0D1526", color: s2.fg }}
-              className="min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center"
+              className="h-full min-h-0 flex items-center"
             >
-              <div className="container mx-auto px-4 md:px-8 w-full">
+              <div className="container mx-auto px-4 md:px-8 w-full h-full min-h-0">
                 {section2Right ? (
                   section2Right
                 ) : (

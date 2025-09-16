@@ -9,6 +9,7 @@ interface AspectRatioSelectorProps {
   disabled?: boolean;
   className?: string;
   label?: string;
+  values?: string[]; // Optional whitelist of aspect ratios to show
 }
 
 const ASPECT_RATIOS = [
@@ -20,6 +21,7 @@ const ASPECT_RATIOS = [
   { value: "2:3", label: "Portrait (2:3)", shortLabel: "2:3" },
   { value: "3:4", label: "Portrait (3:4)", shortLabel: "3:4" },
   { value: "4:3", label: "Standard (4:3)", shortLabel: "4:3" },
+  { value: "1:2", label: "Portrait (1:2)", shortLabel: "1:2" },
 ];
 
 const getAspectWidth = (aspectRatio: string) => {
@@ -31,6 +33,7 @@ const getAspectWidth = (aspectRatio: string) => {
   if (aspectRatio === "2:3") return "20px";
   if (aspectRatio === "3:4") return "18px";
   if (aspectRatio === "4:3") return "32px";
+  if (aspectRatio === "1:2") return "12px";
   return "24px";
 };
 
@@ -43,6 +46,7 @@ const getAspectHeight = (aspectRatio: string) => {
   if (aspectRatio === "2:3") return "30px";
   if (aspectRatio === "3:4") return "24px";
   if (aspectRatio === "4:3") return "24px";
+  if (aspectRatio === "1:2") return "32px";
   return "24px";
 };
 
@@ -52,29 +56,37 @@ export function AspectRatioSelector({
   disabled = false,
   className,
   label,
+  values,
 }: AspectRatioSelectorProps) {
   const t = useTranslations("GenImageShared.aspectRatioSelector");
+
+  const items = values ? ASPECT_RATIOS.filter((r) => values.includes(r.value)) : ASPECT_RATIOS;
+  const count = items.length;
+  // At most 5 per row: 1–4 -> 4列, 5+ -> 5列
+  let gridColsClass = count <= 4 ? "grid-cols-4 gap-2" : "grid-cols-5 gap-2";
+  let itemSizeClass = "aspect-square";
 
   return (
     <div className={className}>
       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
         {label || t("label")}
       </label>
-      <div className="grid gap-2 grid-cols-4 sm:grid-cols-8">
-        {ASPECT_RATIOS.map((ratio) => (
+      <div className={cn("grid", gridColsClass)}>
+        {items.map((ratio) => (
           <button
             key={ratio.value}
             onClick={() => onChange(ratio.value)}
             disabled={disabled}
             className={cn(
-              "h-20 bg-gray-100 dark:bg-gray-800 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg text-sm duration-300 px-0 transition-all hover:bg-gray-200 dark:hover:bg-gray-700",
+              itemSizeClass,
+              "bg-gray-100 dark:bg-gray-800 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg text-sm duration-300 px-0 transition-all hover:bg-gray-200 dark:hover:bg-gray-700",
               value === ratio.value
                 ? "border-main border bg-gray-100 dark:bg-gray-800"
                 : "border border-gray-200 dark:border-gray-700",
               disabled && "cursor-not-allowed opacity-50"
             )}
           >
-            <div className="flex items-center justify-center">
+            <div className={cn("flex items-center justify-center") }>
               <span
                 className={cn(
                   "rounded-sm transition-colors",
@@ -88,7 +100,7 @@ export function AspectRatioSelector({
                 }}
               />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            <span className={cn(count >= 5 ? "text-[10px]" : "text-xs", "leading-tight font-medium text-gray-700 dark:text-gray-300") }>
               {ratio.shortLabel}
             </span>
           </button>
