@@ -77,9 +77,9 @@ export default function PureFourSections({
         <section className="w-full h-[calc(100vh-4rem)]">
           <div className={`grid grid-cols-1 ${section2SplitClass(section2Split)} h-full min-h-0`}>
             <div
-              className="h-full min-h-0 flex items-start pt-4 header-bg text-white"
+              className="h-full min-h-0 flex items-start header-bg text-white"
             >
-              <div className="container mx-auto px-4 md:px-6 w-full h-full min-h-0 flex flex-col md:border-r md:border-white/10">
+              <div className="container mx-auto px-4 md:px-6 pt-4 w-full h-full min-h-0 flex flex-col md:border-r md:border-white/10">
                 {section2Left ? (
                   section2Left
                 ) : (
