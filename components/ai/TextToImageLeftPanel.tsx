@@ -46,7 +46,7 @@ export default function TextToImageLeftPanel({
       <ScrollArea className="flex-1 min-h-0">
         <div className="pr-1">
           {/* 标题 */}
-          <h1 className="text-2xl font-semibold mb-4">文字转图片</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文字转图片</h1>
           {/* Model 标签 + 选择 */}
           <div className="mb-2 text-sm">Model</div>
           {hideModelSelect ? (
@@ -148,7 +148,7 @@ export default function TextToImageLeftPanel({
       </ScrollArea>
 
       {/* 固定底部按钮；上方内容单独滚动 */}
-      <div className="pt-2 pb-5 shrink-0">
+      <div className="pt-2 pb-0 shrink-0 border-t border-white/10">
         {/* 固定区域：Output + credits */}
         <div className="mb-3">
           <div className="mb-2 text-sm">Output Image Number</div>
@@ -163,6 +163,7 @@ export default function TextToImageLeftPanel({
         <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
           创建
         </Button>
+        <div className="mt-6 border-t border-white/10" />
       </div>
     </div>
   );

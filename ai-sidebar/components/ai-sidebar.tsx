@@ -141,7 +141,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
           >
             {/* Top divider before first titled section (e.g., 视频AI) */}
             {section.title && sectionIndex > 0 && !menuSections[sectionIndex - 1].title && (
-              <div className="mx-6 mb-5 border-t border-gray-700" />
+              <div className="mx-6 mb-5 border-t border-white/10" />
             )}
             {section.title && (
               <div className="px-6 mb-4">
@@ -173,14 +173,14 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
               ))}
             </nav>
             {sectionIndex < menuSections.length - 1 && section.title && (
-              <div className="mx-6 mt-5 border-t border-gray-700" />
+              <div className="mx-6 mt-5 border-t border-white/10" />
             )}
           </div>
         ))}
         </div>
       </ScrollArea>
       {/* Fixed bottom login */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-white/10">
         <Button className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white">登录</Button>
       </div>
     </div>

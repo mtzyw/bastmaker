@@ -15,6 +15,10 @@ import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { useRouter } from "@/i18n/routing";
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
+import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
 
 type Menu = {
   name: string;
@@ -26,9 +30,10 @@ type Menu = {
 interface UserInfoProps {
   mobile?: boolean;
   renderContainer?: (children: React.ReactNode) => React.ReactNode;
+  openAuthDialog?: boolean;
 }
 
-export function UserInfo({ mobile = false, renderContainer }: UserInfoProps) {
+export function UserInfo({ mobile = false, renderContainer, openAuthDialog = false }: UserInfoProps) {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { isLoading: isBenefitsLoading } = useUserBenefits();
@@ -40,6 +45,9 @@ export function UserInfo({ mobile = false, renderContainer }: UserInfoProps) {
   const adminMenus: Menu[] = t.raw("AdminMenus");
 
   if (!user) {
+    if (openAuthDialog) {
+      return <AuthDialogTrigger mobile={mobile} />;
+    }
     return (
       <Button
         onClick={() => router.push("/sign-up")}
@@ -151,4 +159,42 @@ export function UserInfo({ mobile = false, renderContainer }: UserInfoProps) {
   }
 
   return userInfoContent;
+}
+function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
+  const t = useTranslations("Login");
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
+            mobile ? "w-full" : ""
+          }`}
+        >
+          {t("Button.signIn")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{t("Button.signIn")}</DialogTitle>
+        </DialogHeader>
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="signin">{t("Button.signIn")}</TabsTrigger>
+            <TabsTrigger value="signup">{t("Button.signUp")}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin" className="mt-4">
+            <div className="max-h-[60vh] overflow-y-auto">
+              <SignInPage />
+            </div>
+          </TabsContent>
+          <TabsContent value="signup" className="mt-4">
+            <div className="max-h-[60vh] overflow-y-auto">
+              <LoginPage />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
 }

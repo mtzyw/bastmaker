@@ -17,7 +17,7 @@ export default function ImageToVideoLeftPanel() {
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0">
         <div className="pr-1">
-          <h1 className="text-2xl font-semibold mb-4">图转视频</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">图转视频</h1>
 
           {/* Model label + select */}
           <div className="mb-2 text-sm">Model</div>
@@ -94,6 +94,7 @@ export default function ImageToVideoLeftPanel() {
           <Sparkles className="w-4 h-4 mr-2" />
           Create
         </Button>
+        <div className="mt-6 border-t border-white/10" />
       </div>
     </div>
   );

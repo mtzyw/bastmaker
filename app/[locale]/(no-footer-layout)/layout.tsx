@@ -10,13 +10,13 @@ export default function NoFooterGroupLayout({
   return (
     <div className="min-h-screen w-full">
       {/* Global header */}
-      <Header hideHeaderHrefs={["/#features", "/#pricing", "/flux-kontext-pro", "/multi-image-kontext-pro"]} hideHeaderIds={["pricing"]} enableSidebarSheet />
+      <Header hideHeaderHrefs={["/#features", "/#pricing", "/flux-kontext-pro", "/multi-image-kontext-pro"]} hideHeaderIds={["pricing"]} enableSidebarSheet openAuthDialog />
 
       {/* Mobile: sidebar hidden; use Header menu to open floating sheet */}
 
       {/* Desktop: fixed left sidebar below header; content shifted right */}
       <aside
-        className="hidden lg:block fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] overflow-hidden z-40 header-bg"
+        className="hidden lg:block fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] overflow-hidden z-40 header-bg border-r border-white/10"
       >
         <AISidebar className="bg-transparent" />
       </aside>

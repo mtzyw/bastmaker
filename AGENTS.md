@@ -1,42 +1,41 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- app: Next.js App Router routes, layouts, API routes.
-- components: Reusable UI (PascalCase files/dirs).
-- lib: Server/client utilities, Supabase types in `lib/supabase`.
-- config, data, content, emails: Site/config data, MD/MDX content, email templates.
-- hooks, stores: Custom React hooks and Zustand stores.
-- public, styles, types: Static assets, Tailwind styles, global TypeScript types.
-- supabase: Local project files and migrations.
+- `app/`: Next.js App Router routes, layouts, and API endpoints.
+- `components/`: Shared UI in PascalCase; co-locate small helpers when needed.
+- `lib/`, `hooks/`, `stores/`: Typed utilities, Supabase bindings (`lib/supabase/`), React hooks, and Zustand state.
+- `config/`, `data/`, `content/`, `blogs/`, `docs/`, `emails/`, `i18n/`: Site configuration, MD/MDX sources, docs, and localized assets.
+- `public/`, `styles/`, `types/`: Static assets, Tailwind layers, and shared TypeScript definitions.
+- `supabase/`: Local migrations and metadata; sync changes before deploying.
+- `actions/`, `text-to-image-generator/`: Workflow scripts and AI tooling consumed by app routes.
 
 ## Build, Test, and Development Commands
-- Install: `pnpm install` (preferred) or `npm install`.
-- Dev server: `pnpm dev` → runs Next.js locally on http://localhost:3000.
-- Build: `pnpm build` → production build; `pnpm start` to serve.
-- Lint: `pnpm lint` → ESLint (Next core‑web‑vitals).
-- Analyze bundle: `pnpm analyze` → enables `@next/bundle-analyzer`.
-- Supabase: `pnpm db:push | db:pull | db:reset | db:new-migration | db:gen-types | db:update`.
+- `pnpm install`: Install dependencies (preferred).
+- `pnpm dev`: Launch the local Next.js server at http://localhost:3000.
+- `pnpm build` → `pnpm start`: Produce and serve the production bundle.
+- `pnpm lint`: Run ESLint with the Next.js core-web-vitals config.
+- `pnpm analyze`: Open the bundle analyzer to review client payloads.
+- Supabase workflows: `pnpm db:push | db:pull | db:reset | db:new-migration | db:gen-types | db:update`.
 
 ## Coding Style & Naming Conventions
-- Language: TypeScript (tsconfig `strict: true`). Prefer explicit types at module boundaries.
-- Components: PascalCase (e.g., `UserCard.tsx`). Hooks: `useSomething.ts`.
-- Files/dirs: kebab-case for non-components (e.g., `lib/format-date.ts`).
-- Imports: use `@/*` base alias per `tsconfig.json`.
-- Styling: Tailwind CSS; co-locate small UI helpers with components.
-- Linting: Keep `react-hooks/exhaustive-deps` warnings clean during dev.
+- TypeScript runs in `strict` mode; add explicit types at API and component boundaries.
+- Components and providers use PascalCase files; hooks follow `use<Name>.ts`; other modules stay kebab-case (e.g., `lib/format-date.ts`).
+- Import via the `@/` alias instead of deep relative paths.
+- Tailwind utilities live inline in JSX; extract repeated groups into reusable components.
+- Resolve `react-hooks/exhaustive-deps` warnings promptly, especially around Supabase clients.
 
 ## Testing Guidelines
-- Framework: None configured yet. For new tests, prefer Vitest + React Testing Library; Playwright for E2E.
-- Location: `__tests__/` or alongside files; suffix `.test.ts(x)`.
-- Scope: Unit-test pure utilities in `lib/`; smoke-test critical pages and API routes.
+- Preferred stack: Vitest + React Testing Library for units, Playwright for E2E once introduced.
+- Place specs in `__tests__/` or beside the source file with a `.test.ts(x)` suffix.
+- Cover critical flows in `app/` routes and pure logic in `lib/`; note remaining gaps in PRs.
 
 ## Commit & Pull Request Guidelines
-- Current history: short, descriptive messages (Chinese), not strict Conventional Commits.
-- Recommended format: `feat|fix|chore|docs(scope): concise summary` in imperative mood.
-- PRs should include: clear description, linked issues, before/after screenshots for UI, notes on env vars and DB migrations (if any), and test/QA steps.
+- Commits stay short and descriptive (history mixes English and Chinese); Conventional Commits are optional.
+- Recommended prefix: `feat|fix|chore|docs(scope): summary` in imperative voice.
+- PRs should link issues, summarize changes, attach UI screenshots for visible updates, note env/DB impacts, and list verification steps.
 
 ## Security & Configuration Tips
-- Env: Copy `.env.example` to `.env.local`. Never commit `.env.local`.
-- Client vs server: Prefix browser-safe vars with `NEXT_PUBLIC_`. Keep secrets server-only.
-- Supabase: After schema changes, run `pnpm db:update` to push and regenerate types.
-- AI/External providers: Store API keys in env; avoid logging secrets.
+- Copy `.env.example` to `.env.local`; never commit secrets.
+- Prefix client-safe env vars with `NEXT_PUBLIC_`; keep Supabase keys server-side when possible.
+- After schema edits, run `pnpm db:update` to push migrations and refresh generated types.
+- Avoid logging API keys or sensitive payloads in shared analytics or console output.

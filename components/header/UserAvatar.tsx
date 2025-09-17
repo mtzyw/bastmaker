@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserInfo } from "./UserInfo";
 
-export function UserAvatar() {
+export function UserAvatar({ openAuthDialog = false }: { openAuthDialog?: boolean }) {
   const { user } = useAuth();
 
   if (!user) {
-    return <UserInfo />;
+    return <UserInfo openAuthDialog={openAuthDialog} />;
   }
 
   const fallbackLetter = (user.email || "N")[0].toUpperCase();

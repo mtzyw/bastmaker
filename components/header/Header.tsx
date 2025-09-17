@@ -18,14 +18,15 @@ interface HeaderProps {
   hideHeaderHrefs?: string[];
   hideHeaderIds?: string[];
   enableSidebarSheet?: boolean;
+  openAuthDialog?: boolean;
 }
 
-const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet }: HeaderProps) => {
+const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDialog }: HeaderProps) => {
   const t = useTranslations("Home");
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="py-4 px-6 backdrop-blur-md sticky top-0 z-50 shadow-sm header-bg">
+    <header className="py-4 px-6 backdrop-blur-md sticky top-0 z-50 header-bg border-b border-white/10">
       <nav className="flex justify-between items-center w-full mx-auto">
         <div className="flex items-center space-x-6 md:space-x-12">
           {enableSidebarSheet && (
@@ -34,7 +35,7 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet }: HeaderPr
                 <SheetTrigger className="p-2 rounded-md hover:bg-accent-foreground/10 focus:outline-none focus:ring-2 focus:ring-ring">
                   <Menu className="h-5 w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-64 sm:w-64 overflow-hidden bg-gray-900 text-white border-r border-gray-800" hideClose>
+                <SheetContent side="left" className="p-0 w-64 sm:w-64 overflow-hidden bg-gray-900 text-white border-r border-white/10" hideClose>
                   <AISidebar className="bg-transparent" onNavigate={() => setOpen(false)} />
                 </SheetContent>
               </Sheet>
@@ -72,7 +73,7 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet }: HeaderPr
           <div className="hidden lg:flex items-center gap-x-2">
             <LocaleSwitcher />
             <ThemeToggle />
-            <UserAvatar />
+            <UserAvatar openAuthDialog={openAuthDialog} />
           </div>
 
           {/* Mobile */}

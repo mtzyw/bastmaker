@@ -47,7 +47,7 @@ export default function ImageToImageLeftPanel({
       <ScrollArea className="flex-1 min-h-0">
         <div className="pr-1">
           {/* Title */}
-          <h1 className="text-2xl font-semibold mb-4">Image to Image</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">Image to Image</h1>
 
           {/* Model */}
           <div className="mb-2 text-sm">Model</div>
@@ -86,7 +86,7 @@ export default function ImageToImageLeftPanel({
           />
 
           {/* Prompt */}
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mt-3 mb-2">
             <div className="text-sm">Prompt</div>
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <span>Translate Prompt</span>
@@ -135,6 +135,7 @@ export default function ImageToImageLeftPanel({
           <Sparkles className="w-4 h-4 mr-2" />
           Create
         </Button>
+        <div className="mt-6 border-t border-white/10" />
       </div>
     </div>
   );

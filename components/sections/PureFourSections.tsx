@@ -79,7 +79,7 @@ export default function PureFourSections({
             <div
               className="h-full min-h-0 flex items-start pt-4 header-bg text-white"
             >
-              <div className="container mx-auto px-4 md:px-6 w-full h-full min-h-0 flex flex-col">
+              <div className="container mx-auto px-4 md:px-6 w-full h-full min-h-0 flex flex-col md:border-r md:border-white/10">
                 {section2Left ? (
                   section2Left
                 ) : (
@@ -93,15 +93,18 @@ export default function PureFourSections({
             <div
               className="h-full min-h-0 flex items-center header-bg text-white"
             >
-              <div className="container mx-auto px-4 md:px-8 w-full h-full min-h-0">
-                {section2Right ? (
-                  section2Right
-                ) : (
-                  <>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Right</h2>
-                    <p className="text-sm opacity-80">Pure color block.</p>
-                  </>
-                )}
+              <div className="container mx-auto px-4 md:px-8 w-full h-full min-h-0 flex flex-col">
+                <div className="flex-1 min-h-0">
+                  {section2Right ? (
+                    section2Right
+                  ) : (
+                    <>
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{s2.title} Right</h2>
+                      <p className="text-sm opacity-80">Pure color block.</p>
+                    </>
+                  )}
+                </div>
+                <div className="mt-6 border-t border-white/10" />
               </div>
             </div>
           </div>

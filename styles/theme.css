@@ -30,7 +30,7 @@
 }
 @layer components {
   .header-bg {
-    @apply bg-[#020617] text-white;
+    @apply bg-[#1C1B1A] text-white;
   }
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[--main-gradient-from] to-[--main-gradient-to];
