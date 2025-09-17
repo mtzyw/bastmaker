@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wand2, Trash2 } from "lucide-react";
+import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatioSelector } from "@/components/ai/AspectRatioSelector";
 
@@ -45,16 +45,18 @@ export default function TextToImageLeftPanel({
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0">
         <div className="pr-1">
-          {/* 顶部标题 + 模型选择 */}
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl font-semibold">文字转图片</h1>
-            {hideModelSelect ? (
-              <div className="text-sm text-white/80 px-3 py-1 rounded bg-white/5 border border-white/10">
-                {model}
-              </div>
-            ) : (
+          {/* 标题 */}
+          <h1 className="text-2xl font-semibold mb-4">文字转图片</h1>
+          {/* Model 标签 + 选择 */}
+          <div className="mb-2 text-sm">Model</div>
+          {hideModelSelect ? (
+            <div className="text-sm text-white/80 px-3 py-2 rounded bg-white/5 border border-white/10 mb-4">
+              {model}
+            </div>
+          ) : (
+            <div className="mb-4">
               <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="w-48 h-9 bg-white/5 border-white/10 text-white">
+                <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
                       <span className="text-white text-[10px] leading-none font-bold">G</span>
@@ -70,11 +72,11 @@ export default function TextToImageLeftPanel({
                   ))}
                 </SelectContent>
               </Select>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* 提示词 + 翻译开关 */}
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mt-3 mb-2">
             <div className="text-sm">提示词</div>
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <span>翻译提示词</span>
@@ -147,6 +149,17 @@ export default function TextToImageLeftPanel({
 
       {/* 固定底部按钮；上方内容单独滚动 */}
       <div className="pt-2 pb-5 shrink-0">
+        {/* 固定区域：Output + credits */}
+        <div className="mb-3">
+          <div className="mb-2 text-sm">Output Image Number</div>
+          <div className="flex items-center justify-between text-sm text-white/80">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-pink-400" />
+              Credits required:
+            </div>
+            <div>4 Credits</div>
+          </div>
+        </div>
         <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
           创建
         </Button>

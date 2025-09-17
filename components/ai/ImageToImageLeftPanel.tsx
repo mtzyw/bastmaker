@@ -9,7 +9,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
 import { Coins, Sparkles } from "lucide-react";
 
-const MAX_IMAGES = 8;
+const DEFAULT_MAX = 8;
+function getMaxCountByModel(model: string) {
+  if (model === "Nano Banana Free") return 3;
+  if (model === "Seedream 4" || model === "Seedream 4 Edit") return 5;
+  return DEFAULT_MAX;
+}
 
 export default function ImageToImageLeftPanel({
   excludeModels,
@@ -34,6 +39,8 @@ export default function ImageToImageLeftPanel({
     if (!models.includes(model)) setModel(models[0] ?? "Nano Banana Free");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [models.join("|")]);
+
+  const maxCount = getMaxCountByModel(model);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -70,11 +77,12 @@ export default function ImageToImageLeftPanel({
           {/* Images */}
           <div className="flex items-center justify-between mb-2">
             <div className="text-sm">Images</div>
-            <div className="text-xs text-white/60">{images.length}/{MAX_IMAGES}</div>
+            <div className="text-xs text-white/60">{images.length}/{maxCount}</div>
           </div>
           <ImageGridUploader
             className="mb-6"
-            onChange={(files) => setImages(files.slice(0, MAX_IMAGES))}
+            maxCount={maxCount}
+            onChange={(files) => setImages(files)}
           />
 
           {/* Prompt */}
@@ -104,22 +112,22 @@ export default function ImageToImageLeftPanel({
             </div>
           </div>
 
-          {/* Output + credits */}
-          <div className="mt-6">
-            <div className="mb-2 text-sm">Output Image Number</div>
-            <div className="flex items-center justify-between text-sm text-white/80">
-              <div className="flex items-center gap-2">
-                <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
-              </div>
-              <div>4 Credits</div>
-            </div>
-          </div>
+          {/* Output moved to fixed bottom region */}
         </div>
       </ScrollArea>
 
-      {/* Bottom button */}
+      {/* Fixed bottom area: Output + Create */}
       <div className="pt-2 pb-5 shrink-0">
+        <div className="mb-3">
+          <div className="mb-2 text-sm">Output Image Number</div>
+          <div className="flex items-center justify-between text-sm text-white/80">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-pink-400" />
+              Credits required:
+            </div>
+            <div>4 Credits</div>
+          </div>
+        </div>
         <Button
           className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90"
           disabled={!prompt.trim()}
@@ -131,4 +139,3 @@ export default function ImageToImageLeftPanel({
     </div>
   );
 }
-

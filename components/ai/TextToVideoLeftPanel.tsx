@@ -5,25 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wand2, Trash2 } from "lucide-react";
+import { Wand2, Trash2, Coins, CheckCircle2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Adapted from text-to-image-generator UI for use in Section 2 Left (dark bg)
 export default function TextToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [outputFormat, setOutputFormat] = useState<"png" | "jpg">("png");
-  const [model, setModel] = useState("Nano Banana Free");
+  const [model, setModel] = useState("Minimax Hailuo 2.0");
+  const [seedanceVersion, setSeedanceVersion] = useState<"lite" | "pro">("pro");
+
+  // Seedance variants reverted; using single entry again.
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0">
         <div className="pr-1">
-        {/* 顶部标题 + 模型选择 */}
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-2xl font-semibold">文字转视频</h1>
+        {/* 标题 */}
+        <h1 className="text-2xl font-semibold mb-4">文字转视频</h1>
+        {/* Model 标签 + 选择 */}
+        <div className="mb-2 text-sm">Model</div>
+        <div className="mb-4">
           <Select value={model} onValueChange={setModel}>
-            <SelectTrigger className="w-48 h-9 bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
                   <span className="text-white text-[10px] leading-none font-bold">G</span>
@@ -32,14 +36,59 @@ export default function TextToVideoLeftPanel() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Nano Banana Free">Nano Banana Free</SelectItem>
-              <SelectItem value="Nano Banana Pro">Nano Banana Pro</SelectItem>
+              <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
+              <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
+              <SelectItem value="Seedance">Seedance</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
+        {/* Seedance model version cards */}
+        {model === "Seedance" && (
+          <div className="mt-3">
+            <div className="text-xs text-white/80 mb-2">Model Version</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Lite */}
+              <button
+                type="button"
+                onClick={() => setSeedanceVersion("lite")}
+                className={`relative text-left rounded-lg border transition-colors p-3 bg-white/5 ${
+                  seedanceVersion === "lite" ? "border-white/20" : "border-white/10 hover:border-white/15"
+                }`}
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="w-8 h-8 rounded-md bg-emerald-500 flex items-center justify-center text-white text-sm font-semibold">S</div>
+                  <div className="text-sm font-semibold">Seedance 1.0 Lite</div>
+                  <div className="text-xs text-white/70">Accurate motion and camera control</div>
+                </div>
+                {seedanceVersion === "lite" && (
+                  <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-400" />
+                )}
+              </button>
+
+              {/* Pro */}
+              <button
+                type="button"
+                onClick={() => setSeedanceVersion("pro")}
+                className={`relative text-left rounded-lg border transition-colors p-3 bg-white/5 ${
+                  seedanceVersion === "pro" ? "border-white/20" : "border-white/10 hover:border-white/15"
+                }`}
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="w-8 h-8 rounded-md bg-emerald-500 flex items-center justify-center text-white text-sm font-semibold">S</div>
+                  <div className="text-sm font-semibold">Seedance 1.0 Pro</div>
+                  <div className="text-xs text-white/70">Fluid, cohesive multi-shot video outputs</div>
+                </div>
+                {seedanceVersion === "pro" && (
+                  <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-400" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 提示词 + 翻译开关 */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mt-3 mb-2">
           <div className="text-sm">提示词</div>
           <div className="flex items-center gap-2 text-sm text-gray-300">
             <span>翻译提示词</span>
@@ -72,47 +121,23 @@ export default function TextToVideoLeftPanel() {
           </div>
         </div>
 
-        {/* 示例 */}
-        <div className="mt-2 text-sm text-white/70">
-          <span className="">示例：</span> Wildflower Trail Dolphin Shadow Butterfly Closeup
-        </div>
-
-        {/* 输出格式 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="text-sm">输出格式</div>
-            <div className="w-4 h-4 rounded-full border border-white/25 flex items-center justify-center text-[10px] text-white/60">?</div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant={outputFormat === "png" ? "default" : "outline"}
-              onClick={() => setOutputFormat("png")}
-              className={
-                outputFormat === "png"
-                  ? "h-11 bg-blue-600 text-white"
-                  : "h-11 bg-white/5 border border-white/10 text-white hover:bg-white/10"
-              }
-            >
-              png
-            </Button>
-            <Button
-              variant={outputFormat === "jpg" ? "default" : "outline"}
-              onClick={() => setOutputFormat("jpg")}
-              className={
-                outputFormat === "jpg"
-                  ? "h-11 bg-blue-600 text-white"
-                  : "h-11 bg-white/5 border border-white/10 text-white hover:bg-white/10"
-              }
-            >
-              jpg
-            </Button>
-          </div>
-        </div>
+        {/* 示例已移除，保持简洁 */}
+        {/* 保留与 text-to-image 一致的结构，不含输出格式 */}
         </div>
       </ScrollArea>
 
-      {/* 固定底部按钮；上方内容单独滚动 */}
+      {/* 固定底部：Output + Create，与 text-to-image 一致 */}
       <div className="pt-2 pb-5 shrink-0">
+        <div className="mb-3">
+          <div className="mb-2 text-sm">Output Image Number</div>
+          <div className="flex items-center justify-between text-sm text-white/80">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-pink-400" />
+              Credits required:
+            </div>
+            <div>4 Credits</div>
+          </div>
+        </div>
         <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
           创建
         </Button>
