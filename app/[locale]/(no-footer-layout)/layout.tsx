@@ -16,9 +16,9 @@ export default function NoFooterGroupLayout({
 
       {/* Desktop: fixed left sidebar below header; content shifted right */}
       <aside
-        className="hidden lg:block fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] overflow-hidden z-40"
+        className="hidden lg:block fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] overflow-hidden z-40 header-bg"
       >
-        <AISidebar />
+        <AISidebar className="bg-transparent" />
       </aside>
 
       <div className="w-full">

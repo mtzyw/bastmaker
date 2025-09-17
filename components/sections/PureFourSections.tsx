@@ -49,8 +49,8 @@ export default function PureFourSections({
       {/* Desktop fixed left column (never moves) - only when embedded */}
       {withSidebar && (
         <div
-          className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40"
-          style={{ width: leftWidthValue(leftWidth), backgroundColor: s1.bg }}
+          className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 header-bg"
+          style={{ width: leftWidthValue(leftWidth) }}
         >
           <AISidebar className="bg-transparent" />
         </div>
@@ -59,8 +59,7 @@ export default function PureFourSections({
       {/* Mobile Section 1 in normal flow - only when embedded */}
       {withSidebar && (
         <section
-          className="w-full min-h-screen flex items-center justify-center lg:hidden"
-          style={{ backgroundColor: s1.bg, color: s1.fg }}
+          className="w-full min-h-screen flex items-center justify-center lg:hidden header-bg"
         >
           <div className="max-w-sm w-full px-4">
             <AISidebar className="bg-transparent" />
@@ -78,8 +77,7 @@ export default function PureFourSections({
         <section className="w-full h-[calc(100vh-4rem)]">
           <div className={`grid grid-cols-1 ${section2SplitClass(section2Split)} h-full min-h-0`}>
             <div
-              style={{ backgroundColor: s2.bg, color: s2.fg }}
-              className="h-full min-h-0 flex items-start pt-4"
+              className="h-full min-h-0 flex items-start pt-4 header-bg text-white"
             >
               <div className="container mx-auto px-4 md:px-6 w-full h-full min-h-0 flex flex-col">
                 {section2Left ? (
@@ -93,8 +91,7 @@ export default function PureFourSections({
               </div>
             </div>
             <div
-              style={{ backgroundColor: "#0D1526", color: s2.fg }}
-              className="h-full min-h-0 flex items-center"
+              className="h-full min-h-0 flex items-center header-bg text-white"
             >
               <div className="container mx-auto px-4 md:px-8 w-full h-full min-h-0">
                 {section2Right ? (
@@ -112,8 +109,7 @@ export default function PureFourSections({
 
         {/* Merged Section 3 + 4 with Footer at the bottom */}
         <section
-          style={{ backgroundColor: s4.bg, color: s4.fg }}
-          className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center"
+          className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center header-bg text-white"
         >
           <div className="w-full">
             <div className="container mx-auto px-4 md:px-8 py-16">
