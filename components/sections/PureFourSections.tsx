@@ -104,7 +104,7 @@ export default function PureFourSections({
                     </>
                   )}
                 </div>
-                <div className="mt-6 border-t border-white/10" />
+                <div className="mt-6 border-t border-white/10 -mx-4 md:-mx-8" />
               </div>
             </div>
           </div>
