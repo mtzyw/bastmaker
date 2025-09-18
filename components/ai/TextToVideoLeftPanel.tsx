@@ -56,7 +56,7 @@ export default function TextToVideoLeftPanel() {
   useEffect(() => {
     const allowedAspects = aspectPresetsByModel[model];
     if (allowedAspects && !allowedAspects.includes(aspectRatio)) {
-      setAspectRatio(allowedAspects[0]);
+      setAspectRatio(allowedAspects.includes("16:9") ? "16:9" : allowedAspects[0]);
     }
   }, [model, aspectRatio]);
 
@@ -160,18 +160,18 @@ export default function TextToVideoLeftPanel() {
                 <RadioGroup
                   value={aspectRatio}
                   onValueChange={(value) => setAspectRatio(value as AspectRatio)}
-                  className="flex gap-2 flex-nowrap overflow-x-auto"
+                  className="flex gap-2"
                 >
                   {aspectPresetsByModel[model]!.map((ratio) => {
                     const ratioId = `aspect-${ratio.replace(":", "-")}`;
                     const isActive = aspectRatio === ratio;
                     return (
-                      <div key={ratio}>
+                      <div key={ratio} className="flex-1 basis-0">
                         <RadioGroupItem value={ratio} id={ratioId} className="sr-only" />
                         <Label
                           htmlFor={ratioId}
                           className={cn(
-                            "cursor-pointer select-none rounded-lg border border-white/10 px-2 py-1.5 flex flex-col items-center gap-1 transition-all w-[54px]",
+                            "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-2 py-1.5 flex-col items-center gap-1 transition-all",
                             isActive
                               ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
                               : "bg-white/8 text-white/70 hover:bg-white/12"
