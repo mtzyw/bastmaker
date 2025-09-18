@@ -112,7 +112,7 @@ html {
     @apply border-border;
     /* Make scrollbars thin and gray across the app */
     scrollbar-width: thin; /* Firefox */
-    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
   }
 
   body {
@@ -123,32 +123,49 @@ html {
 /* Scrollbar styling (WebKit) */
 /* Thin, gray scrollbar with rounded thumb */
 ::-webkit-scrollbar {
-  width: var(--scrollbar-size);
-  height: var(--scrollbar-size);
+  width: var(--scrollbar-size, 6px);
+  height: var(--scrollbar-size, 6px);
 }
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: var(--scrollbar-track, transparent);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
   border-radius: 9999px;
 }
 
 /* Element-scoped thin scrollbar utility */
 .thin-scrollbar {
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
 }
 .thin-scrollbar::-webkit-scrollbar {
-  width: var(--scrollbar-size);
-  height: var(--scrollbar-size);
+  width: var(--scrollbar-size, 6px);
+  height: var(--scrollbar-size, 6px);
 }
 .thin-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
   border-radius: 9999px;
 }
 .thin-scrollbar::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: var(--scrollbar-track, transparent);
+}
+
+/* Compact scrollbar variant for textareas */
+.textarea-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
+}
+.textarea-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.textarea-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
+  border-radius: 9999px;
+}
+.textarea-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, transparent);
 }
 
 @keyframes float {

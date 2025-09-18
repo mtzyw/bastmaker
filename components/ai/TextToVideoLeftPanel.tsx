@@ -1,128 +1,201 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wand2, Trash2, Coins, CheckCircle2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 // Adapted from text-to-image-generator UI for use in Section 2 Left (dark bg)
+type VideoLengthValue = "5" | "6" | "8" | "10";
+type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
+
+const aspectPresetsByModel: Record<string, AspectRatio[]> = {
+  "Seedance 1.0 Lite": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Seedance 1.0 Pro": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling v2.1 Master": ["1:1", "16:9", "9:16"],
+  "wan2.2 Plus": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "PixVerse V5": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+};
+
+const aspectIconWidthMap: Record<AspectRatio, string> = {
+  "16:9": "w-9",
+  "9:16": "w-5",
+  "1:1": "w-7",
+  "4:3": "w-8",
+  "3:4": "w-6",
+};
+
+const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
+  "Minimax Hailuo 2.0": ["6", "10"],
+  "PixVerse V5": ["5", "8"],
+  "Seedance 1.0 Lite": ["5", "10"],
+  "Seedance 1.0 Pro": ["5", "10"],
+};
+
 export default function TextToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState("Minimax Hailuo 2.0");
-  const [seedanceVersion, setSeedanceVersion] = useState<"lite" | "pro">("pro");
+  const [videoLength, setVideoLength] = useState<VideoLengthValue>("6");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
 
-  // Seedance variants reverted; using single entry again.
+  useEffect(() => {
+    const allowed = lengthPresetsByModel[model] ?? ["5", "10"];
+
+    if (!allowed.includes(videoLength)) {
+      setVideoLength(allowed[0]);
+    }
+  }, [model, videoLength]);
+
+  useEffect(() => {
+    const allowedAspects = aspectPresetsByModel[model];
+    if (allowedAspects && !allowedAspects.includes(aspectRatio)) {
+      setAspectRatio(allowedAspects[0]);
+    }
+  }, [model, aspectRatio]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="pr-1">
-        {/* 标题 */}
-        <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文字转视频</h1>
-        {/* Model 标签 + 选择 */}
-        <div className="mb-2 text-sm">Model</div>
-        <div className="mb-4">
-          <Select value={model} onValueChange={setModel}>
-            <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                  <span className="text-white text-[10px] leading-none font-bold">G</span>
-                </div>
-                <SelectValue placeholder="选择模型" />
+      <ScrollArea className="flex-1 min-h-0 -mr-4 md:-mr-6">
+        <div className="pr-4 md:pr-6">
+          <div className="pr-1">
+            {/* 标题 */}
+            <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文字转视频</h1>
+            {/* Model 标签 + 选择 */}
+            <div className="mb-2 text-sm">Model</div>
+            <div className="mb-4">
+              <Select value={model} onValueChange={setModel}>
+                <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                      <span className="text-white text-[10px] leading-none font-bold">G</span>
+                    </div>
+                    <SelectValue placeholder="选择模型" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
+                  <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
+                  <SelectItem value="Seedance 1.0 Lite">Seedance 1.0 Lite</SelectItem>
+                  <SelectItem value="Seedance 1.0 Pro">Seedance 1.0 Pro</SelectItem>
+                  <SelectItem value="wan2.2 Plus">wan2.2 Plus</SelectItem>
+                  <SelectItem value="PixVerse V5">PixVerse V5</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 提示词 + 翻译开关 */}
+            <div className="flex items-center justify-between mt-3 mb-2">
+              <div className="text-sm">提示词</div>
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <span>翻译提示词</span>
+                <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
               </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
-              <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
-              <SelectItem value="Seedance">Seedance</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Seedance model version cards */}
-        {model === "Seedance" && (
-          <div className="mt-3">
-            <div className="text-xs text-white/80 mb-2">Model Version</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Lite */}
-              <button
-                type="button"
-                onClick={() => setSeedanceVersion("lite")}
-                className={`relative text-left rounded-lg border transition-colors p-3 bg-white/5 ${
-                  seedanceVersion === "lite" ? "border-white/20" : "border-white/10 hover:border-white/15"
-                }`}
-              >
-                <div className="flex flex-col gap-2">
-                  <div className="w-8 h-8 rounded-md bg-emerald-500 flex items-center justify-center text-white text-sm font-semibold">S</div>
-                  <div className="text-sm font-semibold">Seedance 1.0 Lite</div>
-                  <div className="text-xs text-white/70">Accurate motion and camera control</div>
-                </div>
-                {seedanceVersion === "lite" && (
-                  <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-400" />
-                )}
-              </button>
-
-              {/* Pro */}
-              <button
-                type="button"
-                onClick={() => setSeedanceVersion("pro")}
-                className={`relative text-left rounded-lg border transition-colors p-3 bg-white/5 ${
-                  seedanceVersion === "pro" ? "border-white/20" : "border-white/10 hover:border-white/15"
-                }`}
-              >
-                <div className="flex flex-col gap-2">
-                  <div className="w-8 h-8 rounded-md bg-emerald-500 flex items-center justify-center text-white text-sm font-semibold">S</div>
-                  <div className="text-sm font-semibold">Seedance 1.0 Pro</div>
-                  <div className="text-xs text-white/70">Fluid, cohesive multi-shot video outputs</div>
-                </div>
-                {seedanceVersion === "pro" && (
-                  <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-400" />
-                )}
-              </button>
             </div>
-          </div>
-        )}
 
-        {/* 提示词 + 翻译开关 */}
-        <div className="flex items-center justify-between mt-3 mb-2">
-          <div className="text-sm">提示词</div>
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            <span>翻译提示词</span>
-            <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-          </div>
-        </div>
-
-        {/* 文本框 */}
-        <div className="rounded-lg border border-white/10 bg-white/5">
-          <div className="p-3">
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="你想要创建什么？"
-              className="min-h-[200px] resize-none bg-transparent text-white placeholder:text-white/50"
-              maxLength={1000}
-            />
-          </div>
-          <div className="flex items-center justify-between px-3 pb-3">
-            <Button variant="secondary" onClick={() => {}} className="h-9 bg-white/10 hover:bg-white/15 border border-white/10 text-white">
-              <Wand2 className="w-4 h-4 mr-2" />
-              AI提示词
-            </Button>
-            <div className="flex items-center gap-3 text-xs text-white/60">
-              <span>{prompt.length} / 1000</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
+            {/* 文本框 */}
+            <div className="rounded-xl bg-white/8 border border-white/10">
+              <div className="px-3 pt-3">
+                <Textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="你想要创建什么？"
+                  className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
+                  maxLength={1000}
+                />
+              </div>
+              <div className="h-px bg-white/10 mx-3 mt-2" />
+              <div className="flex items-center justify-between px-3 py-3">
+                <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
+                  <Wand2 className="w-3.5 h-3.5 mr-2" />
+                  AI提示词
+                </Button>
+                <div className="flex items-center gap-3 text-[11px] text-white/60">
+                  <span>{prompt.length} / 1000</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* 示例已移除，保持简洁 */}
-        {/* 保留与 text-to-image 一致的结构，不含输出格式 */}
+            {/* 视频时长选择 */}
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <div className="text-sm">Video Length</div>
+              <RadioGroup
+                value={videoLength}
+                onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
+                className="flex items-center gap-6"
+              >
+                {(lengthPresetsByModel[model] ?? ["5", "10"]).map((length) => {
+                  const id = `video-length-${length}`;
+                  return (
+                    <div key={length} className="flex items-center gap-2">
+                      <RadioGroupItem
+                        value={length}
+                        id={id}
+                        className="text-white border-white/40 data-[state=checked]:border-white"
+                      />
+                      <Label htmlFor={id} className="text-sm text-white">
+                        {length} 秒
+                      </Label>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            </div>
+
+            {aspectPresetsByModel[model] && (
+              <div className="mt-5">
+                <div className="mb-2">
+                  <div className="text-sm font-medium text-white">Aspect Ratio</div>
+                  <p className="text-xs text-white/60">Choose the appropriate aspect ratio.</p>
+                </div>
+                <RadioGroup
+                  value={aspectRatio}
+                  onValueChange={(value) => setAspectRatio(value as AspectRatio)}
+                  className="flex gap-2 flex-nowrap overflow-x-auto"
+                >
+                  {aspectPresetsByModel[model]!.map((ratio) => {
+                    const ratioId = `aspect-${ratio.replace(":", "-")}`;
+                    const isActive = aspectRatio === ratio;
+                    return (
+                      <div key={ratio}>
+                        <RadioGroupItem value={ratio} id={ratioId} className="sr-only" />
+                        <Label
+                          htmlFor={ratioId}
+                          className={cn(
+                            "cursor-pointer select-none rounded-lg border border-white/10 px-2 py-1.5 flex flex-col items-center gap-1 transition-all w-[54px]",
+                            isActive
+                              ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                              : "bg-white/8 text-white/70 hover:bg-white/12"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "block h-6 rounded-md transition-colors",
+                              aspectIconWidthMap[ratio],
+                              isActive ? "bg-pink-400" : "bg-white/20"
+                            )}
+                          />
+                          <span className="text-[10px] font-semibold tracking-wide">{ratio}</span>
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+            )}
+
+            {/* 示例已移除，保持简洁 */}
+            {/* 保留与 text-to-image 一致的结构，不含输出格式 */}
+          </div>
         </div>
       </ScrollArea>
 

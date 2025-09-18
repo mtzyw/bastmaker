@@ -14,6 +14,11 @@
     --code-bg: #1a1a1a;
     --code-header: #2d2d2d;
     --code-text: #A9B1D6;
+
+    /* Scrollbar */
+    --scrollbar-size: 6px;
+    --scrollbar-thumb: rgb(107 114 128 / 0.6); /* match left toolbar */
+    --scrollbar-track: transparent;
   }
 
   .dark {
@@ -26,6 +31,11 @@
     --code-bg: #1a1a1a;
     --code-header: #2d2d2d;
     --code-text: #A9B1D6;
+
+    /* Scrollbar */
+    --scrollbar-size: 6px;
+    --scrollbar-thumb: rgb(75 85 99 / 0.6); /* match left toolbar */
+    --scrollbar-track: transparent;
   }
 }
 @layer components {
@@ -106,11 +116,3 @@
     border-color: var(--main-gradient-from);
   }
 }
-    /* Scrollbar */
-    --scrollbar-size: 6px;
-    --scrollbar-thumb: #9ca3af; /* gray-400 */
-    --scrollbar-track: transparent;
-    /* Scrollbar */
-    --scrollbar-size: 6px;
-    --scrollbar-thumb: #4b5563; /* gray-600 for dark bg */
-    --scrollbar-track: transparent;
