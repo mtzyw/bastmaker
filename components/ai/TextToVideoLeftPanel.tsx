@@ -126,23 +126,28 @@ export default function TextToVideoLeftPanel() {
             </div>
 
             {/* 视频时长选择 */}
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              <div className="text-sm">Video Length</div>
+            <div className="mt-4">
+              <div className="text-sm mb-2">Video Length</div>
               <RadioGroup
                 value={videoLength}
                 onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
-                className="flex items-center gap-6"
+                className="flex gap-2"
               >
                 {(lengthPresetsByModel[model] ?? ["5", "10"]).map((length) => {
                   const id = `video-length-${length}`;
+                  const isActive = videoLength === length;
                   return (
-                    <div key={length} className="flex items-center gap-2">
-                      <RadioGroupItem
-                        value={length}
-                        id={id}
-                        className="text-white border-white/40 data-[state=checked]:border-white"
-                      />
-                      <Label htmlFor={id} className="text-sm text-white">
+                    <div key={length} className="flex-1 basis-0">
+                      <RadioGroupItem value={length} id={id} className="sr-only" />
+                      <Label
+                        htmlFor={id}
+                        className={cn(
+                          "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all",
+                          isActive
+                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                            : "bg-white/8 text-white/70 hover:bg-white/12"
+                        )}
+                      >
                         {length} 秒
                       </Label>
                     </div>

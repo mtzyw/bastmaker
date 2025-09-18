@@ -88,30 +88,32 @@ export default function ImageToVideoLeftPanel() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              <div className="text-sm">Video Length</div>
+            <div className="mt-4">
+              <div className="text-sm mb-2">Video Length</div>
               <RadioGroup
                 value={videoLength}
                 onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
-                className="flex items-center gap-6"
+                className="flex gap-2"
               >
-                {model === "Minimax Hailuo 2.0" ? (
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="6" id="image-video-length-6" className="text-white border-white/40 data-[state=checked]:border-white" />
-                    <Label htmlFor="image-video-length-6" className="text-sm text-white">6 秒（固定）</Label>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="5" id="image-video-length-5" className="text-white border-white/40 data-[state=checked]:border-white" />
-                      <Label htmlFor="image-video-length-5" className="text-sm text-white">5 秒</Label>
+                {(model === "Minimax Hailuo 2.0" ? ["6"] : ["5", "10"]).map((length) => {
+                  const id = `image-video-length-${length}`;
+                  const isActive = videoLength === length;
+                  return (
+                    <div key={length} className="flex-1 basis-0">
+                      <RadioGroupItem value={length} id={id} className="sr-only" />
+                      <Label
+                        htmlFor={id}
+                        className={`flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all ${
+                          isActive
+                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                            : "bg-white/8 text-white/70 hover:bg-white/12"
+                        }`}
+                      >
+                        {length} 秒{model === "Minimax Hailuo 2.0" && length === "6" ? "（固定）" : ""}
+                      </Label>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="10" id="image-video-length-10" className="text-white border-white/40 data-[state=checked]:border-white" />
-                      <Label htmlFor="image-video-length-10" className="text-sm text-white">10 秒</Label>
-                    </div>
-                  </>
-                )}
+                  );
+                })}
               </RadioGroup>
             </div>
 
@@ -120,7 +122,8 @@ export default function ImageToVideoLeftPanel() {
       </ScrollArea>
 
       {/* Fixed bottom: Output + Create */}
-      <div className="pt-2 pb-5 shrink-0">
+      <div className="pt-2 pb-0 shrink-0">
+        <div className="mb-3 border-t border-white/10 -mx-4 md:-mx-6" />
         <div className="mb-3">
           <div className="mb-2 text-sm">Output Image Number</div>
           <div className="flex items-center justify-between text-sm text-white/80">
@@ -133,9 +136,9 @@ export default function ImageToVideoLeftPanel() {
         </div>
         <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
           <Sparkles className="w-4 h-4 mr-2" />
-          Create
+          创建
         </Button>
-        <div className="mt-6 border-t border-white/10" />
+        <div className="mt-6 border-t border-white/10 -mx-4 md:-mx-6" />
       </div>
     </div>
   );
