@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 // Adapted from text-to-image-generator UI for use in Section 2 Left (dark bg)
 type VideoLengthValue = "5" | "6" | "8" | "10";
 type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
+type VideoResolutionValue = "360p" | "480p" | "540p" | "580p" | "720p" | "768p" | "1080p";
 
 const aspectPresetsByModel: Record<string, AspectRatio[]> = {
   "Seedance 1.0 Lite": ["16:9", "9:16", "1:1", "4:3", "3:4"],
@@ -36,6 +37,15 @@ const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
   "PixVerse V5": ["5", "8"],
   "Seedance 1.0 Lite": ["5", "10"],
   "Seedance 1.0 Pro": ["5", "10"],
+  "wan2.2 Plus": ["5", "10"],
+};
+
+const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
+  "Minimax Hailuo 2.0": ["480p", "720p", "768p", "1080p"],
+  "PixVerse V5": ["360p", "540p", "720p", "1080p"],
+  "Seedance 1.0 Lite": ["480p", "720p", "1080p"],
+  "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
+  "wan2.2 Plus": ["480p", "580p", "720p"],
 };
 
 export default function TextToVideoLeftPanel() {
@@ -44,6 +54,9 @@ export default function TextToVideoLeftPanel() {
   const [model, setModel] = useState("Minimax Hailuo 2.0");
   const [videoLength, setVideoLength] = useState<VideoLengthValue>("6");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
+  const [resolution, setResolution] = useState<VideoResolutionValue>(
+    (resolutionPresetsByModel["Minimax Hailuo 2.0"] ?? ["720p"])[0]
+  );
 
   useEffect(() => {
     const allowed = lengthPresetsByModel[model] ?? ["5", "10"];
@@ -59,6 +72,13 @@ export default function TextToVideoLeftPanel() {
       setAspectRatio(allowedAspects.includes("16:9") ? "16:9" : allowedAspects[0]);
     }
   }, [model, aspectRatio]);
+
+  useEffect(() => {
+    const allowedResolutions = resolutionPresetsByModel[model] ?? ["720p"];
+    if (!allowedResolutions.includes(resolution)) {
+      setResolution(allowedResolutions.includes("720p") ? "720p" : allowedResolutions[0]);
+    }
+  }, [model, resolution]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -149,6 +169,36 @@ export default function TextToVideoLeftPanel() {
                         )}
                       >
                         {length} 秒
+                      </Label>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-sm mb-2">Video Resolution</div>
+              <RadioGroup
+                value={resolution}
+                onValueChange={(value) => setResolution(value as VideoResolutionValue)}
+                className="flex gap-2"
+              >
+                {(resolutionPresetsByModel[model] ?? ["720p"]).map((item) => {
+                  const id = `video-resolution-${item}`;
+                  const isActive = resolution === item;
+                  return (
+                    <div key={item} className="flex-1 basis-0">
+                      <RadioGroupItem value={item} id={id} className="sr-only" />
+                      <Label
+                        htmlFor={id}
+                        className={cn(
+                          "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all",
+                          isActive
+                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                            : "bg-white/8 text-white/70 hover:bg-white/12"
+                        )}
+                      >
+                        {item}
                       </Label>
                     </div>
                   );
