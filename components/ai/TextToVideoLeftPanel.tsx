@@ -33,7 +33,6 @@ const aspectIconWidthMap: Record<AspectRatio, string> = {
 };
 
 const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
-  "Minimax Hailuo 2.0": ["6", "10"],
   "PixVerse V5": ["5", "8"],
   "Seedance 1.0 Lite": ["5", "10"],
   "Seedance 1.0 Pro": ["5", "10"],
@@ -41,30 +40,55 @@ const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
 };
 
 const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
-  "Minimax Hailuo 2.0": ["480p", "720p", "768p", "1080p"],
+  "Minimax Hailuo 2.0": ["768p", "1080p"],
   "PixVerse V5": ["360p", "540p", "720p", "1080p"],
   "Seedance 1.0 Lite": ["480p", "720p", "1080p"],
   "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
   "wan2.2 Plus": ["480p", "580p", "720p"],
 };
 
+const getAllowedVideoLengths = (
+  model: string,
+  resolution: VideoResolutionValue
+): VideoLengthValue[] => {
+  if (model === "Minimax Hailuo 2.0") {
+    if (resolution === "1080p") {
+      return ["6"];
+    }
+
+    if (resolution === "768p") {
+      return ["6", "10"];
+    }
+
+    return ["6"];
+  }
+
+  return lengthPresetsByModel[model] ?? ["5", "10"];
+};
+
+const defaultModel = "Minimax Hailuo 2.0";
+const defaultResolution = (resolutionPresetsByModel[defaultModel] ?? ["720p"])[0];
+const defaultVideoLength = getAllowedVideoLengths(defaultModel, defaultResolution)[0];
+
 export default function TextToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [model, setModel] = useState("Minimax Hailuo 2.0");
-  const [videoLength, setVideoLength] = useState<VideoLengthValue>("6");
+  const [model, setModel] = useState(defaultModel);
+  const [videoLength, setVideoLength] = useState<VideoLengthValue>(defaultVideoLength);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
-  const [resolution, setResolution] = useState<VideoResolutionValue>(
-    (resolutionPresetsByModel["Minimax Hailuo 2.0"] ?? ["720p"])[0]
-  );
+  const [resolution, setResolution] = useState<VideoResolutionValue>(defaultResolution);
 
   useEffect(() => {
-    const allowed = lengthPresetsByModel[model] ?? ["5", "10"];
+    if (!resolution) {
+      return;
+    }
+
+    const allowed = getAllowedVideoLengths(model, resolution);
 
     if (!allowed.includes(videoLength)) {
       setVideoLength(allowed[0]);
     }
-  }, [model, videoLength]);
+  }, [model, resolution, videoLength]);
 
   useEffect(() => {
     const allowedAspects = aspectPresetsByModel[model];
@@ -74,11 +98,19 @@ export default function TextToVideoLeftPanel() {
   }, [model, aspectRatio]);
 
   useEffect(() => {
-    const allowedResolutions = resolutionPresetsByModel[model] ?? ["720p"];
+    const allowedResolutions = resolutionPresetsByModel[model];
+    if (!allowedResolutions || allowedResolutions.length === 0) {
+      return;
+    }
+
     if (!allowedResolutions.includes(resolution)) {
-      setResolution(allowedResolutions.includes("720p") ? "720p" : allowedResolutions[0]);
+      setResolution(allowedResolutions[0]);
     }
   }, [model, resolution]);
+
+  const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
+  const isSingleVideoLength = allowedVideoLengths.length === 1;
+  const resolutionOptions = resolutionPresetsByModel[model];
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -145,26 +177,64 @@ export default function TextToVideoLeftPanel() {
               </div>
             </div>
 
+            {resolutionOptions && resolutionOptions.length > 0 ? (
+              <div className="mt-4">
+                <div className="text-sm mb-2">Video Resolution</div>
+                <RadioGroup
+                  value={resolution}
+                  onValueChange={(value) => setResolution(value as VideoResolutionValue)}
+                  className="flex gap-2"
+                >
+                  {resolutionOptions.map((item) => {
+                    const id = `video-resolution-${item}`;
+                    const isActive = resolution === item;
+                    return (
+                      <div key={item} className="flex-1 basis-0">
+                        <RadioGroupItem value={item} id={id} className="sr-only" />
+                        <Label
+                          htmlFor={id}
+                          className={cn(
+                            "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all",
+                            isActive
+                              ? "bg-[#dc2e5a] text-white shadow-[0_0_12px_rgba(220,46,90,0.35)] border-[#dc2e5a]"
+                              : "bg-white/8 text-white/70 hover:bg-white/12"
+                          )}
+                        >
+                          {item}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+            ) : null}
+
             {/* 视频时长选择 */}
             <div className="mt-4">
               <div className="text-sm mb-2">Video Length</div>
               <RadioGroup
                 value={videoLength}
                 onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
-                className="flex gap-2"
+                className={cn("flex gap-2", isSingleVideoLength && "justify-start")}
               >
-                {(lengthPresetsByModel[model] ?? ["5", "10"]).map((length) => {
+                {allowedVideoLengths.map((length) => {
                   const id = `video-length-${length}`;
                   const isActive = videoLength === length;
                   return (
-                    <div key={length} className="flex-1 basis-0">
+                    <div
+                      key={length}
+                      className={cn(
+                        "flex-1 basis-0",
+                        "flex"
+                      )}
+                    >
                       <RadioGroupItem value={length} id={id} className="sr-only" />
                       <Label
                         htmlFor={id}
                         className={cn(
-                          "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all",
+                          "flex cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all justify-center w-full",
                           isActive
-                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                            ? "bg-[#dc2e5a] text-white shadow-[0_0_12px_rgba(220,46,90,0.35)] border-[#dc2e5a]"
                             : "bg-white/8 text-white/70 hover:bg-white/12"
                         )}
                       >
@@ -173,36 +243,9 @@ export default function TextToVideoLeftPanel() {
                     </div>
                   );
                 })}
-              </RadioGroup>
-            </div>
-
-            <div className="mt-4">
-              <div className="text-sm mb-2">Video Resolution</div>
-              <RadioGroup
-                value={resolution}
-                onValueChange={(value) => setResolution(value as VideoResolutionValue)}
-                className="flex gap-2"
-              >
-                {(resolutionPresetsByModel[model] ?? ["720p"]).map((item) => {
-                  const id = `video-resolution-${item}`;
-                  const isActive = resolution === item;
-                  return (
-                    <div key={item} className="flex-1 basis-0">
-                      <RadioGroupItem value={item} id={id} className="sr-only" />
-                      <Label
-                        htmlFor={id}
-                        className={cn(
-                          "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all",
-                          isActive
-                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
-                            : "bg-white/8 text-white/70 hover:bg-white/12"
-                        )}
-                      >
-                        {item}
-                      </Label>
-                    </div>
-                  );
-                })}
+                {isSingleVideoLength ? (
+                  <div className="flex-1 basis-0 invisible pointer-events-none" aria-hidden="true" />
+                ) : null}
               </RadioGroup>
             </div>
 
@@ -226,20 +269,24 @@ export default function TextToVideoLeftPanel() {
                         <Label
                           htmlFor={ratioId}
                           className={cn(
-                            "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-2 py-1.5 flex-col items-center gap-1 transition-all",
-                            isActive
-                              ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
-                              : "bg-white/8 text-white/70 hover:bg-white/12"
+                            "flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-2 py-1.5 flex-col items-center gap-1 transition-all bg-white/8 text-white/70 hover:bg-white/12"
                           )}
                         >
                           <span
                             className={cn(
                               "block h-6 rounded-md transition-colors",
                               aspectIconWidthMap[ratio],
-                              isActive ? "bg-pink-400" : "bg-white/20"
+                              isActive ? "bg-[#dc2e5a]" : "bg-white/20"
                             )}
                           />
-                          <span className="text-[10px] font-semibold tracking-wide">{ratio}</span>
+                          <span
+                            className={cn(
+                              "text-[10px] font-semibold tracking-wide transition-colors",
+                              isActive ? "text-white" : "text-white/70"
+                            )}
+                          >
+                            {ratio}
+                          </span>
                         </Label>
                       </div>
                     );
@@ -267,7 +314,14 @@ export default function TextToVideoLeftPanel() {
             <div>4 Credits</div>
           </div>
         </div>
-        <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
+        <Button
+          className={cn(
+            "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
+            prompt.trim() &&
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+          )}
+          disabled={!prompt.trim()}
+        >
           创建
         </Button>
         <div className="mt-6 border-t border-white/10 -mx-4 md:-mx-6" />

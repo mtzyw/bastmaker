@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
 import { Coins, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -129,7 +130,11 @@ export default function ImageToImageLeftPanel({
           </div>
         </div>
         <Button
-          className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90"
+          className={cn(
+            "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
+            prompt.trim() &&
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+          )}
           disabled={!prompt.trim()}
         >
           <Sparkles className="w-4 h-4 mr-2" />

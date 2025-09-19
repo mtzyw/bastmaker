@@ -10,59 +10,99 @@ import { Label } from "@/components/ui/label";
 import { Coins, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
+import { cn } from "@/lib/utils";
 
-type VideoLengthValue = "5" | "6" | "10";
+type VideoLengthValue = "5" | "6" | "8" | "10";
 type VideoResolutionValue = "360p" | "480p" | "540p" | "580p" | "720p" | "768p" | "1080p";
 
+const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
+  "PixVerse V5": ["5", "8"],
+  "Seedance 1.0 Lite": ["5", "10"],
+  "Seedance 1.0 Pro": ["5", "10"],
+  "wan2.2 Plus": ["5", "10"],
+};
+
 const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
-  "Minimax Hailuo 2.0": ["480p", "720p", "768p", "1080p"],
+  "Minimax Hailuo 2.0": ["768p", "1080p"],
   "Kling v2.1 Master": ["720p", "1080p"],
-  Seedance: ["480p", "720p", "1080p"],
+  "Seedance 1.0 Lite": ["480p", "720p", "1080p"],
+  "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
+  "wan2.2 Plus": ["480p", "580p", "720p"],
   "PixVerse V5": ["360p", "540p", "720p", "1080p"],
 };
+
+const getAllowedVideoLengths = (
+  model: string,
+  resolution: VideoResolutionValue
+): VideoLengthValue[] => {
+  if (model === "Minimax Hailuo 2.0") {
+    if (resolution === "1080p") {
+      return ["6"];
+    }
+
+    if (resolution === "768p") {
+      return ["6", "10"];
+    }
+
+    return ["6"];
+  }
+
+  return lengthPresetsByModel[model] ?? ["5", "10"];
+};
+
+const defaultModel = "Minimax Hailuo 2.0";
+const defaultResolution = (resolutionPresetsByModel[defaultModel] ?? ["720p"])[0];
+const defaultVideoLength = getAllowedVideoLengths(defaultModel, defaultResolution)[0];
 
 export default function ImageToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [model, setModel] = useState("Minimax Hailuo 2.0");
-  const [videoLength, setVideoLength] = useState<VideoLengthValue>("6");
-  const [resolution, setResolution] = useState<VideoResolutionValue>(
-    (resolutionPresetsByModel["Minimax Hailuo 2.0"] ?? ["720p"])[0]
-  );
+  const [model, setModel] = useState(defaultModel);
+  const [videoLength, setVideoLength] = useState<VideoLengthValue>(defaultVideoLength);
+  const [resolution, setResolution] = useState<VideoResolutionValue>(defaultResolution);
   const [imageName, setImageName] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<{ file: File; url: string } | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropSource, setCropSource] = useState<{ src: string; fileName: string; fileType: string } | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadedBlobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const nextAllowed: VideoLengthValue[] =
-      model === "Minimax Hailuo 2.0" ? ["6"] : ["5", "10"];
-
-    if (!nextAllowed.includes(videoLength)) {
-      setVideoLength(nextAllowed[0]);
+    if (!resolution) {
+      return;
     }
-  }, [model, videoLength]);
+
+    const allowed = getAllowedVideoLengths(model, resolution);
+
+    if (!allowed.includes(videoLength)) {
+      setVideoLength(allowed[0]);
+    }
+  }, [model, resolution, videoLength]);
 
   useEffect(() => {
     const allowedResolutions = resolutionPresetsByModel[model] ?? ["720p"];
     if (!allowedResolutions.includes(resolution)) {
-      setResolution(allowedResolutions.includes("720p") ? "720p" : allowedResolutions[0]);
+      setResolution(allowedResolutions[0]);
     }
   }, [model, resolution]);
 
-  useEffect(() => {
-    return () => {
-      if (uploadedImage?.url) URL.revokeObjectURL(uploadedImage.url);
-    };
-  }, [uploadedImage?.url]);
+  const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
+  const isSingleVideoLength = allowedVideoLengths.length === 1;
 
   useEffect(() => {
     return () => {
       if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
     };
   }, [cropSource?.src]);
+
+  useEffect(() => {
+    return () => {
+      if (uploadedBlobUrlRef.current) {
+        URL.revokeObjectURL(uploadedBlobUrlRef.current);
+      }
+    };
+  }, []);
 
   const openCropperWithFile = (file: File) => {
     const nextUrl = URL.createObjectURL(file);
@@ -91,14 +131,29 @@ export default function ImageToVideoLeftPanel() {
     const fileType = cropSource?.fileType ?? blob.type ?? "image/png";
     const croppedFile = new File([blob], fileName, { type: fileType });
 
-    if (uploadedImage?.url) URL.revokeObjectURL(uploadedImage.url);
+    if (uploadedBlobUrlRef.current) {
+      URL.revokeObjectURL(uploadedBlobUrlRef.current);
+      uploadedBlobUrlRef.current = null;
+    }
 
     const previewUrl = dataUrl || URL.createObjectURL(blob);
+    uploadedBlobUrlRef.current = previewUrl.startsWith("blob:") ? previewUrl : null;
     setUploadedImage({ file: croppedFile, url: previewUrl });
+    setOriginalFile(croppedFile);
     setImageName(fileName);
     setCropperOpen(false);
     if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
     setCropSource(null);
+  };
+
+  const resetImageSelection = () => {
+    if (uploadedBlobUrlRef.current) {
+      URL.revokeObjectURL(uploadedBlobUrlRef.current);
+      uploadedBlobUrlRef.current = null;
+    }
+    setUploadedImage(null);
+    setImageName(null);
+    setOriginalFile(null);
   };
 
   return (
@@ -123,7 +178,9 @@ export default function ImageToVideoLeftPanel() {
                 <SelectContent>
                   <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
                   <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
-                  <SelectItem value="Seedance">Seedance</SelectItem>
+                  <SelectItem value="Seedance 1.0 Lite">Seedance 1.0 Lite</SelectItem>
+                  <SelectItem value="Seedance 1.0 Pro">Seedance 1.0 Pro</SelectItem>
+                  <SelectItem value="wan2.2 Plus">wan2.2 Plus</SelectItem>
                   <SelectItem value="PixVerse V5">PixVerse V5</SelectItem>
                 </SelectContent>
               </Select>
@@ -132,21 +189,41 @@ export default function ImageToVideoLeftPanel() {
             {/* Image upload */}
             <div className="mb-4">
               <div className="text-sm mb-2">参考图片</div>
-              <button
-                type="button"
-                onClick={() => imageInputRef.current?.click()}
-                className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
-              >
-                {uploadedImage ? (
-                  <img
-                    src={uploadedImage.url}
-                    alt="已选择的参考图"
-                    className="h-48 w-full object-cover"
-                  />
-                ) : (
-                  <div className="px-4 py-12 text-center text-xs text-white/60">Click to upload an image</div>
-                )}
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="group relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
+                >
+                  {uploadedImage ? (
+                    <img
+                      src={uploadedImage.url}
+                      alt="已选择的参考图"
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : (
+                    <div className="px-4 py-12 text-center text-xs text-white/60">Click to upload an image</div>
+                  )}
+
+                  {uploadedImage ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-b from-black/35 via-black/15 to-black/0 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="pointer-events-auto m-2 h-8 w-8 rounded-full bg-black/45 text-white shadow-lg hover:bg-black/60"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          resetImageSelection();
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </button>
+              </div>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/60">
                 <button type="button" onClick={() => imageInputRef.current?.click()} className="hover:text-white">
                   {uploadedImage ? "重新选择" : "选择图片"}
@@ -214,35 +291,6 @@ export default function ImageToVideoLeftPanel() {
             </div>
 
             <div className="mt-4">
-              <div className="text-sm mb-2">Video Length</div>
-              <RadioGroup
-                value={videoLength}
-                onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
-                className="flex gap-2"
-              >
-                {(model === "Minimax Hailuo 2.0" ? ["6"] : ["5", "10"]).map((length) => {
-                  const id = `image-video-length-${length}`;
-                  const isActive = videoLength === length;
-                  return (
-                    <div key={length} className="flex-1 basis-0">
-                      <RadioGroupItem value={length} id={id} className="sr-only" />
-                      <Label
-                        htmlFor={id}
-                        className={`flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all ${
-                          isActive
-                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
-                            : "bg-white/8 text-white/70 hover:bg-white/12"
-                        }`}
-                      >
-                        {length} 秒{model === "Minimax Hailuo 2.0" && length === "6" ? "（固定）" : ""}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </div>
-
-            <div className="mt-4">
               <div className="text-sm mb-2">Video Resolution</div>
               <RadioGroup
                 value={resolution}
@@ -259,7 +307,7 @@ export default function ImageToVideoLeftPanel() {
                         htmlFor={id}
                         className={`flex h-full w-full cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all ${
                           isActive
-                            ? "bg-pink-500/30 text-white shadow-[0_0_12px_rgba(236,72,153,0.25)] border-white/30"
+                            ? "bg-[#dc2e5a] text-white shadow-[0_0_12px_rgba(220,46,90,0.35)] border-[#dc2e5a]"
                             : "bg-white/8 text-white/70 hover:bg-white/12"
                         }`}
                       >
@@ -268,6 +316,45 @@ export default function ImageToVideoLeftPanel() {
                     </div>
                   );
                 })}
+              </RadioGroup>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-sm mb-2">Video Length</div>
+              <RadioGroup
+                value={videoLength}
+                onValueChange={(value) => setVideoLength(value as VideoLengthValue)}
+                className={cn("flex gap-2", isSingleVideoLength && "justify-start")}
+              >
+                {allowedVideoLengths.map((length) => {
+                  const id = `image-video-length-${length}`;
+                  const isActive = videoLength === length;
+                  return (
+                    <div
+                      key={length}
+                      className={cn(
+                        "flex-1 basis-0",
+                        "flex"
+                      )}
+                    >
+                      <RadioGroupItem value={length} id={id} className="sr-only" />
+                      <Label
+                        htmlFor={id}
+                        className={cn(
+                          "flex cursor-pointer select-none rounded-lg border border-white/10 px-3 py-2 text-sm text-center transition-all justify-center w-full",
+                          isActive
+                            ? "bg-[#dc2e5a] text-white shadow-[0_0_12px_rgba(220,46,90,0.35)] border-[#dc2e5a]"
+                            : "bg-white/8 text-white/70 hover:bg-white/12"
+                        )}
+                      >
+                        {length} 秒
+                      </Label>
+                    </div>
+                  );
+                })}
+                {isSingleVideoLength ? (
+                  <div className="flex-1 basis-0 invisible pointer-events-none" aria-hidden="true" />
+                ) : null}
               </RadioGroup>
             </div>
 
@@ -288,7 +375,14 @@ export default function ImageToVideoLeftPanel() {
             <div>4 Credits</div>
           </div>
         </div>
-        <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-600/90 hover:to-blue-600/90" disabled={!prompt.trim()}>
+        <Button
+          className={cn(
+            "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
+            prompt.trim() &&
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+          )}
+          disabled={!prompt.trim()}
+        >
           <Sparkles className="w-4 h-4 mr-2" />
           创建
         </Button>
