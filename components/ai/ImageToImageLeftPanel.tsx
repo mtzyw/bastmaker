@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
-import { Coins, Sparkles } from "lucide-react";
+import { Coins, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_MAX = 8;
@@ -94,22 +94,28 @@ export default function ImageToImageLeftPanel({
               <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
             </div>
           </div>
-          <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
-            <div className="p-3">
+          <div className="rounded-xl bg-white/8 border border-white/10">
+            <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="What do you want to create?"
-                className="min-h-[180px] resize-none bg-transparent text-white placeholder:text-white/50"
+                className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={2000}
               />
             </div>
-            <div className="flex items-center justify-between px-3 pb-3 text-xs text-white/70">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
+            <div className="h-px bg-white/10 mx-3 mt-2" />
+            <div className="flex items-center justify-between px-3 py-3">
+              <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
+                <Wand2 className="w-3.5 h-3.5 mr-2" />
                 Generate with AI
+              </Button>
+              <div className="flex items-center gap-3 text-[11px] text-white/60">
+                <span>{prompt.length} / 2000</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
               </div>
-              <div>{prompt.length} / 2000</div>
             </div>
           </div>
 
@@ -119,6 +125,7 @@ export default function ImageToImageLeftPanel({
 
       {/* Fixed bottom area: Output + Create */}
       <div className="pt-2 pb-5 shrink-0">
+        <div className="mb-3 border-t border-white/10 -mx-4" />
         <div className="mb-3">
           <div className="mb-2 text-sm">Output Image Number</div>
           <div className="flex items-center justify-between text-sm text-white/80">

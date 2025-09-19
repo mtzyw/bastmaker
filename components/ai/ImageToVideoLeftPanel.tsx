@@ -157,8 +157,8 @@ export default function ImageToVideoLeftPanel() {
 
   return (
     <div className="w-full h-full text-white flex flex-col">
-      <ScrollArea className="flex-1 min-h-0 -mr-4 md:-mr-6">
-        <div className="px-4 md:px-6 pt-3 pb-6">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="pr-1 pt-3 pb-6">
           <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">图转视频</h1>
 
           {/* Model label + select */}
@@ -191,7 +191,7 @@ export default function ImageToVideoLeftPanel() {
               <button
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
-                className="group relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
+                className="group relative flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
               >
                 {uploadedImage ? (
                   <img
@@ -200,7 +200,7 @@ export default function ImageToVideoLeftPanel() {
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <div className="px-4 py-12 text-center text-xs text-white/60">Click to upload an image</div>
+                  <div className="px-4 py-8 text-center text-xs text-white/60">Click to upload an image</div>
                 )}
 
                 {uploadedImage ? (
