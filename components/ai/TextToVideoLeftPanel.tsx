@@ -282,8 +282,7 @@ export default function TextToVideoLeftPanel() {
       </ScrollArea>
 
       {/* 固定底部：Output + Create，与 text-to-image 一致 */}
-      <div className="pt-2 pb-6 px-4 md:px-6 shrink-0">
-        <div className="mb-3 border-t border-white/10" />
+      <div className="pt-2 pb-0 shrink-0 border-t border-white/10">
         <div className="mb-3">
           <div className="mb-2 text-sm">Output Image Number</div>
           <div className="flex items-center justify-between text-sm text-white/80">
