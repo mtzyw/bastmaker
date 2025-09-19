@@ -1,4 +1,5 @@
 import Footer from "@/components/footer/Footer";
+import { cn } from "@/lib/utils";
 import { AISidebar } from "../../ai-sidebar/components/ai-sidebar";
 import React from "react";
 
@@ -35,6 +36,7 @@ export default function PureFourSections({
   withSidebar = true,
   section2Left,
   section2Right,
+  lockSection2Height = true,
 }: {
   leftWidth?: WidthPreset;
   section2Split?: SplitPreset;
@@ -42,8 +44,15 @@ export default function PureFourSections({
   withSidebar?: boolean;
   section2Left?: React.ReactNode;
   section2Right?: React.ReactNode;
+  lockSection2Height?: boolean;
 }) {
   const [s1, s2, s3, s4] = sections;
+  const section2HeightClass = lockSection2Height
+    ? "h-[calc(100vh-4rem)]"
+    : "min-h-[calc(100vh-4rem)]";
+  const section2GridHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
+  const section2ColumnHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
+  const section2ColumnInnerHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
   return (
     <div className="relative w-full">
       {/* Desktop fixed left column (never moves) - only when embedded */}
@@ -74,12 +83,16 @@ export default function PureFourSections({
         )}
         <div className="w-full">
         {/* Section 2 split left/right (fixed viewport height below header) */}
-        <section className="w-full h-[calc(100vh-4rem)]">
-          <div className={`grid grid-cols-1 ${section2SplitClass(section2Split)} h-full min-h-0`}>
+        <section className={cn("w-full", section2HeightClass)}>
+          <div className={cn("grid grid-cols-1", section2SplitClass(section2Split), section2GridHeightClass)}>
             <div
-              className="h-full min-h-0 flex items-start header-bg text-white"
+              className={cn(section2ColumnHeightClass, "flex items-start header-bg text-white")}
             >
-              <div className="container mx-auto px-4 md:px-6 pt-4 w-full h-full min-h-0 flex flex-col md:border-r md:border-white/10">
+              <div className={cn(
+                "container mx-auto px-4 md:px-6 pt-4 w-full flex flex-col md:border-r md:border-white/10",
+                section2ColumnInnerHeightClass
+              )}
+              >
                 {section2Left ? (
                   section2Left
                 ) : (
@@ -91,9 +104,13 @@ export default function PureFourSections({
               </div>
             </div>
             <div
-              className="h-full min-h-0 flex items-center header-bg text-white"
+              className={cn(section2ColumnHeightClass, "flex items-center header-bg text-white")}
             >
-              <div className="container mx-auto px-4 md:px-8 w-full h-full min-h-0 flex flex-col">
+              <div className={cn(
+                "container mx-auto px-4 md:px-8 w-full flex flex-col",
+                section2ColumnInnerHeightClass
+              )}
+              >
                 <div className="flex-1 min-h-0">
                   {section2Right ? (
                     section2Right
