@@ -124,20 +124,20 @@ export default function ImageCropperDialog({ open, imageSrc, onConfirm, onCancel
 
   const zoomLabel = useMemo(() => `${zoom.toFixed(2)}x`, [zoom]);
   const confirmDisabled = isProcessing || !imageSrc || !croppedAreaPixels;
-  const containerStyle: CSSProperties = useMemo(
-    () => ({ aspectRatio: imageAspect ?? effectiveAspect ?? DEFAULT_ASPECT, width: "100%" }),
-    [effectiveAspect, imageAspect]
-  );
+  const containerStyle: CSSProperties = useMemo(() => {
+    const aspect = imageAspect ?? effectiveAspect ?? DEFAULT_ASPECT;
+    return { aspectRatio: aspect, width: "100%", maxHeight: 360 };
+  }, [effectiveAspect, imageAspect]);
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
-      <DialogContent className="w-[min(80vw,360px)] max-w-full bg-[#0f0f12] text-white border border-white/10 p-3">
+      <DialogContent className="w-full max-w-[480px] bg-[#0f0f12] text-white border border-white/10 p-4">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">编辑上传的图片</DialogTitle>
         </DialogHeader>
 
         <div className="mt-2 space-y-3" onWheel={handleWheel}>
-          <div className="relative w-full overflow-hidden rounded-xl bg-black/80 select-none" style={containerStyle}>
+          <div className="relative w-full overflow-hidden rounded-xl bg-white/10 select-none" style={containerStyle}>
             {imageSrc ? (
               <Cropper
                 key={String(effectiveAspect)}
