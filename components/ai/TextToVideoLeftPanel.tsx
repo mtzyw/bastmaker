@@ -4,30 +4,23 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-
+import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import {
+  AspectRatio,
+  DEFAULT_VIDEO_LENGTH,
+  DEFAULT_VIDEO_MODEL,
+  DEFAULT_VIDEO_RESOLUTION,
+  VIDEO_ASPECT_PRESETS,
+  VIDEO_MODEL_SELECT_OPTIONS,
+  VIDEO_RESOLUTION_PRESETS,
+  VideoLengthValue,
+  VideoResolutionValue,
+  getAllowedVideoLengths,
+} from "@/components/ai/video-models";
 // Adapted from text-to-image-generator UI for use in Section 2 Left (dark bg)
-type VideoLengthValue = "5" | "6" | "8" | "10";
-type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
-type VideoResolutionValue = "360p" | "480p" | "540p" | "580p" | "720p" | "768p" | "1080p";
-
-const aspectPresetsByModel: Record<string, AspectRatio[]> = {
-  "Seedance 1.0 Lite": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Seedance 1.0 Pro": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling v2.1 Master": ["1:1", "16:9", "9:16"],
-  "wan2.2 Plus": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Std v2.1": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling v2": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Elements Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Elements Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "PixVerse V5": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-};
-
 const aspectIconWidthMap: Record<AspectRatio, string> = {
   "16:9": "w-9",
   "9:16": "w-5",
@@ -36,63 +29,22 @@ const aspectIconWidthMap: Record<AspectRatio, string> = {
   "3:4": "w-6",
 };
 
-const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
-  "PixVerse V5": ["5", "8"],
-  "Seedance 1.0 Lite": ["5", "10"],
-  "Seedance 1.0 Pro": ["5", "10"],
-  "wan2.2 Plus": ["5", "10"],
-  "Kling Std v2.1": ["5", "8"],
-  "Kling v2": ["5", "8"],
-  "Kling Pro 1.6": ["5", "8"],
-  "Kling Std 1.6": ["5", "8"],
-  "Kling Elements Pro 1.6": ["5", "8"],
-  "Kling Elements Std 1.6": ["5", "8"],
-};
-
-const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
-  "Minimax Hailuo 2.0": ["768p", "1080p"],
-  "PixVerse V5": ["360p", "540p", "720p", "1080p"],
-  "Seedance 1.0 Lite": ["480p", "720p", "1080p"],
-  "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
-  "wan2.2 Plus": ["480p", "580p", "720p"],
-  "Kling Std v2.1": ["360p", "540p", "720p", "1080p"],
-  "Kling v2": ["360p", "540p", "720p", "1080p"],
-  "Kling Pro 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Std 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Elements Pro 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Elements Std 1.6": ["360p", "540p", "720p", "1080p"],
-};
-
-const getAllowedVideoLengths = (
-  model: string,
-  resolution: VideoResolutionValue
-): VideoLengthValue[] => {
-  if (model === "Minimax Hailuo 2.0") {
-    if (resolution === "1080p") {
-      return ["6"];
-    }
-
-    if (resolution === "768p") {
-      return ["6", "10"];
-    }
-
-    return ["6"];
-  }
-
-  return lengthPresetsByModel[model] ?? ["5", "10"];
-};
-
-const defaultModel = "Minimax Hailuo 2.0";
-const defaultResolution = (resolutionPresetsByModel[defaultModel] ?? ["720p"])[0];
-const defaultVideoLength = getAllowedVideoLengths(defaultModel, defaultResolution)[0];
+const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
+const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
 
 export default function TextToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [model, setModel] = useState(defaultModel);
-  const [videoLength, setVideoLength] = useState<VideoLengthValue>(defaultVideoLength);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
-  const [resolution, setResolution] = useState<VideoResolutionValue>(defaultResolution);
+  const [model, setModel] = useState(DEFAULT_VIDEO_MODEL);
+  const [videoLength, setVideoLength] = useState<VideoLengthValue>(DEFAULT_VIDEO_LENGTH);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => {
+    const allowed = VIDEO_ASPECT_PRESETS[DEFAULT_VIDEO_MODEL];
+    if (allowed?.includes(FALLBACK_ASPECT_RATIO)) {
+      return FALLBACK_ASPECT_RATIO;
+    }
+    return allowed?.[0] ?? FALLBACK_ASPECT_RATIO;
+  });
+  const [resolution, setResolution] = useState<VideoResolutionValue>(DEFAULT_VIDEO_RESOLUTION);
 
   useEffect(() => {
     if (!resolution) {
@@ -107,18 +59,16 @@ export default function TextToVideoLeftPanel() {
   }, [model, resolution, videoLength]);
 
   useEffect(() => {
-    const allowedAspects = aspectPresetsByModel[model];
-    if (allowedAspects && !allowedAspects.includes(aspectRatio)) {
-      setAspectRatio(allowedAspects.includes("16:9") ? "16:9" : allowedAspects[0]);
+    const allowedAspects = VIDEO_ASPECT_PRESETS[model] ?? [FALLBACK_ASPECT_RATIO];
+    if (!allowedAspects.includes(aspectRatio)) {
+      setAspectRatio(allowedAspects.includes(FALLBACK_ASPECT_RATIO)
+        ? FALLBACK_ASPECT_RATIO
+        : allowedAspects[0]);
     }
   }, [model, aspectRatio]);
 
   useEffect(() => {
-    const allowedResolutions = resolutionPresetsByModel[model];
-    if (!allowedResolutions || allowedResolutions.length === 0) {
-      return;
-    }
-
+    const allowedResolutions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
     if (!allowedResolutions.includes(resolution)) {
       setResolution(allowedResolutions[0]);
     }
@@ -126,7 +76,8 @@ export default function TextToVideoLeftPanel() {
 
   const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
-  const resolutionOptions = resolutionPresetsByModel[model];
+  const resolutionOptions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
+  const aspectOptions = VIDEO_ASPECT_PRESETS[model] ?? [FALLBACK_ASPECT_RATIO];
 
   return (
     <div className="w-full h-full text-white flex flex-col">
@@ -135,30 +86,11 @@ export default function TextToVideoLeftPanel() {
           <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">文字转视频</h1>
           <div className="mb-2 text-sm">Model</div>
           <div className="mb-4">
-            <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-white text-[10px] leading-none font-bold">G</span>
-                  </div>
-                  <SelectValue placeholder="选择模型" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
-                <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
-                <SelectItem value="Kling Std v2.1">Kling Std v2.1</SelectItem>
-                <SelectItem value="Kling v2">Kling v2</SelectItem>
-                <SelectItem value="Kling Pro 1.6">Kling Pro 1.6</SelectItem>
-                <SelectItem value="Kling Std 1.6">Kling Std 1.6</SelectItem>
-                <SelectItem value="Kling Elements Pro 1.6">Kling Elements Pro 1.6</SelectItem>
-                <SelectItem value="Kling Elements Std 1.6">Kling Elements Std 1.6</SelectItem>
-                <SelectItem value="Seedance 1.0 Lite">Seedance 1.0 Lite</SelectItem>
-                <SelectItem value="Seedance 1.0 Pro">Seedance 1.0 Pro</SelectItem>
-                <SelectItem value="wan2.2 Plus">wan2.2 Plus</SelectItem>
-                <SelectItem value="PixVerse V5">PixVerse V5</SelectItem>
-              </SelectContent>
-            </Select>
+            <AIModelDropdown
+              options={VIDEO_MODEL_SELECT_OPTIONS}
+              value={model}
+              onChange={setModel}
+            />
           </div>
 
           <div className="flex items-center justify-between mt-3 mb-2">
@@ -256,14 +188,14 @@ export default function TextToVideoLeftPanel() {
             </div>
           </div>
 
-          {aspectPresetsByModel[model] && (
+          {aspectOptions && aspectOptions.length > 0 && (
             <div className="mt-5">
               <div className="mb-2">
                 <div className="text-sm font-medium text-white">Aspect Ratio</div>
                 <p className="text-xs text-white/60">Choose the appropriate aspect ratio.</p>
               </div>
               <div role="radiogroup" aria-label="Aspect Ratio" className="flex gap-2">
-                {aspectPresetsByModel[model]!.map((ratio) => {
+                {aspectOptions.map((ratio) => {
                   const isActive = aspectRatio === ratio;
                   return (
                     <div key={ratio} className="flex-1 basis-0">
