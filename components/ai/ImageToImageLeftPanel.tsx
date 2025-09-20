@@ -124,27 +124,29 @@ export default function ImageToImageLeftPanel({
       </ScrollArea>
 
       {/* 固定底部：Output + 创建按钮，与文字转图片保持一致 */}
-      <div className="pt-2 pb-0 shrink-0 border-t border-white/10">
-        <div className="mb-3">
-          <div className="mb-2 text-sm">Output Image Number</div>
-          <div className="flex items-center justify-between text-sm text-white/80">
-            <div className="flex items-center gap-2">
-              <Coins className="w-4 h-4 text-pink-400" />
-              Credits required:
+      <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
+        <div className="px-4 md:px-6">
+          <div className="mb-3">
+            <div className="mb-2 text-sm">Output Image Number</div>
+            <div className="flex items-center justify-between text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-pink-400" />
+                Credits required:
+              </div>
+              <div>4 Credits</div>
             </div>
-            <div>4 Credits</div>
           </div>
+          <Button
+            className={cn(
+              "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
+              prompt.trim() &&
+                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+            )}
+            disabled={!prompt.trim()}
+          >
+            创建
+          </Button>
         </div>
-        <Button
-          className={cn(
-            "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
-            prompt.trim() &&
-              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
-          )}
-          disabled={!prompt.trim()}
-        >
-          创建
-        </Button>
         <div className="mt-6 border-t border-white/10" />
       </div>
     </div>
