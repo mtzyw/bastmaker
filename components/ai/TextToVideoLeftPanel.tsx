@@ -19,6 +19,12 @@ const aspectPresetsByModel: Record<string, AspectRatio[]> = {
   "Seedance 1.0 Pro": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "Kling v2.1 Master": ["1:1", "16:9", "9:16"],
   "wan2.2 Plus": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling Std v2.1": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling v2": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling Elements Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "Kling Elements Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "PixVerse V5": ["16:9", "9:16", "1:1", "4:3", "3:4"],
 };
 
@@ -35,6 +41,12 @@ const lengthPresetsByModel: Record<string, VideoLengthValue[]> = {
   "Seedance 1.0 Lite": ["5", "10"],
   "Seedance 1.0 Pro": ["5", "10"],
   "wan2.2 Plus": ["5", "10"],
+  "Kling Std v2.1": ["5", "8"],
+  "Kling v2": ["5", "8"],
+  "Kling Pro 1.6": ["5", "8"],
+  "Kling Std 1.6": ["5", "8"],
+  "Kling Elements Pro 1.6": ["5", "8"],
+  "Kling Elements Std 1.6": ["5", "8"],
 };
 
 const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
@@ -43,6 +55,12 @@ const resolutionPresetsByModel: Record<string, VideoResolutionValue[]> = {
   "Seedance 1.0 Lite": ["480p", "720p", "1080p"],
   "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
   "wan2.2 Plus": ["480p", "580p", "720p"],
+  "Kling Std v2.1": ["360p", "540p", "720p", "1080p"],
+  "Kling v2": ["360p", "540p", "720p", "1080p"],
+  "Kling Pro 1.6": ["360p", "540p", "720p", "1080p"],
+  "Kling Std 1.6": ["360p", "540p", "720p", "1080p"],
+  "Kling Elements Pro 1.6": ["360p", "540p", "720p", "1080p"],
+  "Kling Elements Std 1.6": ["360p", "540p", "720p", "1080p"],
 };
 
 const getAllowedVideoLengths = (
@@ -129,6 +147,12 @@ export default function TextToVideoLeftPanel() {
               <SelectContent>
                 <SelectItem value="Minimax Hailuo 2.0">Minimax Hailuo 2.0</SelectItem>
                 <SelectItem value="Kling v2.1 Master">Kling v2.1 Master</SelectItem>
+                <SelectItem value="Kling Std v2.1">Kling Std v2.1</SelectItem>
+                <SelectItem value="Kling v2">Kling v2</SelectItem>
+                <SelectItem value="Kling Pro 1.6">Kling Pro 1.6</SelectItem>
+                <SelectItem value="Kling Std 1.6">Kling Std 1.6</SelectItem>
+                <SelectItem value="Kling Elements Pro 1.6">Kling Elements Pro 1.6</SelectItem>
+                <SelectItem value="Kling Elements Std 1.6">Kling Elements Std 1.6</SelectItem>
                 <SelectItem value="Seedance 1.0 Lite">Seedance 1.0 Lite</SelectItem>
                 <SelectItem value="Seedance 1.0 Pro">Seedance 1.0 Pro</SelectItem>
                 <SelectItem value="wan2.2 Plus">wan2.2 Plus</SelectItem>
