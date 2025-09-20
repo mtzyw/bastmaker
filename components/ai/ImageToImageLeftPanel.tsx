@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
-import { Coins, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Coins, Trash2, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_MAX = 8;
@@ -123,9 +123,8 @@ export default function ImageToImageLeftPanel({
         </div>
       </ScrollArea>
 
-      {/* Fixed bottom area: Output + Create */}
-      <div className="pt-2 pb-5 shrink-0">
-        <div className="mb-3 border-t border-white/10 -mx-4" />
+      {/* 固定底部：Output + 创建按钮，与文字转图片保持一致 */}
+      <div className="pt-2 pb-0 shrink-0 border-t border-white/10">
         <div className="mb-3">
           <div className="mb-2 text-sm">Output Image Number</div>
           <div className="flex items-center justify-between text-sm text-white/80">
@@ -144,8 +143,7 @@ export default function ImageToImageLeftPanel({
           )}
           disabled={!prompt.trim()}
         >
-          <Sparkles className="w-4 h-4 mr-2" />
-          Create
+          创建
         </Button>
         <div className="mt-6 border-t border-white/10" />
       </div>
