@@ -112,8 +112,8 @@ export default function TextToVideoLeftPanel() {
 
   return (
     <div className="w-full h-full text-white flex flex-col">
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="pr-1 pt-3 pb-6">
+      <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
+        <div className="pt-3 pb-6 pr-1 md:pr-7">
           <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">文字转视频</h1>
           <div className="mb-2 text-sm">Model</div>
           <div className="mb-4">

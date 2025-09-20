@@ -45,8 +45,8 @@ export default function ImageToImageLeftPanel({
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="pr-1">
+      <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
+        <div className="pr-1 md:pr-7">
           {/* Title */}
           <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">Image to Image</h1>
 
