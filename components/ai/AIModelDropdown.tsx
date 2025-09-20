@@ -31,6 +31,17 @@ export function AIModelDropdown({
     () => options.find((option) => option.value === value) ?? options[0],
     [options, value]
   );
+  const selectedIcon = selectedOption?.icon;
+  const selectedHasImage = Boolean(selectedIcon?.src);
+  const selectedIconWrapperClass = selectedHasImage
+    ? cn(
+        "h-9 w-9 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10",
+        selectedIcon?.className,
+      )
+    : cn(
+        "h-10 w-10 rounded-full text-sm font-semibold",
+        selectedIcon?.className ?? DEFAULT_ICON_CLASS,
+      );
 
   const handleSelect = (nextValue: string) => {
     onChange(nextValue);
@@ -76,20 +87,14 @@ export function AIModelDropdown({
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-3 text-left">
-          <div
-            className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-full",
-              selectedOption?.icon?.src ? "bg-white/10" : "text-sm font-semibold",
-              selectedOption?.icon?.className,
-              !selectedOption?.icon?.src && !selectedOption?.icon?.className && DEFAULT_ICON_CLASS,
-            )}
-          >
-            {selectedOption?.icon?.src ? (
+          <div className={cn("flex items-center justify-center", selectedIconWrapperClass)}>
+            {selectedHasImage ? (
               <Image
                 src={selectedOption.icon.src}
                 alt={`${selectedOption.label} icon`}
                 width={28}
                 height={28}
+                className="h-full w-full object-cover"
               />
             ) : (
               selectedOption?.icon?.label ?? (selectedOption?.label?.[0] ?? "M")
@@ -127,6 +132,21 @@ export function AIModelDropdown({
           >
             {options.map((option) => {
               const isActive = option.value === (selectedOption?.value ?? value);
+              const optionIcon = option.icon;
+              const optionHasImage = Boolean(optionIcon?.src);
+              const optionIconWrapperClass = optionHasImage
+                ? cn(
+                    "mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/12 ring-1 ring-white/10 overflow-hidden",
+                    isActive ? "ring-2 ring-[#dc2e5a]/60 bg-[#dc2e5a]/20" : undefined,
+                    optionIcon?.className,
+                  )
+                : cn(
+                    "mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold",
+                    isActive
+                      ? "border-[#dc2e5a] bg-[#dc2e5a] text-white"
+                      : "border-white/30 text-white/70",
+                    optionIcon?.className ?? "",
+                  );
 
               return (
                 <button
@@ -142,21 +162,14 @@ export function AIModelDropdown({
                   role="option"
                   aria-selected={isActive}
                 >
-                  <span
-                    className={cn(
-                      "mt-1 inline-flex items-center justify-center rounded-full",
-                      option.icon?.src ? "h-6 w-6 bg-white/10" : "h-5 w-5 border text-[10px] font-semibold",
-                      isActive && !option.icon?.src && "border-[#dc2e5a] bg-[#dc2e5a] text-white",
-                      !isActive && !option.icon?.src && "border-white/30 text-white/70",
-                      option.icon?.src && (isActive ? "bg-[#dc2e5a]/20" : "bg-white/10"),
-                    )}
-                  >
-                    {option.icon?.src ? (
+                  <span className={optionIconWrapperClass}>
+                    {optionHasImage ? (
                       <Image
                         src={option.icon.src}
                         alt={`${option.label} icon`}
                         width={16}
                         height={16}
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       option.icon?.label ?? option.label[0]
