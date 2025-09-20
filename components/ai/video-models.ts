@@ -11,7 +11,8 @@ export type VideoResolutionValue =
 
 export type VideoModelIcon = {
   label: string;
-  className: string;
+  className?: string;
+  src?: string;
 };
 
 export type VideoModelOption = {
@@ -89,67 +90,72 @@ export function getAllowedVideoLengths(
   return VIDEO_LENGTH_PRESETS[model] ?? ["5", "10"];
 }
 
-export const DEFAULT_VIDEO_MODEL = "Minimax Hailuo 2.0";
+export const DEFAULT_VIDEO_MODEL = "Seedance 1.0 Pro";
 export const DEFAULT_VIDEO_RESOLUTION =
-  VIDEO_RESOLUTION_PRESETS[DEFAULT_VIDEO_MODEL]?.[0] ?? "720p";
+  VIDEO_RESOLUTION_PRESETS[DEFAULT_VIDEO_MODEL]?.find((value) => value === "720p") ??
+  VIDEO_RESOLUTION_PRESETS[DEFAULT_VIDEO_MODEL]?.[0] ??
+  "720p";
 export const DEFAULT_VIDEO_LENGTH = getAllowedVideoLengths(
   DEFAULT_VIDEO_MODEL,
   DEFAULT_VIDEO_RESOLUTION
 )[0];
 
-const klingIcon = "bg-cyan-500/80 text-white";
-const seedanceIcon = "bg-sky-500/80 text-white";
-const minimaxIcon = "bg-indigo-500/80 text-white";
-const pixverseIcon = "bg-fuchsia-500/80 text-white";
-const wanIcon = "bg-amber-500/80 text-white";
+const MODEL_ICON_PATHS = {
+  hailuo: "/images/modessvg/hailuo.jpg",
+  seedance: "/images/modessvg/seedance.jpg",
+  google: "/images/modessvg/google.jpg",
+  pixverse: "/images/modessvg/pixverse.jpg",
+  wan: "/images/modessvg/wan.jpg",
+  kling: "/images/modessvg/king.svg",
+} as const;
 
 export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
   {
-    value: "Minimax Hailuo 2.0",
-    label: "Minimax Hailuo 2.0",
-    icon: { label: "M", className: minimaxIcon },
-    fps: "24 FPS",
-    credits: 12,
-    description: "火山引擎视频生成模型",
-  },
-  {
     value: "Seedance 1.0 Pro",
     label: "Seedance 1.0 Pro",
-    icon: { label: "S", className: seedanceIcon },
+    icon: { label: "S", src: MODEL_ICON_PATHS.seedance },
     fps: "24 FPS",
     credits: 10,
     recommended: true,
     description: "高清人像与场景表现",
   },
   {
-    value: "Veo3 Fast Pro",
-    label: "Veo3 Fast Pro",
-    icon: { label: "V", className: "bg-blue-500/80 text-white" },
-    fps: "24 FPS",
-    credits: 100,
-    description: "Google Veo 快速版",
-  },
-  {
     value: "Seedance 1.0 Lite",
     label: "Seedance 1.0 Lite",
-    icon: { label: "S", className: seedanceIcon },
+    icon: { label: "S", src: MODEL_ICON_PATHS.seedance },
     fps: "24 FPS",
     credits: 10,
     description: "轻量人像生成",
   },
   {
+    value: "wan2.2 Plus",
+    label: "wan2.2 Plus",
+    icon: { label: "W", src: MODEL_ICON_PATHS.wan },
+    fps: "24 FPS",
+    credits: 12,
+    description: "高保真场景转换",
+  },
+  {
     value: "PixVerse V5",
     label: "PixVerse V5",
-    icon: { label: "P", className: pixverseIcon },
+    icon: { label: "P", src: MODEL_ICON_PATHS.pixverse },
     fps: "24 FPS",
     credits: 25,
     recommended: true,
     description: "高质量动态镜头",
   },
   {
+    value: "Minimax Hailuo 2.0",
+    label: "Minimax Hailuo 2.0",
+    icon: { label: "M", src: MODEL_ICON_PATHS.hailuo },
+    fps: "24 FPS",
+    credits: 12,
+    description: "火山引擎视频生成模型",
+  },
+  {
     value: "Kling v2.1 Master",
     label: "Kling v2.1 Master",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 100,
     description: "高精度场景重建",
@@ -157,52 +163,44 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
   {
     value: "Kling Std v2.1",
     label: "Kling Std v2.1",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 60,
   },
   {
     value: "Kling v2",
     label: "Kling v2",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 45,
   },
   {
     value: "Kling Pro 1.6",
     label: "Kling Pro 1.6",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 35,
   },
   {
     value: "Kling Std 1.6",
     label: "Kling Std 1.6",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 25,
   },
   {
     value: "Kling Elements Pro 1.6",
     label: "Kling Elements Pro 1.6",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 30,
   },
   {
     value: "Kling Elements Std 1.6",
     label: "Kling Elements Std 1.6",
-    icon: { label: "K", className: klingIcon },
+    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 18,
-  },
-  {
-    value: "wan2.2 Plus",
-    label: "wan2.2 Plus",
-    icon: { label: "W", className: wanIcon },
-    fps: "24 FPS",
-    credits: 12,
-    description: "高保真场景转换",
   },
 ];
 
@@ -217,17 +215,6 @@ function formatLengthTag(lengths?: VideoLengthValue[]): string | null {
   return `${unique[0]}-${unique[unique.length - 1]} sec`;
 }
 
-function formatResolutionTag(resolutions?: VideoResolutionValue[]): string | null {
-  if (!resolutions || resolutions.length === 0) {
-    return null;
-  }
-  const values = [...resolutions];
-  if (values.length === 1) {
-    return values[0];
-  }
-  return `${values[0]}-${values[values.length - 1]}`;
-}
-
 export const VIDEO_MODEL_SELECT_OPTIONS: VideoModelSelectOption[] = VIDEO_MODEL_OPTIONS.map(
   (option) => {
     const candidateResolutions =
@@ -236,10 +223,7 @@ export const VIDEO_MODEL_SELECT_OPTIONS: VideoModelSelectOption[] = VIDEO_MODEL_
       VIDEO_LENGTH_PRESETS[option.value] ??
       getAllowedVideoLengths(option.value, candidateResolutions[0]);
     const lengthTag = formatLengthTag(candidateLengths);
-    const resolutionTag = formatResolutionTag(
-      VIDEO_RESOLUTION_PRESETS[option.value]
-    );
-    const tags = [lengthTag, resolutionTag, option.fps].filter(Boolean) as string[];
+    const tags = [lengthTag].filter(Boolean) as string[];
     return {
       ...option,
       tags,
