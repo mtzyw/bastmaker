@@ -157,8 +157,8 @@ export default function ImageToVideoLeftPanel() {
 
   return (
     <div className="w-full h-full text-white flex flex-col">
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="pr-1 pt-3 pb-6">
+      <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
+        <div className="pr-1 pt-3 pb-6 md:pr-7">
           <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">图转视频</h1>
 
           {/* Model label + select */}
