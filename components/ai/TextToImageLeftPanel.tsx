@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatioSelector } from "@/components/ai/AspectRatioSelector";
 import { cn } from "@/lib/utils";
+import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import {
+  TEXT_TO_IMAGE_DEFAULT_MODEL,
+  TEXT_TO_IMAGE_MODEL_OPTIONS,
+} from "@/components/ai/text-image-models";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -22,25 +26,25 @@ export default function TextToImageLeftPanel({
 } = {}) {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [model, setModel] = useState(forcedModel ?? "Nano Banana Free");
+  const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState("1:1");
 
-  const allModels = [
-    "Nano Banana Free",
-    "Flux Dev",
-    "Hyperflux",
-    "Google Imagen4",
-    "Seedream 4",
-    "Seedream 4 Edit",
-  ];
-  const models = allModels.filter((m) => !(excludeModels ?? []).includes(m));
+  const availableOptions = useMemo(() => {
+    const excludeSet = new Set(excludeModels ?? []);
+    const filtered = TEXT_TO_IMAGE_MODEL_OPTIONS.filter((option) => !excludeSet.has(option.value));
+    return filtered.length > 0 ? filtered : TEXT_TO_IMAGE_MODEL_OPTIONS;
+  }, [excludeModels]);
 
-  // Ensure current model is valid if options are filtered
   useEffect(() => {
-    if (!models.includes(model)) {
-      setModel(models[0] ?? "Nano Banana Free");
+    const allowedValues = availableOptions.map((option) => option.value);
+    if (forcedModel && allowedValues.includes(forcedModel) && forcedModel !== model) {
+      setModel(forcedModel);
+      return;
     }
-  }, [models.join("|")]);
+    if (!allowedValues.includes(model)) {
+      setModel(allowedValues[0] ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
+    }
+  }, [availableOptions, forcedModel, model]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -56,23 +60,11 @@ export default function TextToImageLeftPanel({
             </div>
           ) : (
             <div className="mb-4">
-              <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                      <span className="text-white text-[10px] leading-none font-bold">G</span>
-                    </div>
-                    <SelectValue placeholder="选择模型" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {models.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <AIModelDropdown
+                options={availableOptions}
+                value={model}
+                onChange={setModel}
+              />
             </div>
           )}
 

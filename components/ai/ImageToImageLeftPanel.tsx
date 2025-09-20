@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
 import { Coins, Trash2, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import {
+  TEXT_TO_IMAGE_DEFAULT_MODEL,
+  TEXT_TO_IMAGE_MODEL_OPTIONS,
+} from "@/components/ai/text-image-models";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -24,22 +28,21 @@ export default function ImageToImageLeftPanel({
 }) {
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
-  const [model, setModel] = useState("Nano Banana Free");
+  const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [images, setImages] = useState<File[]>([]);
 
-  const allModels = [
-    "Nano Banana Free",
-    "Flux Dev",
-    "Hyperflux",
-    "Google Imagen4",
-    "Seedream 4",
-    "Seedream 4 Edit",
-  ];
-  const models = allModels.filter((m) => !(excludeModels ?? []).includes(m));
+  const availableOptions = useMemo(() => {
+    const excludeSet = new Set(excludeModels ?? []);
+    const filtered = TEXT_TO_IMAGE_MODEL_OPTIONS.filter((option) => !excludeSet.has(option.value));
+    return filtered.length > 0 ? filtered : TEXT_TO_IMAGE_MODEL_OPTIONS;
+  }, [excludeModels]);
+
   useEffect(() => {
-    if (!models.includes(model)) setModel(models[0] ?? "Nano Banana Free");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [models.join("|")]);
+    const allowedValues = availableOptions.map((option) => option.value);
+    if (!allowedValues.includes(model)) {
+      setModel(allowedValues[0] ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
+    }
+  }, [availableOptions, model]);
 
   const maxCount = getMaxCountByModel(model);
 
@@ -53,26 +56,11 @@ export default function ImageToImageLeftPanel({
           {/* Model */}
           <div className="mb-2 text-sm">Model</div>
           <div className="mb-6">
-            <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="h-11 bg-white/5 border-white/10 text-white">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-blue-500 flex items-center justify-center">
-                    <span className="text-white text-[10px] leading-none font-bold">G</span>
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <SelectValue placeholder="Select a model" />
-                    <span className="text-[11px] text-white/60">Ultra-high character consistency</span>
-                  </div>
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {models.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <AIModelDropdown
+              options={availableOptions}
+              value={model}
+              onChange={setModel}
+            />
           </div>
 
           {/* Images */}
