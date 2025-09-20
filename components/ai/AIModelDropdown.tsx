@@ -82,11 +82,11 @@ export function AIModelDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#1e1e24] p-4 transition-colors hover:bg-[#25262e]"
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#1e1e24] px-3 py-2.5 transition-colors hover:bg-[#25262e]"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-3 text-left">
+        <div className="flex items-center gap-2.5 text-left">
           <div className={cn("flex items-center justify-center", selectedIconWrapperClass)}>
             {selectedHasImage ? (
               <Image
@@ -100,19 +100,19 @@ export function AIModelDropdown({
               selectedOption?.icon?.label ?? (selectedOption?.label?.[0] ?? "M")
             )}
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-semibold leading-none">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold leading-tight">
                 {selectedOption?.label ?? "选择模型"}
               </span>
               {selectedOption?.recommended ? (
-                <span className="rounded-full bg-[#dc2e5a] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-[#dc2e5a] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                   推荐
                 </span>
               ) : null}
             </div>
             {selectedOption?.description ? (
-              <p className="text-xs text-white/70">{selectedOption.description}</p>
+              <p className="text-[11px] leading-tight text-white/70">{selectedOption.description}</p>
             ) : null}
           </div>
         </div>
@@ -127,7 +127,7 @@ export function AIModelDropdown({
       {isOpen ? (
         <div className="absolute left-0 top-full z-20 mt-2 w-full">
           <div
-            className="max-h-80 overflow-y-auto rounded-xl border border-white/10 bg-[#1e1e24] shadow-lg"
+            className="max-h-[420px] overflow-y-auto rounded-xl border border-white/10 bg-[#1e1e24] shadow-lg"
             role="listbox"
           >
             {options.map((option) => {
@@ -153,7 +153,7 @@ export function AIModelDropdown({
                   type="button"
                   key={option.value}
                   className={cn(
-                    "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors",
+                    "flex w-full items-start gap-2.5 px-3.5 py-2.5 text-left transition-colors",
                     isActive
                       ? "bg-[#dc2e5a]/30 border-l-2 border-l-[#dc2e5a]"
                       : "hover:bg-white/10",
@@ -177,23 +177,23 @@ export function AIModelDropdown({
                   </span>
 
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-medium leading-none text-white">{option.label}</p>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="text-[13px] font-medium leading-snug text-white">{option.label}</p>
                       {option.recommended ? (
-                        <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-medium text-white/80">
+                        <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-medium text-white/80">
                           推荐
                         </span>
                       ) : null}
                     </div>
                     {option.description ? (
-                      <p className="mt-1 text-xs text-white/60">{option.description}</p>
+                      <p className="mt-1 text-[11px] leading-tight text-white/60">{option.description}</p>
                     ) : null}
 
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       {option.tags?.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-medium tracking-wide text-white/70"
+                          className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-white/70"
                         >
                           {tag}
                         </span>
