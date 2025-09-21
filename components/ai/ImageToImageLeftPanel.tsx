@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,7 @@ import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
 import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
+  getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
 
 const DEFAULT_MAX = 8;
@@ -45,6 +46,22 @@ export default function ImageToImageLeftPanel({
   }, [availableOptions, model]);
 
   const maxCount = getMaxCountByModel(model);
+  const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
+
+  const handleCreate = useCallback(() => {
+    if (!prompt.trim()) {
+      return;
+    }
+
+    const payload = {
+      model: apiModel,
+      prompt: prompt.trim(),
+      translate_prompt: translatePrompt,
+      reference_image_count: images.length,
+    };
+
+    console.debug("[image-to-image] submit payload", payload);
+  }, [apiModel, images, prompt, translatePrompt]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -131,6 +148,7 @@ export default function ImageToImageLeftPanel({
                 "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
             )}
             disabled={!prompt.trim()}
+            onClick={handleCreate}
           >
             创建
           </Button>

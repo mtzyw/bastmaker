@@ -27,6 +27,8 @@ export type VideoModelOption = {
 
 export type VideoModelSelectOption = VideoModelOption & {
   tags: string[];
+  /** Optional后端标识，便于请求时做模型名称映射 */
+  apiValue?: string;
 };
 
 export const VIDEO_ASPECT_PRESETS: Record<string, AspectRatio[]> = {
