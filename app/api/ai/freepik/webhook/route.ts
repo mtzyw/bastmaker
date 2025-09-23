@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
   }
 
   const metadata = (job.metadata_json ?? {}) as Record<string, any>;
+  const outputType = metadata.source === "video" ? "video" : "image";
   const updatedMetadata = {
     ...metadata,
     freepik_latest_status: freepikStatus,
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
       .map((url, index) => ({
         job_id: job.id,
         index,
-        type: "image",
+        type: outputType,
         url,
       }));
 

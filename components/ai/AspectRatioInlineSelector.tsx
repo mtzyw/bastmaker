@@ -24,6 +24,7 @@ const WIDTH_MAP: Record<string, string> = {
   "2:1": "w-10",
   "4:5": "w-7",
   "5:4": "w-8",
+  auto: "w-8",
 };
 
 const HEIGHT_MAP: Record<string, string> = {

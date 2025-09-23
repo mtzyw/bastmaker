@@ -44,13 +44,24 @@ function getApiKey(): string {
   return key;
 }
 
-export async function createFreepikImageTask(
-  model: string,
-  payload: FreepikImagePayload
+function buildVideoEndpoint(model: string): string {
+  const trimmed = model.replace(/^\/+/, "");
+  if (trimmed.startsWith("v1/")) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("ai/") || trimmed.startsWith("image-to-video/")) {
+    return `v1/${trimmed}`;
+  }
+  return `v1/ai/image-to-video/${trimmed}`;
+}
+
+async function postToFreepik(
+  endpoint: string,
+  payload: Record<string, unknown>
 ): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
   const baseUrl = getBaseUrl();
-  const endpoint = buildEndpoint(model).replace(/^\//, "");
-  const url = new URL(endpoint, baseUrl).toString();
+  const normalizedEndpoint = endpoint.replace(/^\//, "");
+  const url = new URL(normalizedEndpoint, baseUrl).toString();
 
   let response: Response;
   try {
@@ -82,4 +93,22 @@ export async function createFreepikImageTask(
   }
 
   return data as FreepikTaskResponse | Record<string, unknown> | null;
+}
+
+export async function createFreepikImageTask(
+  model: string,
+  payload: FreepikImagePayload
+): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
+  const endpoint = buildEndpoint(model).replace(/^\//, "");
+  return postToFreepik(endpoint, payload);
+}
+
+export type FreepikVideoPayload = Record<string, unknown>;
+
+export async function createFreepikVideoTask(
+  model: string,
+  payload: FreepikVideoPayload
+): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
+  const endpoint = buildVideoEndpoint(model).replace(/^\//, "");
+  return postToFreepik(endpoint, payload);
 }

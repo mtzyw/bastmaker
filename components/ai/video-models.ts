@@ -1,5 +1,5 @@
 export type VideoLengthValue = "5" | "6" | "8" | "10";
-export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
+export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "auto";
 export type VideoResolutionValue =
   | "360p"
   | "480p"
@@ -35,7 +35,7 @@ export const VIDEO_ASPECT_PRESETS: Record<string, AspectRatio[]> = {
   "Seedance 1.0 Lite": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "Seedance 1.0 Pro": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "Kling v2.1 Master": ["1:1", "16:9", "9:16"],
-  "wan2.2 Plus": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "wan2.2 Plus": ["auto", "16:9", "9:16", "1:1", "4:3", "3:4"],
   "Kling Std v2.1": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "PixVerse V5": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "PixVerse V5 Transition": ["16:9", "9:16", "1:1", "4:3", "3:4"],
@@ -47,7 +47,7 @@ export const VIDEO_LENGTH_PRESETS: Record<string, VideoLengthValue[]> = {
   "Seedance 1.0 Lite": ["5", "10"],
   "Seedance 1.0 Pro": ["5", "10"],
   "wan2.2 Plus": ["5", "10"],
-  "Kling Std v2.1": ["5", "8"],
+  "Kling Std v2.1": ["5", "10"],
 };
 
 export const VIDEO_RESOLUTION_PRESETS: Record<string, VideoResolutionValue[]> = {
@@ -67,17 +67,28 @@ export function getAllowedVideoLengths(
 ): VideoLengthValue[] {
   if (model === "Minimax Hailuo 2.0") {
     if (resolution === "1080p") {
-      return ["6"];
+      return ["6"] as VideoLengthValue[];
     }
 
     if (resolution === "768p") {
-      return ["6", "10"];
+      return ["6", "10"] as VideoLengthValue[];
     }
 
-    return ["6"];
+    return ["6"] as VideoLengthValue[];
   }
 
-  return VIDEO_LENGTH_PRESETS[model] ?? ["5", "10"];
+  if (model === "PixVerse V5" || model === "PixVerse V5 Transition") {
+    if (resolution === "1080p") {
+      return ["5"] as VideoLengthValue[];
+    }
+    return ["5", "8"] as VideoLengthValue[];
+  }
+
+  if (model === "Kling Std v2.1") {
+    return ["5", "10"] as VideoLengthValue[];
+  }
+
+  return (VIDEO_LENGTH_PRESETS[model] ?? ["5", "10"]) as VideoLengthValue[];
 }
 
 export const DEFAULT_VIDEO_MODEL = "Seedance 1.0 Pro";

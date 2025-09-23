@@ -8,6 +8,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { CreationItem } from "@/lib/ai/creations";
 
+const STATUS_TEXT_MAP: Record<string, string> = {
+  pending: "排队中",
+  queued: "排队中",
+  processing: "生成中",
+  completed: "已完成",
+  failed: "生成失败",
+  cancelled: "已取消",
+  cancelled_insufficient_credits: "积分不足",
+};
+
+const STATUS_STYLE_MAP: Record<string, string> = {
+  pending: "bg-sky-500/20 text-sky-200 border border-sky-500/40",
+  completed: "bg-emerald-500/20 text-emerald-200 border border-emerald-500/50",
+  processing: "bg-sky-500/20 text-sky-200 border border-sky-500/40",
+  queued: "bg-sky-500/20 text-sky-200 border border-sky-500/40",
+  failed: "bg-rose-500/20 text-rose-200 border border-rose-500/40",
+  cancelled: "bg-rose-500/20 text-rose-200 border border-rose-500/40",
+  cancelled_insufficient_credits: "bg-amber-500/20 text-amber-200 border border-amber-500/40",
+};
+
+function getStatusLabel(status?: string | null) {
+  if (!status) return "未知状态";
+  return STATUS_TEXT_MAP[status] ?? status;
+}
+
+function getStatusStyle(status?: string | null) {
+  if (!status) return "bg-white/15 text-white/80 border border-white/20";
+  return STATUS_STYLE_MAP[status] ?? "bg-white/15 text-white/80 border border-white/20";
+}
+
 function getPrimaryOutput(item: CreationItem) {
   const [first] = item.outputs;
   if (!first) return null;
@@ -114,6 +144,11 @@ export function MyCreationsContent({
       <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {items.map((item) => {
           const previewUrl = getPrimaryOutput(item);
+          const status = item.status ?? undefined;
+          const statusLabel = getStatusLabel(status);
+          const statusBadgeClass = getStatusStyle(status);
+          const isInProgress = status === "queued" || status === "pending" || status === "processing";
+          const isError = status === "failed" || status === "cancelled" || status === "cancelled_insufficient_credits";
 
           return (
             <div
@@ -121,6 +156,16 @@ export function MyCreationsContent({
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
             >
               <div className="relative aspect-square overflow-hidden">
+                <div className="absolute left-3 top-3 z-10">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none",
+                      statusBadgeClass
+                    )}
+                  >
+                    {statusLabel}
+                  </span>
+                </div>
                 {previewUrl ? (
                   <a href={previewUrl} target="_blank" rel="noopener noreferrer">
                     <Image
@@ -134,8 +179,19 @@ export function MyCreationsContent({
                   </a>
                 ) : (
                   <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5">
-                    <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/40 border-t-white/80" />
-                    <span className="mt-3 text-[13px] text-white/70">正在生成中</span>
+                    {isInProgress ? (
+                      <>
+                        <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/40 border-t-white/80" />
+                        <span className="mt-3 text-[13px] text-white/70">{statusLabel}</span>
+                      </>
+                    ) : (
+                      <span className={cn(
+                        "rounded-md px-3 py-1 text-sm",
+                        isError ? "bg-rose-500/15 text-rose-100" : "bg-white/15 text-white/80"
+                      )}>
+                        {statusLabel}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

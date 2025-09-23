@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +18,7 @@ import {
   VIDEO_MODEL_SELECT_OPTIONS,
   VIDEO_RESOLUTION_PRESETS,
   getAllowedVideoLengths,
+  getModelOption,
 } from "@/components/ai/video-models";
 
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -41,8 +42,38 @@ export default function ImageToVideoLeftPanel() {
   const outroImageInputRef = useRef<HTMLInputElement | null>(null);
   const [introImage, setIntroImage] = useState<{ file: File; url: string } | null>(null);
   const [outroImage, setOutroImage] = useState<{ file: File; url: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const isTransitionModel = model === TRANSITION_MODEL;
+
+  const fileToDataUrl = useCallback(async (file: File) => {
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error ?? new Error("读取文件失败"));
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  const resolveImageSource = useCallback(
+    async (image: { file: File; url: string } | null | undefined) => {
+      if (!image) {
+        return undefined;
+      }
+      if (image.url.startsWith("data:")) {
+        return image.url;
+      }
+      try {
+        return await fileToDataUrl(image.file);
+      } catch (error) {
+        console.error("[image-to-video] convert file to data URL failed", error);
+        throw new Error("图片读取失败，请重新上传");
+      }
+    },
+    [fileToDataUrl]
+  );
 
   useEffect(() => {
     if (!resolution) {
@@ -66,6 +97,97 @@ export default function ImageToVideoLeftPanel() {
   const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
   const resolutionOptions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
+  const selectedModel = getModelOption(model);
+  const creditsCost = selectedModel?.credits ?? 0;
+  const hasPrompt = prompt.trim().length > 0;
+  const isImageMode = !isTransitionModel;
+  const hasImage = Boolean(uploadedImage);
+  const hasTransitionImages = Boolean(introImage && outroImage);
+  const mode: "image" | "transition" = isTransitionModel ? "transition" : "image";
+  const canSubmit = hasPrompt && (isTransitionModel ? hasTransitionImages : hasImage);
+  const disableSubmit = !canSubmit || isSubmitting;
+
+  const handleCreate = useCallback(async () => {
+    const trimmedPrompt = prompt.trim();
+
+    if (!trimmedPrompt || disableSubmit) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const payload: Record<string, unknown> = {
+        mode,
+        model,
+        prompt: trimmedPrompt,
+        translate_prompt: translatePrompt,
+        resolution,
+        video_length: videoLength,
+        duration: Number(videoLength),
+      };
+
+      if (isImageMode) {
+        if (!uploadedImage) {
+          throw new Error("请上传参考图片");
+        }
+        const imageSource = await resolveImageSource(uploadedImage);
+        payload.image_url = imageSource;
+        payload.first_frame_image_url = imageSource;
+      } else {
+        if (!introImage || !outroImage) {
+          throw new Error("请上传首尾图片");
+        }
+        payload.intro_image_url = await resolveImageSource(introImage);
+        payload.outro_image_url = await resolveImageSource(outroImage);
+      }
+
+      const response = await fetch("/api/ai/freepik/video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        const message = result?.error ?? response.statusText ?? "提交失败";
+        throw new Error(message);
+      }
+
+      const taskInfo = result.data as {
+        jobId?: string;
+        providerJobId?: string;
+        status?: string;
+        freepikStatus?: string;
+        creditsCost?: number;
+        updatedBenefits?: { totalAvailableCredits?: number };
+      };
+
+      const parts: string[] = ["视频任务已提交，请稍后在生成记录页查看进度。"];
+
+      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
+        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
+      }
+
+      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
+      if (typeof remainingCredits === "number") {
+        parts.push(`当前余额 ${remainingCredits} Credits`);
+      }
+
+      setStatusMessage(parts.join("，"));
+
+      console.debug("[image-to-video] submit payload", payload, result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      setErrorMessage(message);
+      console.error("[image-to-video] submit error", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [disableSubmit, isImageMode, mode, prompt, resolveImageSource, translatePrompt, resolution, videoLength, uploadedImage, introImage, outroImage]);
 
   useEffect(() => {
     return () => {
@@ -432,20 +554,28 @@ export default function ImageToVideoLeftPanel() {
                 <Coins className="w-4 h-4 text-pink-400" />
                 Credits required:
               </div>
-              <div>4 Credits</div>
+              <div>{creditsCost ? `${creditsCost} Credits` : "--"}</div>
             </div>
           </div>
           <Button
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
-              prompt.trim() &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+              canSubmit &&
+                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              isSubmitting && "cursor-wait"
             )}
-            disabled={!prompt.trim()}
+            disabled={disableSubmit}
+            onClick={() => void handleCreate()}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            创建
+            {isSubmitting ? "创建中..." : "创建"}
           </Button>
+          {errorMessage ? (
+            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
+          ) : null}
+          {statusMessage ? (
+            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
+          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
