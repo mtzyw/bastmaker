@@ -37,25 +37,17 @@ export const VIDEO_ASPECT_PRESETS: Record<string, AspectRatio[]> = {
   "Kling v2.1 Master": ["1:1", "16:9", "9:16"],
   "wan2.2 Plus": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "Kling Std v2.1": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling v2": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Elements Pro 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
-  "Kling Elements Std 1.6": ["16:9", "9:16", "1:1", "4:3", "3:4"],
   "PixVerse V5": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+  "PixVerse V5 Transition": ["16:9", "9:16", "1:1", "4:3", "3:4"],
 };
 
 export const VIDEO_LENGTH_PRESETS: Record<string, VideoLengthValue[]> = {
   "PixVerse V5": ["5", "8"],
+  "PixVerse V5 Transition": ["5", "8"],
   "Seedance 1.0 Lite": ["5", "10"],
   "Seedance 1.0 Pro": ["5", "10"],
   "wan2.2 Plus": ["5", "10"],
   "Kling Std v2.1": ["5", "8"],
-  "Kling v2": ["5", "8"],
-  "Kling Pro 1.6": ["5", "8"],
-  "Kling Std 1.6": ["5", "8"],
-  "Kling Elements Pro 1.6": ["5", "8"],
-  "Kling Elements Std 1.6": ["5", "8"],
 };
 
 export const VIDEO_RESOLUTION_PRESETS: Record<string, VideoResolutionValue[]> = {
@@ -65,12 +57,8 @@ export const VIDEO_RESOLUTION_PRESETS: Record<string, VideoResolutionValue[]> = 
   "Seedance 1.0 Pro": ["480p", "720p", "1080p"],
   "wan2.2 Plus": ["480p", "580p", "720p"],
   "PixVerse V5": ["360p", "540p", "720p", "1080p"],
+  "PixVerse V5 Transition": ["360p", "540p", "720p", "1080p"],
   "Kling Std v2.1": ["360p", "540p", "720p", "1080p"],
-  "Kling v2": ["360p", "540p", "720p", "1080p"],
-  "Kling Pro 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Std 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Elements Pro 1.6": ["360p", "540p", "720p", "1080p"],
-  "Kling Elements Std 1.6": ["360p", "540p", "720p", "1080p"],
 };
 
 export function getAllowedVideoLengths(
@@ -146,6 +134,15 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     recommended: true,
     description: "高质量动态镜头",
   },
+
+  {
+    value: "PixVerse V5 Transition",
+    label: "PixVerse V5 Transition",
+    icon: { label: "P", src: MODEL_ICON_PATHS.pixverse },
+    fps: "24 FPS",
+    credits: 25,
+    description: "PixVerse 双图转场，上传首尾图生成平滑过渡。",
+  },
   {
     value: "Minimax Hailuo 2.0",
     label: "Minimax Hailuo 2.0",
@@ -168,41 +165,6 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     icon: { label: "K", src: MODEL_ICON_PATHS.kling },
     fps: "24 FPS",
     credits: 60,
-  },
-  {
-    value: "Kling v2",
-    label: "Kling v2",
-    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
-    fps: "24 FPS",
-    credits: 45,
-  },
-  {
-    value: "Kling Pro 1.6",
-    label: "Kling Pro 1.6",
-    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
-    fps: "24 FPS",
-    credits: 35,
-  },
-  {
-    value: "Kling Std 1.6",
-    label: "Kling Std 1.6",
-    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
-    fps: "24 FPS",
-    credits: 25,
-  },
-  {
-    value: "Kling Elements Pro 1.6",
-    label: "Kling Elements Pro 1.6",
-    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
-    fps: "24 FPS",
-    credits: 30,
-  },
-  {
-    value: "Kling Elements Std 1.6",
-    label: "Kling Elements Std 1.6",
-    icon: { label: "K", src: MODEL_ICON_PATHS.kling },
-    fps: "24 FPS",
-    credits: 18,
   },
 ];
 

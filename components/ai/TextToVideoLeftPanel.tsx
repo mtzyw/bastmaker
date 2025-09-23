@@ -20,14 +20,7 @@ import {
   VideoResolutionValue,
   getAllowedVideoLengths,
 } from "@/components/ai/video-models";
-// Adapted from text-to-image-generator UI for use in Section 2 Left (dark bg)
-const aspectIconWidthMap: Record<AspectRatio, string> = {
-  "16:9": "w-9",
-  "9:16": "w-5",
-  "1:1": "w-7",
-  "4:3": "w-8",
-  "3:4": "w-6",
-};
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -188,49 +181,14 @@ export default function TextToVideoLeftPanel() {
             </div>
           </div>
 
-          {aspectOptions && aspectOptions.length > 0 && (
-            <div className="mt-5">
-              <div className="mb-2">
-                <div className="text-sm font-medium text-white">Aspect Ratio</div>
-                <p className="text-xs text-white/60">Choose the appropriate aspect ratio.</p>
-              </div>
-              <div role="radiogroup" aria-label="Aspect Ratio" className="flex gap-2">
-                {aspectOptions.map((ratio) => {
-                  const isActive = aspectRatio === ratio;
-                  return (
-                    <div key={ratio} className="flex-1 basis-0">
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={isActive}
-                        onClick={() => setAspectRatio(ratio)}
-                        className={cn(
-                          "flex h-full w-full flex-col items-center gap-1 rounded-lg border border-white/10 px-2 py-1.5 transition-all bg-white/8 text-white/70 hover:bg-white/12",
-                          isActive && "text-white"
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "block h-6 rounded-md transition-colors",
-                            aspectIconWidthMap[ratio],
-                            isActive ? "bg-[#dc2e5a]" : "bg-white/20"
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            "text-[10px] font-semibold tracking-wide transition-colors",
-                            isActive ? "text-white" : "text-white/70"
-                          )}
-                        >
-                          {ratio}
-                        </span>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <AspectRatioInlineSelector
+            className="mt-5"
+            value={aspectRatio}
+            options={aspectOptions}
+            onChange={setAspectRatio}
+            label="Aspect Ratio"
+            description="Choose the appropriate aspect ratio."
+          />
 
           {/* 示例已移除，保持简洁 */}
           {/* 保留与 text-to-image 一致的结构，不含输出格式 */}

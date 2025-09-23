@@ -23,13 +23,9 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
-import { Inter as FontSans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { notFound } from "next/navigation";
-
-export const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
 
 type MetadataProps = {
   params: Promise<{ locale: string }>;
@@ -85,7 +81,8 @@ export default async function LocaleLayout({
       <body
         className={cn(
           "min-h-screen bg-background flex flex-col",
-          fontSans.variable
+          GeistSans.variable,
+          GeistMono.variable
         )}
       >
         <NextIntlClientProvider messages={messages}>

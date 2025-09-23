@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AspectRatioSelector } from "@/components/ai/AspectRatioSelector";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
 import {
@@ -15,6 +14,7 @@ import {
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
 import { toFreepikAspectRatio } from "@/lib/ai/freepik";
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -30,6 +30,9 @@ export default function TextToImageLeftPanel({
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState("1:1");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -48,23 +51,93 @@ export default function TextToImageLeftPanel({
     }
   }, [availableOptions, forcedModel, model]);
 
+  const aspectOptions = useMemo(() => {
+    if (model === "Flux Dev" || model === "Hyperflux") {
+      return ["1:1", "9:16", "1:2", "3:4"];
+    }
+    if (model === "Google Imagen4") {
+      return ["1:1", "9:16", "16:9", "4:3", "3:4"];
+    }
+    if (model === "Seedream 4" || model === "Seedream 4 Edit") {
+      return ["1:1", "16:9", "9:16", "3:4", "4:3"];
+    }
+    return [] as string[];
+  }, [model]);
+
+  useEffect(() => {
+    if (aspectOptions.length === 0) {
+      return;
+    }
+    if (!aspectOptions.includes(aspectRatio)) {
+      setAspectRatio(aspectOptions[0]);
+    }
+  }, [aspectOptions, aspectRatio]);
+
   const apiAspectRatio = useMemo(() => toFreepikAspectRatio(aspectRatio), [aspectRatio]);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
 
-  const handleCreate = useCallback(() => {
-    if (!prompt.trim()) {
+  const handleCreate = useCallback(async () => {
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt || isSubmitting) {
       return;
     }
 
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
     const payload = {
       model: apiModel,
-      prompt: prompt.trim(),
+      prompt: trimmedPrompt,
       aspect_ratio: apiAspectRatio,
       translate_prompt: translatePrompt,
     };
 
-    console.debug("[text-to-image] submit payload", payload);
-  }, [apiModel, apiAspectRatio, prompt, translatePrompt]);
+    try {
+      const response = await fetch("/api/ai/freepik/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        const message = result?.error ?? response.statusText ?? "提交失败";
+        throw new Error(message);
+      }
+
+      const taskInfo = result.data as {
+        jobId?: string;
+        providerJobId?: string;
+        status?: string;
+        freepikStatus?: string;
+        creditsCost?: number;
+        updatedBenefits?: { totalAvailableCredits?: number };
+      };
+
+      const parts: string[] = ["任务已提交，请稍后在生成记录页查看进度。"];
+
+      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
+        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
+      }
+
+      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
+      if (typeof remainingCredits === "number") {
+        parts.push(`当前余额 ${remainingCredits} Credits`);
+      }
+
+      setStatusMessage(parts.join("，"));
+
+      console.debug("[text-to-image] submit payload", payload, result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      setErrorMessage(message);
+      console.error("[text-to-image] submit error", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [apiAspectRatio, apiModel, isSubmitting, prompt, translatePrompt]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -127,34 +200,14 @@ export default function TextToImageLeftPanel({
             <span className="">示例：</span> Wildflower Trail Dolphin Shadow Butterfly Closeup
           </div>
 
-          {/* 长宽比（仅 Flux Dev 显示） */}
-          {(model === "Flux Dev" || model === "Hyperflux") && (
-            <AspectRatioSelector
-              value={aspectRatio}
-              onChange={setAspectRatio}
-              label="长宽比"
-              className="mt-4"
-              values={["1:1", "9:16", "1:2", "3:4"]}
-            />
-          )}
-          {model === "Google Imagen4" && (
-            <AspectRatioSelector
-              value={aspectRatio}
-              onChange={setAspectRatio}
-              label="长宽比"
-              className="mt-4"
-              values={["1:1", "9:16", "16:9", "4:3", "3:4"]}
-            />
-          )}
-          {(model === "Seedream 4" || model === "Seedream 4 Edit") && (
-            <AspectRatioSelector
-              value={aspectRatio}
-              onChange={setAspectRatio}
-              label="长宽比"
-              className="mt-4"
-              values={["1:1", "16:9", "9:16", "2:3", "3:4", "3:2", "4:3"]}
-            />
-          )}
+          <AspectRatioInlineSelector
+            className="mt-5"
+            value={aspectRatio}
+            options={aspectOptions}
+            onChange={setAspectRatio}
+            label="长宽比"
+            description="选择图像输出比例"
+          />
 
           {/* 输出格式已移除 */}
         </div>
@@ -178,13 +231,20 @@ export default function TextToImageLeftPanel({
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               prompt.trim() &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              isSubmitting && "cursor-wait"
             )}
-            disabled={!prompt.trim()}
-            onClick={handleCreate}
+            disabled={!prompt.trim() || isSubmitting}
+            onClick={() => void handleCreate()}
           >
-            创建
+            {isSubmitting ? "创建中..." : "创建"}
           </Button>
+          {errorMessage ? (
+            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
+          ) : null}
+          {statusMessage ? (
+            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
+          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

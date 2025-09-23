@@ -21,6 +21,7 @@ import {
 } from "@/components/ai/video-models";
 
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
+const TRANSITION_MODEL = "PixVerse V5 Transition";
 
 export default function ImageToVideoLeftPanel() {
   const [prompt, setPrompt] = useState("");
@@ -35,6 +36,13 @@ export default function ImageToVideoLeftPanel() {
   const [cropperOpen, setCropperOpen] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const uploadedBlobUrlRef = useRef<string | null>(null);
+
+  const introImageInputRef = useRef<HTMLInputElement | null>(null);
+  const outroImageInputRef = useRef<HTMLInputElement | null>(null);
+  const [introImage, setIntroImage] = useState<{ file: File; url: string } | null>(null);
+  const [outroImage, setOutroImage] = useState<{ file: File; url: string } | null>(null);
+
+  const isTransitionModel = model === TRANSITION_MODEL;
 
   useEffect(() => {
     if (!resolution) {
@@ -125,6 +133,52 @@ export default function ImageToVideoLeftPanel() {
     setOriginalFile(null);
   };
 
+  const handleTransitionUpload = (slot: "intro" | "outro", file: File | null) => {
+    if (!file) {
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    if (slot === "intro") {
+      if (introImage?.url) URL.revokeObjectURL(introImage.url);
+      setIntroImage({ file, url: previewUrl });
+    } else {
+      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
+      setOutroImage({ file, url: previewUrl });
+    }
+  };
+
+  const clearTransitionImage = (slot: "intro" | "outro") => {
+    if (slot === "intro") {
+      if (introImage?.url) URL.revokeObjectURL(introImage.url);
+      setIntroImage(null);
+    } else {
+      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
+      setOutroImage(null);
+    }
+  };
+
+  useEffect(() => {
+    if (model === TRANSITION_MODEL && uploadedImage) {
+      resetImageSelection();
+    }
+    if (model !== TRANSITION_MODEL) {
+      clearTransitionImage("intro");
+      clearTransitionImage("outro");
+    }
+  }, [model]);
+
+  useEffect(() => {
+    return () => {
+      if (introImage?.url) URL.revokeObjectURL(introImage.url);
+    };
+  }, [introImage?.url]);
+
+  useEffect(() => {
+    return () => {
+      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
+    };
+  }, [outroImage?.url]);
+
   return (
     <div className="w-full h-full text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
@@ -144,72 +198,131 @@ export default function ImageToVideoLeftPanel() {
           {/* Image upload */}
           <div className="mb-4">
             <div className="text-sm mb-2">参考图片</div>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => imageInputRef.current?.click()}
-                className="group relative flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
-              >
-                {uploadedImage ? (
-                  <img
-                    src={uploadedImage.url}
-                    alt="已选择的参考图"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                ) : (
-                  <div className="px-4 py-8 text-center text-xs text-white/60">Click to upload an image</div>
-                )}
+            {isTransitionModel ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {(
+                  [
+                    { key: "intro", label: "首图", description: "用于视频开场" },
+                    { key: "outro", label: "尾图", description: "用于视频结尾" },
+                  ] as const
+                ).map(({ key, label, description }) => {
+                  const selected = key === "intro" ? introImage : outroImage;
+                  const inputRef = key === "intro" ? introImageInputRef : outroImageInputRef;
+                  return (
+                    <div key={key}>
+                      <div className="mb-2 flex items-center justify-between text-xs text-white/70">
+                        <span>{label}</span>
+                        {selected ? (
+                          <button
+                            type="button"
+                            className="text-white/60 hover:text-white"
+                            onClick={() => clearTransitionImage(key)}
+                          >
+                            移除
+                          </button>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => inputRef.current?.click()}
+                        className="group relative flex h-32 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
+                      >
+                        {selected ? (
+                          <img
+                            src={selected.url}
+                            alt={label}
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        ) : (
+                          <div className="px-4 py-6 text-center text-xs text-white/60">点击上传{label}</div>
+                        )}
+                      </button>
+                      <input
+                        ref={inputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          handleTransitionUpload(key, file);
+                          event.target.value = "";
+                        }}
+                      />
+                      <p className="mt-2 text-[11px] text-white/50">{description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="group relative flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/10"
+                  >
+                    {uploadedImage ? (
+                      <img
+                        src={uploadedImage.url}
+                        alt="已选择的参考图"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    ) : (
+                      <div className="px-4 py-8 text-center text-xs text-white/60">Click to upload an image</div>
+                    )}
 
-                {uploadedImage ? (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-b from-black/35 via-black/15 to-black/0 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
+                    {uploadedImage ? (
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-b from-black/35 via-black/15 to-black/0 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="pointer-events-auto m-2 h-8 w-8 rounded-full bg-black/45 text-white shadow-lg hover:bg-black/60"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            resetImageSelection();
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : null}
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/60">
+                  <button type="button" onClick={() => imageInputRef.current?.click()} className="hover:text-white">
+                    {uploadedImage ? "重新选择" : "选择图片"}
+                  </button>
+                  {uploadedImage ? (
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="pointer-events-auto m-2 h-8 w-8 rounded-full bg-black/45 text-white shadow-lg hover:bg-black/60"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        resetImageSelection();
+                      onClick={() => {
+                        const fileToUse = originalFile ?? uploadedImage.file;
+                        openCropperWithFile(fileToUse);
                       }}
+                      className="hover:text-white"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : null}
-              </button>
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/60">
-              <button type="button" onClick={() => imageInputRef.current?.click()} className="hover:text-white">
-                {uploadedImage ? "重新选择" : "选择图片"}
-              </button>
-              {uploadedImage ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fileToUse = originalFile ?? uploadedImage.file;
-                    openCropperWithFile(fileToUse);
+                      重新裁剪
+                    </button>
+                  ) : null}
+                  {imageName ? <span className="text-white/40">文件：{imageName}</span> : null}
+                </div>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    if (file) {
+                      handleNewUpload(file);
+                    }
+                    event.target.value = "";
                   }}
-                  className="hover:text-white"
-                >
-                  重新裁剪
-                </button>
-              ) : null}
-              {imageName ? <span className="text-white/40">文件：{imageName}</span> : null}
-            </div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0] ?? null;
-                if (file) {
-                  handleNewUpload(file);
-                }
-                event.target.value = "";
-              }}
-            />
+                />
+              </>
+            )}
           </div>
 
           {/* Prompt */}

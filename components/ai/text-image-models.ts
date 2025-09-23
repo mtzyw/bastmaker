@@ -18,6 +18,7 @@ export const TEXT_TO_IMAGE_MODEL_OPTIONS: VideoModelSelectOption[] = [
     recommended: true,
     description: "免费入门模型，适合快速尝试。",
     tags: ["免费", "极速"],
+    apiValue: FREEPIK_MODEL_MAP["Nano Banana Free"],
   },
   {
     value: "Flux Dev",

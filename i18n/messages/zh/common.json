@@ -118,7 +118,8 @@
     },
     "Button": {
       "signIn": "登录",
-      "signOut": "退出"
+      "signOut": "退出",
+      "signUp": "注册账号"
     },
     "UserMenus": [
       {

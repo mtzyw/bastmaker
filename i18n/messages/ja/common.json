@@ -118,7 +118,8 @@
     },
     "Button": {
       "signIn": "ログイン",
-      "signOut": "ログアウト"
+      "signOut": "ログアウト",
+      "signUp": "アカウント作成"
     },
     "UserMenus": [
       {

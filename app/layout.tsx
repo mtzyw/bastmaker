@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "@/styles/globals.css"
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -18,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={cn("min-h-screen bg-background flex flex-col", GeistSans.variable, GeistMono.variable)}>
         <Suspense fallback={null}>{children}</Suspense>
         <Analytics />
       </body>

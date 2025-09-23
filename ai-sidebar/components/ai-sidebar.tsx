@@ -123,6 +123,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     if (itemId === "image-to-image") { router.push("/image-to-image"); onNavigate && onNavigate(); }
     if (itemId === "text-to-video") { router.push("/text-to-video"); onNavigate && onNavigate(); }
     if (itemId === "image-to-video") { router.push("/image-to-video"); onNavigate && onNavigate(); }
+    if (itemId === "assets") { router.push("/my-creations"); onNavigate && onNavigate(); }
   }
 
   return (

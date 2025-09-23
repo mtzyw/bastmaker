@@ -34,6 +34,9 @@ const nextConfig = {
             },
           ]
         : []),
+      {
+        hostname: "cdn.bestmaker.ai",
+      },
     ],
   },
   compiler: {

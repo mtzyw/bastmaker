@@ -15,6 +15,23 @@ import {
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("无法读取文件"));
+        return;
+      }
+      const commaIndex = result.indexOf(",");
+      resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
+    };
+    reader.onerror = () => reject(new Error("读取文件失败"));
+    reader.readAsDataURL(file);
+  });
+}
+
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
   if (model === "Nano Banana Free") return 3;
@@ -31,6 +48,9 @@ export default function ImageToImageLeftPanel({
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [images, setImages] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -45,23 +65,84 @@ export default function ImageToImageLeftPanel({
     }
   }, [availableOptions, model]);
 
+  useEffect(() => {
+    if (images.length > 0 && errorMessage) {
+      setErrorMessage(null);
+    }
+  }, [images.length, errorMessage]);
+
   const maxCount = getMaxCountByModel(model);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
 
-  const handleCreate = useCallback(() => {
-    if (!prompt.trim()) {
+  const handleCreate = useCallback(async () => {
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt || isSubmitting) {
       return;
     }
 
-    const payload = {
-      model: apiModel,
-      prompt: prompt.trim(),
-      translate_prompt: translatePrompt,
-      reference_image_count: images.length,
-    };
+    if (images.length === 0) {
+      setErrorMessage("请至少上传一张参考图");
+      return;
+    }
 
-    console.debug("[image-to-image] submit payload", payload);
-  }, [apiModel, images, prompt, translatePrompt]);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    try {
+      const base64Images = await Promise.all(images.map((file) => fileToBase64(file)));
+
+      const payload = {
+        model: apiModel,
+        prompt: trimmedPrompt,
+        reference_images: base64Images,
+        translate_prompt: translatePrompt,
+      };
+
+      const response = await fetch("/api/ai/freepik/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        const message = result?.error ?? response.statusText ?? "提交失败";
+        throw new Error(message);
+      }
+
+      const taskInfo = result.data as {
+        jobId?: string;
+        providerJobId?: string;
+        status?: string;
+        freepikStatus?: string;
+        creditsCost?: number;
+        updatedBenefits?: { totalAvailableCredits?: number };
+      };
+
+      const parts: string[] = ["任务已提交，请稍后在生成记录页查看进度。"];
+
+      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
+        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
+      }
+
+      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
+      if (typeof remainingCredits === "number") {
+        parts.push(`当前余额 ${remainingCredits} Credits`);
+      }
+
+      setStatusMessage(parts.join("，"));
+
+      console.debug("[image-to-image] submit payload", payload, result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      setErrorMessage(message);
+      console.error("[image-to-image] submit error", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [apiModel, images, isSubmitting, prompt, translatePrompt]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -145,13 +226,20 @@ export default function ImageToImageLeftPanel({
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               prompt.trim() &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]"
+                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              isSubmitting && "cursor-wait"
             )}
-            disabled={!prompt.trim()}
-            onClick={handleCreate}
+            disabled={!prompt.trim() || images.length === 0 || isSubmitting}
+            onClick={() => void handleCreate()}
           >
-            创建
+            {isSubmitting ? "创建中..." : "创建"}
           </Button>
+          {errorMessage ? (
+            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
+          ) : null}
+          {statusMessage ? (
+            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
+          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
