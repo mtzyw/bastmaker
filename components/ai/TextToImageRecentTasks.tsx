@@ -380,13 +380,13 @@ export default function TextToImageRecentTasks() {
               key={task.id}
               className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
             >
-              <header className="flex items-start gap-3">
+              <header className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 border border-white/10 bg-white/10 text-white">
                   <AvatarFallback className="text-xs font-semibold bg-transparent text-white">
                     {task.provider.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 space-y-1">
+                <div className="flex flex-1 flex-col justify-center gap-1">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium leading-none text-white">
