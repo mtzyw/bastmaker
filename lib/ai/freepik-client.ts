@@ -65,6 +65,10 @@ async function postToFreepik(
 
   let response: Response;
   try {
+    console.log("[freepik-api] request", {
+      url,
+      payload,
+    });
     response = await fetch(url, {
       method: "POST",
       headers: {
@@ -84,6 +88,13 @@ async function postToFreepik(
   } catch (error) {
     // Ignore JSON parse errors; data stays null
   }
+
+  console.log("[freepik-api] response", {
+    url,
+    status: response.status,
+    ok: response.ok,
+    data,
+  });
 
   if (!response.ok) {
     const message = typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)

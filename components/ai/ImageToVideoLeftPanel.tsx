@@ -21,6 +21,14 @@ import {
   getModelOption,
 } from "@/components/ai/video-models";
 
+type UploadKind = "primary" | "intro" | "outro" | "tail";
+
+type UploadedAsset = {
+  file: File;
+  previewUrl: string;
+  remoteUrl: string | null;
+};
+
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
 const TRANSITION_MODEL = "PixVerse V5 Transition";
 
@@ -31,7 +39,7 @@ export default function ImageToVideoLeftPanel() {
   const [videoLength, setVideoLength] = useState<VideoLengthValue>(DEFAULT_VIDEO_LENGTH);
   const [resolution, setResolution] = useState<VideoResolutionValue>(DEFAULT_VIDEO_RESOLUTION);
   const [imageName, setImageName] = useState<string | null>(null);
-  const [uploadedImage, setUploadedImage] = useState<{ file: File; url: string } | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<UploadedAsset | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropSource, setCropSource] = useState<{ src: string; fileName: string; fileType: string } | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -40,40 +48,48 @@ export default function ImageToVideoLeftPanel() {
 
   const introImageInputRef = useRef<HTMLInputElement | null>(null);
   const outroImageInputRef = useRef<HTMLInputElement | null>(null);
-  const [introImage, setIntroImage] = useState<{ file: File; url: string } | null>(null);
-  const [outroImage, setOutroImage] = useState<{ file: File; url: string } | null>(null);
+  const [introImage, setIntroImage] = useState<UploadedAsset | null>(null);
+  const [outroImage, setOutroImage] = useState<UploadedAsset | null>(null);
+  const [isUploadingPrimary, setIsUploadingPrimary] = useState(false);
+  const [isUploadingIntro, setIsUploadingIntro] = useState(false);
+  const [isUploadingOutro, setIsUploadingOutro] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const isTransitionModel = model === TRANSITION_MODEL;
 
-  const fileToDataUrl = useCallback(async (file: File) => {
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(reader.error ?? new Error("读取文件失败"));
-      reader.readAsDataURL(file);
+  const uploadImageToR2 = useCallback(async (file: File, kind: UploadKind): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("kind", kind);
+
+    const response = await fetch("/api/uploads/image-to-video", {
+      method: "POST",
+      body: formData,
     });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result?.success) {
+      const message = typeof result?.error === "string" ? result.error : "图片上传失败";
+      throw new Error(message);
+    }
+
+    const remoteUrl = result?.data?.url;
+    if (typeof remoteUrl !== "string" || remoteUrl.length === 0) {
+      throw new Error("图片上传结果异常");
+    }
+
+    return remoteUrl;
   }, []);
 
-  const resolveImageSource = useCallback(
-    async (image: { file: File; url: string } | null | undefined) => {
-      if (!image) {
-        return undefined;
-      }
-      if (image.url.startsWith("data:")) {
-        return image.url;
-      }
-      try {
-        return await fileToDataUrl(image.file);
-      } catch (error) {
-        console.error("[image-to-video] convert file to data URL failed", error);
-        throw new Error("图片读取失败，请重新上传");
-      }
-    },
-    [fileToDataUrl]
-  );
+  const resolveImageSource = useCallback(async (image: UploadedAsset | null | undefined) => {
+    if (!image?.remoteUrl) {
+      throw new Error("图片上传尚未完成，请稍后重试");
+    }
+    return image.remoteUrl;
+  }, []);
 
   useEffect(() => {
     if (!resolution) {
@@ -101,11 +117,14 @@ export default function ImageToVideoLeftPanel() {
   const creditsCost = selectedModel?.credits ?? 0;
   const hasPrompt = prompt.trim().length > 0;
   const isImageMode = !isTransitionModel;
-  const hasImage = Boolean(uploadedImage);
-  const hasTransitionImages = Boolean(introImage && outroImage);
+  const hasImage = Boolean(uploadedImage?.remoteUrl);
+  const hasTransitionImages = Boolean(introImage?.remoteUrl && outroImage?.remoteUrl);
   const mode: "image" | "transition" = isTransitionModel ? "transition" : "image";
   const canSubmit = hasPrompt && (isTransitionModel ? hasTransitionImages : hasImage);
-  const disableSubmit = !canSubmit || isSubmitting;
+  const disableSubmit =
+    !canSubmit ||
+    isSubmitting ||
+    (isImageMode ? isUploadingPrimary : isUploadingIntro || isUploadingOutro);
 
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
@@ -225,7 +244,7 @@ export default function ImageToVideoLeftPanel() {
     }
   };
 
-  const handleCropConfirm = ({ blob, dataUrl }: { blob: Blob; dataUrl: string }) => {
+  const handleCropConfirm = async ({ blob, dataUrl }: { blob: Blob; dataUrl: string }) => {
     const fileName = cropSource?.fileName ?? `cropped-${Date.now()}.png`;
     const fileType = cropSource?.fileType ?? blob.type ?? "image/png";
     const croppedFile = new File([blob], fileName, { type: fileType });
@@ -237,12 +256,29 @@ export default function ImageToVideoLeftPanel() {
 
     const previewUrl = dataUrl || URL.createObjectURL(blob);
     uploadedBlobUrlRef.current = previewUrl.startsWith("blob:") ? previewUrl : null;
-    setUploadedImage({ file: croppedFile, url: previewUrl });
+    setUploadedImage({ file: croppedFile, previewUrl, remoteUrl: null });
     setOriginalFile(croppedFile);
     setImageName(fileName);
     setCropperOpen(false);
     if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
     setCropSource(null);
+
+    setErrorMessage(null);
+    setIsUploadingPrimary(true);
+    try {
+      const remoteUrl = await uploadImageToR2(croppedFile, "primary");
+      setUploadedImage((prev) => {
+        if (!prev || prev.file !== croppedFile) {
+          return prev;
+        }
+        return { ...prev, remoteUrl };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      setErrorMessage(message);
+    } finally {
+      setIsUploadingPrimary(false);
+    }
   };
 
   const resetImageSelection = () => {
@@ -253,29 +289,66 @@ export default function ImageToVideoLeftPanel() {
     setUploadedImage(null);
     setImageName(null);
     setOriginalFile(null);
+    setIsUploadingPrimary(false);
   };
 
-  const handleTransitionUpload = (slot: "intro" | "outro", file: File | null) => {
+  const handleTransitionUpload = async (slot: "intro" | "outro", file: File | null) => {
     if (!file) {
       return;
     }
+
     const previewUrl = URL.createObjectURL(file);
-    if (slot === "intro") {
-      if (introImage?.url) URL.revokeObjectURL(introImage.url);
-      setIntroImage({ file, url: previewUrl });
-    } else {
-      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
-      setOutroImage({ file, url: previewUrl });
+    const setAsset = slot === "intro" ? setIntroImage : setOutroImage;
+    const currentAsset = slot === "intro" ? introImage : outroImage;
+    const setUploading = slot === "intro" ? setIsUploadingIntro : setIsUploadingOutro;
+
+    if (currentAsset?.previewUrl && currentAsset.previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(currentAsset.previewUrl);
+    }
+
+    setAsset({ file, previewUrl, remoteUrl: null });
+    setUploading(true);
+
+    setErrorMessage(null);
+
+    try {
+      const remoteUrl = await uploadImageToR2(file, slot);
+      setAsset((prev) => {
+        if (!prev || prev.file !== file) {
+          return prev;
+        }
+        return { ...prev, remoteUrl };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      setErrorMessage(message);
+      setAsset((prev) => {
+        if (!prev || prev.file !== file) {
+          return prev;
+        }
+        if (prev.previewUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(prev.previewUrl);
+        }
+        return null;
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
   const clearTransitionImage = (slot: "intro" | "outro") => {
     if (slot === "intro") {
-      if (introImage?.url) URL.revokeObjectURL(introImage.url);
+      if (introImage?.previewUrl && introImage.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(introImage.previewUrl);
+      }
       setIntroImage(null);
+      setIsUploadingIntro(false);
     } else {
-      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
+      if (outroImage?.previewUrl && outroImage.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(outroImage.previewUrl);
+      }
       setOutroImage(null);
+      setIsUploadingOutro(false);
     }
   };
 
@@ -291,15 +364,19 @@ export default function ImageToVideoLeftPanel() {
 
   useEffect(() => {
     return () => {
-      if (introImage?.url) URL.revokeObjectURL(introImage.url);
+      if (introImage?.previewUrl && introImage.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(introImage.previewUrl);
+      }
     };
-  }, [introImage?.url]);
+  }, [introImage?.previewUrl]);
 
   useEffect(() => {
     return () => {
-      if (outroImage?.url) URL.revokeObjectURL(outroImage.url);
+      if (outroImage?.previewUrl && outroImage.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(outroImage.previewUrl);
+      }
     };
-  }, [outroImage?.url]);
+  }, [outroImage?.previewUrl]);
 
   return (
     <div className="w-full h-full text-white flex flex-col">
@@ -330,6 +407,7 @@ export default function ImageToVideoLeftPanel() {
                 ).map(({ key, label, description }) => {
                   const selected = key === "intro" ? introImage : outroImage;
                   const inputRef = key === "intro" ? introImageInputRef : outroImageInputRef;
+                  const isUploading = key === "intro" ? isUploadingIntro : isUploadingOutro;
                   return (
                     <div key={key}>
                       <div className="mb-2 flex items-center justify-between text-xs text-white/70">
@@ -351,13 +429,18 @@ export default function ImageToVideoLeftPanel() {
                       >
                         {selected ? (
                           <img
-                            src={selected.url}
+                            src={selected.previewUrl}
                             alt={label}
                             className="max-h-full max-w-full object-contain"
                           />
                         ) : (
                           <div className="px-4 py-6 text-center text-xs text-white/60">点击上传{label}</div>
                         )}
+                        {isUploading ? (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
+                            上传中...
+                          </div>
+                        ) : null}
                       </button>
                       <input
                         ref={inputRef}
@@ -366,11 +449,12 @@ export default function ImageToVideoLeftPanel() {
                         className="hidden"
                         onChange={(event) => {
                           const file = event.target.files?.[0] ?? null;
-                          handleTransitionUpload(key, file);
+                          void handleTransitionUpload(key, file);
                           event.target.value = "";
                         }}
                       />
                       <p className="mt-2 text-[11px] text-white/50">{description}</p>
+                      {isUploading ? <p className="mt-1 text-[11px] text-white/60">正在上传，请稍候...</p> : null}
                     </div>
                   );
                 })}
@@ -385,7 +469,7 @@ export default function ImageToVideoLeftPanel() {
                   >
                     {uploadedImage ? (
                       <img
-                        src={uploadedImage.url}
+                        src={uploadedImage.previewUrl}
                         alt="已选择的参考图"
                         className="max-h-full max-w-full object-contain"
                       />
@@ -408,6 +492,11 @@ export default function ImageToVideoLeftPanel() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                      </div>
+                    ) : null}
+                    {isUploadingPrimary ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
+                        上传中...
                       </div>
                     ) : null}
                   </button>
@@ -443,6 +532,7 @@ export default function ImageToVideoLeftPanel() {
                     event.target.value = "";
                   }}
                 />
+                {isUploadingPrimary ? <p className="mt-2 text-xs text-white/60">图片正在上传，请稍候...</p> : null}
               </>
             )}
           </div>

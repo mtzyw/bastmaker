@@ -7,6 +7,7 @@ import {
 } from "@/lib/ai/freepik-client";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
+import { formatProviderError } from "@/lib/ai/provider-error";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { apiResponse } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
@@ -190,17 +191,47 @@ export async function POST(req: NextRequest) {
 
     const updatedMetadata = {
       ...metadataJson,
+      freepik_task_id: providerJobId,
       freepik_initial_status: freepikStatus,
+      freepik_latest_status: freepikStatus,
+      freepik_last_event_at: new Date().toISOString(),
     };
+
+    const updates: Database["public"]["Tables"]["ai_jobs"]["Update"] = {
+      provider_job_id: providerJobId,
+      status: internalStatus,
+      cost_actual_credits: deduction.wasCharged ? deduction.amount : 0,
+      metadata_json: updatedMetadata,
+    };
+
+    if (internalStatus === "failed") {
+      const providerError = formatProviderError(
+        (taskData as any)?.error ??
+          (taskData as any)?.message ??
+          (freepikResponse as any)?.error ??
+          (freepikResponse as any)?.message
+      );
+      const errorMessage = providerError ?? "Provider reported failure";
+      updates.error_message = errorMessage;
+      updatedMetadata.error_message = errorMessage;
+
+      if (deduction.wasCharged) {
+        await refundCreditsForJob(
+          adminSupabase,
+          user.id,
+          deduction.amount,
+          jobRecord.id,
+          "Refund: Freepik task failed immediately"
+        );
+        updates.cost_actual_credits = 0;
+        updatedMetadata.refund_issued = true;
+        deduction.wasCharged = false;
+      }
+    }
 
     await adminSupabase
       .from("ai_jobs")
-      .update({
-        provider_job_id: providerJobId,
-        status: internalStatus,
-        cost_actual_credits: deduction.wasCharged ? deduction.amount : 0,
-        metadata_json: updatedMetadata,
-      })
+      .update(updates)
       .eq("id", jobRecord.id);
 
     await adminSupabase.from("ai_job_events").insert({

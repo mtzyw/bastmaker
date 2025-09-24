@@ -1,4 +1,5 @@
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
+import { formatProviderError } from "@/lib/ai/provider-error";
 import { refundCreditsForJob } from "@/lib/ai/job-finance";
 import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -10,10 +11,10 @@ const taskPayloadSchema = z
     task_id: z.string().min(1).optional(),
     freepik_task_id: z.string().min(1).optional(),
     status: z.string().min(1),
-    generated: z.array(z.string().min(1)).optional(),
-    urls: z.array(z.string().min(1)).optional(),
-    public_url: z.string().min(1).optional(),
-    error: z.string().optional(),
+    generated: z.array(z.string().min(1)).nullish(),
+    urls: z.array(z.string().min(1)).nullish(),
+    public_url: z.string().min(1).nullish(),
+    error: z.unknown().optional(),
   })
   .passthrough();
 
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
   const parsed = webhookSchema.safeParse(json);
   if (!parsed.success) {
     console.error("[freepik-webhook] schema validation failed", parsed.error.format());
+    console.error("[freepik-webhook] raw payload", json);
     return NextResponse.json({ success: false, error: "Invalid payload" }, { status: 400 });
   }
 
@@ -109,8 +111,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (internalStatus === "failed") {
-    const errorMessage = task.error ?? withDefault(metadata.error_message, "Provider reported failure");
+    const providerError = formatProviderError(task.error);
+    const errorMessage = providerError ?? withDefault(metadata.error_message, "Provider reported failure");
     updates.error_message = errorMessage;
+    updatedMetadata.error_message = errorMessage;
   }
 
   const generatedOutputs = (
