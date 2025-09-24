@@ -19,6 +19,11 @@ export type CreationItem = {
   costCredits: number;
   outputs: CreationOutput[];
   metadata: Record<string, any>;
+  inputParams: Record<string, any>;
+  modalityCode: string | null;
+  modelSlug: string | null;
+  errorMessage: string | null;
+  seed: string | null;
   isImageToImage: boolean;
   referenceImageCount: number;
 };
@@ -59,7 +64,7 @@ export async function fetchUserCreations(
   let query = supabase
     .from("ai_jobs")
     .select(
-      "id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits",
+      "id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits,input_params_json,modality_code,model_slug_at_submit,error_message,seed",
       { count: "exact" }
     )
     .eq("user_id", userId);
@@ -107,6 +112,7 @@ export async function fetchUserCreations(
 
   const items: CreationItem[] = (jobs ?? []).map((job) => {
     const metadata = (job.metadata_json ?? {}) as Record<string, any>;
+    const inputParams = (job.input_params_json ?? {}) as Record<string, any>;
     const outputs = outputsByJob.get(job.id) ?? [];
     const isImageToImage = Boolean(metadata.is_image_to_image) || (metadata.reference_image_count ?? 0) > 0;
     const latestStatus = (metadata.freepik_latest_status as string | undefined) ?? null;
@@ -125,6 +131,11 @@ export async function fetchUserCreations(
       costCredits,
       outputs,
       metadata,
+      inputParams,
+      modalityCode: job.modality_code,
+      modelSlug: job.model_slug_at_submit,
+      errorMessage: job.error_message,
+      seed: job.seed,
       isImageToImage,
       referenceImageCount: metadata.reference_image_count ?? 0,
     };

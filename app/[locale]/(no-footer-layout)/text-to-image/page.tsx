@@ -1,5 +1,6 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import TextToImageLeftPanel from "@/components/ai/TextToImageLeftPanel";
+import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { Metadata } from "next";
@@ -39,6 +40,7 @@ export default function TextToImagePage() {
       sections={sections}
       withSidebar={false}
       section2Left={<TextToImageLeftPanel />}
+      section2Right={<TextToImageRecentTasks />}
     />
   );
 }
