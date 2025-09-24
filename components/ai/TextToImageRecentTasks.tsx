@@ -400,8 +400,6 @@ export default function TextToImageRecentTasks() {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-white/50">
-                      {task.aspectRatio ? <span>{task.aspectRatio}</span> : null}
-                      {typeof task.seed === "number" ? <span>Seed {task.seed}</span> : null}
                       <span>{task.createdAtLabel}</span>
                     </div>
                   </div>
