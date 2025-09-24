@@ -34,11 +34,16 @@ export function getDefaultPageSize() {
   return DEFAULT_PAGE_SIZE;
 }
 
+export type FetchUserCreationsOptions = {
+  modalityCodes?: string[];
+};
+
 export async function fetchUserCreations(
   supabase: SupabaseClient<Database>,
   userId: string,
   page: number,
-  pageSize: number
+  pageSize: number,
+  options?: FetchUserCreationsOptions
 ): Promise<CreationsResult> {
   const safePage = Number.isFinite(page) && page >= 0 ? Math.floor(page) : 0;
   const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.min(Math.floor(pageSize), 60) : DEFAULT_PAGE_SIZE;
@@ -46,14 +51,24 @@ export async function fetchUserCreations(
   const from = safePage * safePageSize;
   const to = from + safePageSize - 1;
 
-  const {
-    data: jobs,
-    error: jobsError,
-    count,
-  } = await supabase
+  const requestedModalityCodes = Array.isArray(options?.modalityCodes) ? options?.modalityCodes : [];
+  const modalityCodes = requestedModalityCodes.filter(
+    (code): code is string => typeof code === "string" && code.trim().length > 0
+  );
+
+  let query = supabase
     .from("ai_jobs")
-    .select("id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits", { count: "exact" })
-    .eq("user_id", userId)
+    .select(
+      "id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits",
+      { count: "exact" }
+    )
+    .eq("user_id", userId);
+
+  if (modalityCodes.length > 0) {
+    query = query.in("modality_code", modalityCodes);
+  }
+
+  const { data: jobs, error: jobsError, count } = await query
     .order("created_at", { ascending: false })
     .range(from, to);
 

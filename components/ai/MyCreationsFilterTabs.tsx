@@ -1,34 +1,37 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-type MyCreationsFilterTabsProps = {
-  labels: string[];
-  onChange?: (label: string) => void;
+export type MyCreationsFilterOption = {
+  label: string;
+  value: string;
 };
 
-export function MyCreationsFilterTabs({ labels, onChange }: MyCreationsFilterTabsProps) {
-  const [active, setActive] = useState(labels[0]);
+type MyCreationsFilterTabsProps = {
+  options: MyCreationsFilterOption[];
+  value: string;
+  onChange?: (value: string) => void;
+};
 
+export function MyCreationsFilterTabs({ options, value, onChange }: MyCreationsFilterTabsProps) {
+  
   return (
     <div className="flex flex-wrap items-center gap-4 text-sm text-white/70">
-      {labels.map((label) => {
-        const isActive = label === active;
+      {options.map((option) => {
+        const isActive = option.value === value;
         return (
           <button
-            key={label}
+            key={option.value}
             type="button"
             onClick={() => {
-              setActive(label);
-              onChange?.(label);
+              onChange?.(option.value);
             }}
             className={cn(
               "relative px-3 py-1 transition-colors",
               isActive ? "text-white" : "text-white/60 hover:text-white/80"
             )}
           >
-            {label}
+            {option.label}
             <span
               className={cn(
                 "pointer-events-none absolute inset-x-0 bottom-0 h-[2px] rounded-full bg-white/80 transition-opacity",

@@ -48,6 +48,12 @@ const VIDEO_MODEL_CONFIGS: Record<string, VideoModelConfig> = {
     creditsCost: 100,
     defaultModality: "i2v",
   },
+  "Kling v2.5 Pro": {
+    displayName: "Kling v2.5 Pro",
+    providerCode: "freepik",
+    creditsCost: 100,
+    defaultModality: "i2v",
+  },
   "Kling Std v2.1": {
     displayName: "Kling Std v2.1",
     providerCode: "freepik",
@@ -108,6 +114,9 @@ const MODEL_ENDPOINTS: Record<string, ResolutionEndpointMap> = {
   },
   "Kling v2.1 Master": {
     default: "kling-v2-1-master",
+  },
+  "Kling v2.5 Pro": {
+    default: "kling-v2-5-pro",
   },
   "Kling Std v2.1": {
     default: "kling-v2-1-std",

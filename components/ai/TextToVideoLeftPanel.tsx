@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -19,14 +19,18 @@ import {
   VideoLengthValue,
   VideoResolutionValue,
   getAllowedVideoLengths,
-  getModelOption,
 } from "@/components/ai/video-models";
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
+const EXCLUDED_MODELS = new Set(["PixVerse V5 Transition"]);
 
 export default function TextToVideoLeftPanel() {
+  const textToVideoOptions = useMemo(
+    () => VIDEO_MODEL_SELECT_OPTIONS.filter((option) => !EXCLUDED_MODELS.has(option.value)),
+    []
+  );
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(DEFAULT_VIDEO_MODEL);
@@ -43,22 +47,34 @@ export default function TextToVideoLeftPanel() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  const hasValidModel = useMemo(
+    () => textToVideoOptions.some((option) => option.value === model),
+    [model, textToVideoOptions]
+  );
+  const activeModel = hasValidModel ? model : DEFAULT_VIDEO_MODEL;
+
+  useEffect(() => {
+    if (!hasValidModel) {
+      setModel(DEFAULT_VIDEO_MODEL);
+    }
+  }, [hasValidModel]);
+
   useEffect(() => {
     if (!resolution) {
       return;
     }
 
-    const allowed = getAllowedVideoLengths(model, resolution);
+    const allowed = getAllowedVideoLengths(activeModel, resolution);
 
     if (!allowed.includes(videoLength)) {
       setVideoLength(allowed[0]);
     }
-  }, [model, resolution, videoLength]);
+  }, [activeModel, resolution, videoLength]);
 
   useEffect(() => {
-    const allowedAspects = VIDEO_ASPECT_PRESETS[model] ?? [FALLBACK_ASPECT_RATIO];
+    const allowedAspects = VIDEO_ASPECT_PRESETS[activeModel] ?? [FALLBACK_ASPECT_RATIO];
     if (!allowedAspects.includes(aspectRatio)) {
-      if (model === "wan2.2 Plus" && allowedAspects.includes("auto")) {
+      if (activeModel === "wan2.2 Plus" && allowedAspects.includes("auto")) {
         setAspectRatio("auto");
         return;
       }
@@ -66,20 +82,20 @@ export default function TextToVideoLeftPanel() {
         ? FALLBACK_ASPECT_RATIO
         : allowedAspects[0]);
     }
-  }, [model, aspectRatio]);
+  }, [activeModel, aspectRatio]);
 
   useEffect(() => {
-    const allowedResolutions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
+    const allowedResolutions = VIDEO_RESOLUTION_PRESETS[activeModel] ?? [FALLBACK_RESOLUTION];
     if (!allowedResolutions.includes(resolution)) {
       setResolution(allowedResolutions[0]);
     }
-  }, [model, resolution]);
+  }, [activeModel, resolution]);
 
-  const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
+  const allowedVideoLengths = getAllowedVideoLengths(activeModel, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
-  const resolutionOptions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
-  const aspectOptions = VIDEO_ASPECT_PRESETS[model] ?? [FALLBACK_ASPECT_RATIO];
-  const selectedModel = getModelOption(model);
+  const resolutionOptions = VIDEO_RESOLUTION_PRESETS[activeModel] ?? [FALLBACK_RESOLUTION];
+  const aspectOptions = VIDEO_ASPECT_PRESETS[activeModel] ?? [FALLBACK_ASPECT_RATIO];
+  const selectedModel = textToVideoOptions.find((option) => option.value === activeModel);
   const creditsCost = selectedModel?.credits ?? 0;
   const hasPrompt = prompt.trim().length > 0;
 
@@ -96,7 +112,7 @@ export default function TextToVideoLeftPanel() {
 
     const payload = {
       mode: "text" as const,
-      model,
+      model: activeModel,
       prompt: trimmedPrompt,
       translate_prompt: translatePrompt,
       resolution,
@@ -149,7 +165,7 @@ export default function TextToVideoLeftPanel() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [aspectRatio, isSubmitting, model, prompt, resolution, translatePrompt, videoLength]);
+  }, [activeModel, aspectRatio, isSubmitting, prompt, resolution, translatePrompt, videoLength]);
 
   return (
     <div className="w-full h-full text-white flex flex-col">
@@ -159,8 +175,8 @@ export default function TextToVideoLeftPanel() {
           <div className="mb-2 text-sm">Model</div>
           <div className="mb-4">
             <AIModelDropdown
-              options={VIDEO_MODEL_SELECT_OPTIONS}
-              value={model}
+              options={textToVideoOptions}
+              value={activeModel}
               onChange={setModel}
             />
           </div>

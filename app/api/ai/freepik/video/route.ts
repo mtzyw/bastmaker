@@ -79,6 +79,7 @@ const ENDPOINT_ALLOWED_DURATIONS: Record<string, (number | string)[]> = {
   "minimax-hailuo-02-768p": [6, 10],
   "minimax-hailuo-02-1080p": [6],
   "kling-v2-1-master": ["5", "10"],
+  "kling-v2-5-pro": ["5", "10"],
   "kling-v2-1-std": ["5", "10"],
   "pixverse-v5": [5, 8],
   "pixverse-v5-transition": [5, 8],
@@ -233,6 +234,7 @@ function buildFreepikVideoPayload({
       break;
     }
     case "kling-v2-1-master":
+    case "kling-v2-5-pro":
     case "kling-v2-1-std": {
       if (!prompt && !imageUrl) {
         throw new Error("Kling 任务需要提示词或参考图");

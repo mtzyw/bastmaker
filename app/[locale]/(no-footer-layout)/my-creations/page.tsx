@@ -1,5 +1,4 @@
 import { MyCreationsContent } from "@/components/ai/MyCreationsContent";
-import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
 import { fetchUserCreations, getDefaultPageSize } from "@/lib/ai/creations";
 import { createClient } from "@/lib/supabase/server";
 import { constructMetadata } from "@/lib/metadata";
@@ -37,7 +36,6 @@ function HeroSection() {
         </h1>
       </div>
 
-      <MyCreationsFilterTabs labels={['全部', '视频', 'AI视频特效', '图片']} />
     </div>
   );
 }
@@ -78,14 +76,6 @@ export default async function MyCreationsPage() {
           />
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
-          <h2 className="text-lg font-semibold text-white">创作小贴士</h2>
-          <ul className="mt-3 list-inside list-disc space-y-2">
-            <li>合理利用参考图功能，能让风格更统一。</li>
-            <li>记录优秀的提示词组合，下次可以快速复用。</li>
-            <li>作品会按生成时间倒序排列，便于查找最新灵感。</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

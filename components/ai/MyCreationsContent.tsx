@@ -1,16 +1,18 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
+import type { MyCreationsFilterOption } from "@/components/ai/MyCreationsFilterTabs";
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 
 const STATUS_TEXT_MAP: Record<string, string> = {
-  pending: "排队中",
-  queued: "排队中",
+  pending: "生成中",
+  queued: "生成中",
   processing: "生成中",
   completed: "已完成",
   failed: "生成失败",
@@ -34,6 +36,41 @@ function isVideoOutput(output?: CreationOutput | null) {
   const url = output.url?.toLowerCase() ?? "";
   return /\.(mp4|webm|mov)(\?.*)?$/i.test(url);
 }
+
+type FilterKey = "all" | "video" | "video-effects" | "image";
+
+const FILTER_OPTIONS: ReadonlyArray<MyCreationsFilterOption> = [
+  { value: "all", label: "全部" },
+  { value: "video", label: "视频" },
+  { value: "video-effects", label: "AI视频特效" },
+  { value: "image", label: "图片" },
+];
+
+const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => string> = {
+  all: (page, pageSize) => `/api/ai/my-creations?page=${page}&pageSize=${pageSize}`,
+  video: (page, pageSize) => `/api/ai/my-creations/videos?page=${page}&pageSize=${pageSize}`,
+  "video-effects": (page, pageSize) =>
+    `/api/ai/my-creations/videos?page=${page}&pageSize=${pageSize}`,
+  image: (page, pageSize) => `/api/ai/my-creations/images?page=${page}&pageSize=${pageSize}`,
+};
+
+function buildEndpoint(filter: FilterKey, page: number, pageSize: number): string {
+  const builder = FILTER_ENDPOINTS[filter] ?? FILTER_ENDPOINTS.all;
+  return builder(page, pageSize);
+}
+
+function isFilterKey(value: string): value is FilterKey {
+  return FILTER_OPTIONS.some((option) => option.value === value);
+}
+
+type FilterState = {
+  items: CreationItem[];
+  totalCount: number;
+  page: number;
+  initialized: boolean;
+};
+
+type FilterStateMap = Record<FilterKey, FilterState>;
 
 type ApiResponse = {
   success: boolean;
@@ -60,22 +97,102 @@ export function MyCreationsContent({
   pageSize,
   isAuthenticated,
 }: MyCreationsContentProps) {
-  const [items, setItems] = useState<CreationItem[]>(initialItems);
-  const [page, setPage] = useState(0);
-  const [currentTotal, setCurrentTotal] = useState(totalCount);
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [filterStates, setFilterStates] = useState<FilterStateMap>({
+    all: { items: initialItems, totalCount, page: 0, initialized: true },
+    video: { items: [], totalCount: 0, page: 0, initialized: false },
+    "video-effects": { items: [], totalCount: 0, page: 0, initialized: false },
+    image: { items: [], totalCount: 0, page: 0, initialized: false },
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasMore = useMemo(() => items.length < currentTotal, [items.length, currentTotal]);
+  useEffect(() => {
+    setFilterStates((prev) => ({
+      ...prev,
+      all: { items: initialItems, totalCount, page: 0, initialized: true },
+    }));
+  }, [initialItems, totalCount]);
 
-  const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+  const currentState = filterStates[activeFilter] ?? {
+    items: [],
+    totalCount: 0,
+    page: 0,
+    initialized: false,
+  };
+
+  const items = currentState.items;
+  const currentTotal = currentState.totalCount;
+  const hasMore = items.length < currentTotal;
+
+  const handleFilterChange = async (value: string) => {
+    if (loading) {
+      return;
+    }
+
+    const nextFilter: FilterKey = isFilterKey(value) ? value : "all";
+
+    if (nextFilter === activeFilter) {
+      return;
+    }
+
+    setActiveFilter(nextFilter);
+    setError(null);
+
+    const targetState = filterStates[nextFilter];
+    if (targetState?.initialized) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(buildEndpoint(nextFilter, 0, pageSize), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      });
+
+      const result = (await response.json()) as ApiResponse;
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error ?? response.statusText);
+      }
+
+      const nextItems = result.data?.items ?? [];
+      const nextTotalCount = result.data?.totalCount ?? 0;
+
+      setFilterStates((prev) => ({
+        ...prev,
+        [nextFilter]: {
+          items: nextItems,
+          totalCount: nextTotalCount,
+          page: 0,
+          initialized: true,
+        },
+      }));
+    } catch (err: any) {
+      console.error("[my-creations] fetch filter failed", err);
+      setError(err?.message ?? "加载失败，请稍后再试");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (loading || !hasMore) {
+      return;
+    }
+
+    const filterForRequest = activeFilter;
+    const nextPage = (filterStates[filterForRequest]?.page ?? 0) + 1;
+
     setLoading(true);
     setError(null);
 
     try {
-      const nextPage = page + 1;
-      const response = await fetch(`/api/ai/my-creations?page=${nextPage}&pageSize=${pageSize}`, {
+      const response = await fetch(buildEndpoint(filterForRequest, nextPage, pageSize), {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -92,16 +209,31 @@ export function MyCreationsContent({
       const nextItems = result.data?.items ?? [];
       const nextTotalCount = result.data?.totalCount ?? currentTotal;
 
-      setItems((prev) => [...prev, ...nextItems]);
-      setPage(nextPage);
-      setCurrentTotal(nextTotalCount);
+      setFilterStates((prev) => {
+        const state: FilterState = prev[filterForRequest] ?? {
+          items: [],
+          totalCount: 0,
+          page: 0,
+          initialized: true,
+        };
+
+        return {
+          ...prev,
+          [filterForRequest]: {
+            items: [...state.items, ...nextItems],
+            totalCount: nextTotalCount,
+            page: nextPage,
+            initialized: true,
+          },
+        };
+      });
     } catch (err: any) {
       console.error("[my-creations] load more failed", err);
       setError(err?.message ?? "加载失败，请稍后再试");
     } finally {
       setLoading(false);
     }
-  }, [hasMore, loading, page, pageSize, currentTotal]);
+  };
 
   if (!isAuthenticated) {
     return (
@@ -117,20 +249,29 @@ export function MyCreationsContent({
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="text-center space-y-3">
-          <h3 className="text-xl font-semibold text-white">暂无作品</h3>
-        </div>
-      </div>
-    );
-  }
+  const showSkeletonGrid = loading && items.length === 0;
+  const showEmptyState = !loading && items.length === 0;
 
   return (
     <div className="w-full">
-      <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-        {items.map((item) => {
+      <div className="mb-6">
+        <MyCreationsFilterTabs options={FILTER_OPTIONS} value={activeFilter} onChange={handleFilterChange} />
+        {error && items.length === 0 ? (
+          <p className="mt-2 text-sm text-red-300">{error}</p>
+        ) : null}
+      </div>
+
+      {showSkeletonGrid ? (
+        <div className="flex justify-center py-10 text-sm text-white/70">加载中...</div>
+      ) : showEmptyState ? (
+        <div className="flex flex-1 items-center justify-center py-10">
+          <div className="text-center space-y-3">
+            <h3 className="text-xl font-semibold text-white">暂无作品</h3>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          {items.map((item) => {
           const [primaryOutput] = item.outputs;
           const assetUrl = primaryOutput?.url ?? primaryOutput?.thumbUrl ?? undefined;
           const video = isVideoOutput(primaryOutput);
@@ -231,32 +372,35 @@ export function MyCreationsContent({
             );
           })();
 
-          return (
-            <div
-              key={item.jobId}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
-            >
-              <div className="relative aspect-square overflow-hidden">
-                {mediaContent}
+            return (
+              <div
+                key={item.jobId}
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+              >
+                <div className="relative aspect-square overflow-hidden">
+                  {mediaContent}
+                </div>
+
               </div>
+            );
+          })}
+        </div>
+      )}
 
-            </div>
-          );
-        })}
-      </div>
+      {items.length > 0 && (
+        <div className="mt-8 flex flex-col items-center gap-3">
+          {error && !loading ? <p className="text-sm text-red-300">{error}</p> : null}
+          {hasMore ? (
+            <Button onClick={loadMore} disabled={loading} variant="outline" className="w-40 border-white/20 text-white">
+              {loading ? "加载中..." : "加载更多"}
+            </Button>
+          ) : (
+            <p className="text-sm text-white/50">没有更多内容啦</p>
+          )}
+        </div>
+      )}
 
-      <div className="mt-8 flex flex-col items-center gap-3">
-        {error ? <p className="text-sm text-red-300">{error}</p> : null}
-        {hasMore ? (
-          <Button onClick={loadMore} disabled={loading} variant="outline" className="w-40 border-white/20 text-white">
-            {loading ? "加载中..." : "加载更多"}
-          </Button>
-        ) : (
-          <p className="text-sm text-white/50">没有更多内容啦</p>
-        )}
-      </div>
-
-      {loading && hasMore && (
+      {loading && hasMore && items.length > 0 && (
         <div className="mt-6 grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-[320px] rounded-2xl bg-white/10" />

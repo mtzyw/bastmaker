@@ -15,29 +15,19 @@ import {
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("无法读取文件"));
-        return;
-      }
-      const commaIndex = result.indexOf(",");
-      resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
-    };
-    reader.onerror = () => reject(new Error("读取文件失败"));
-    reader.readAsDataURL(file);
-  });
-}
-
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
   if (model === "Nano Banana Free") return 3;
   if (model === "Seedream 4" || model === "Seedream 4 Edit") return 5;
   return DEFAULT_MAX;
 }
+
+type ReferenceImage = {
+  file: File;
+  remoteUrl: string | null;
+  uploading: boolean;
+  error: string | null;
+};
 
 export default function ImageToImageLeftPanel({
   excludeModels,
@@ -47,7 +37,7 @@ export default function ImageToImageLeftPanel({
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
-  const [images, setImages] = useState<File[]>([]);
+  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -66,13 +56,110 @@ export default function ImageToImageLeftPanel({
   }, [availableOptions, model]);
 
   useEffect(() => {
-    if (images.length > 0 && errorMessage) {
+    if (referenceImages.length > 0 && errorMessage === "请至少上传一张参考图") {
       setErrorMessage(null);
     }
-  }, [images.length, errorMessage]);
+  }, [referenceImages.length, errorMessage]);
+
+  const uploadReferenceImage = useCallback(async (file: File) => {
+    setReferenceImages((prev) => {
+      const index = prev.findIndex((item) => item.file === file);
+      if (index === -1) {
+        return prev;
+      }
+      const next = [...prev];
+      next[index] = { ...next[index], uploading: true, error: null };
+      return next;
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/uploads/image-to-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result?.success) {
+        const message = typeof result?.error === "string" ? result.error : response.statusText ?? "图片上传失败";
+        throw new Error(message);
+      }
+
+      const remoteUrl = result?.data?.url;
+      if (typeof remoteUrl !== "string" || remoteUrl.length === 0) {
+        throw new Error("图片上传结果异常");
+      }
+
+      setReferenceImages((prev) => {
+        const index = prev.findIndex((item) => item.file === file);
+        if (index === -1) {
+          return prev;
+        }
+        const next = [...prev];
+        next[index] = { ...next[index], uploading: false, remoteUrl, error: null };
+        return next;
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      setReferenceImages((prev) => {
+        const index = prev.findIndex((item) => item.file === file);
+        if (index === -1) {
+          return prev;
+        }
+        const next = [...prev];
+        next[index] = { ...next[index], uploading: false, remoteUrl: null, error: message };
+        return next;
+      });
+      setErrorMessage(message);
+    }
+  }, []);
+
+  const handleImagesChange = useCallback(
+    (files: File[]) => {
+      const newFiles = files.filter((file) => !referenceImages.some((item) => item.file === file));
+
+      setReferenceImages((prev) => {
+        const existingMap = new Map(prev.map((item) => [item.file, item] as const));
+        return files.map((file) => {
+          const existing = existingMap.get(file);
+          if (existing) {
+            return existing;
+          }
+          return { file, remoteUrl: null, uploading: true, error: null };
+        });
+      });
+
+      if (newFiles.length > 0) {
+        if (errorMessage) {
+          setErrorMessage(null);
+        }
+        setStatusMessage(null);
+      }
+
+      newFiles.forEach((file) => {
+        void uploadReferenceImage(file);
+      });
+
+      if (files.length === 0) {
+        setStatusMessage(null);
+      }
+    },
+    [referenceImages, uploadReferenceImage, errorMessage]
+  );
 
   const maxCount = getMaxCountByModel(model);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
+  const isUploading = referenceImages.some((item) => item.uploading);
+  const hasPendingUploads = referenceImages.some((item) => !item.remoteUrl);
+  const disableSubmit =
+    !prompt.trim() ||
+    referenceImages.length === 0 ||
+    isSubmitting ||
+    isUploading ||
+    hasPendingUploads;
 
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
@@ -80,8 +167,20 @@ export default function ImageToImageLeftPanel({
       return;
     }
 
-    if (images.length === 0) {
+    if (referenceImages.length === 0) {
       setErrorMessage("请至少上传一张参考图");
+      return;
+    }
+
+    if (isUploading) {
+      setErrorMessage("图片上传中，请稍候");
+      return;
+    }
+
+    const unresolved = referenceImages.filter((item) => !item.remoteUrl);
+    if (unresolved.length > 0) {
+      const firstError = unresolved.find((item) => item.error)?.error;
+      setErrorMessage(firstError ?? "图片上传尚未完成，请重新上传");
       return;
     }
 
@@ -90,12 +189,18 @@ export default function ImageToImageLeftPanel({
     setStatusMessage(null);
 
     try {
-      const base64Images = await Promise.all(images.map((file) => fileToBase64(file)));
+      const referenceUrls = referenceImages
+        .map((item) => item.remoteUrl)
+        .filter((url): url is string => typeof url === "string" && url.length > 0);
+
+      if (referenceUrls.length === 0) {
+        throw new Error("参考图上传失败，请重新上传");
+      }
 
       const payload = {
         model: apiModel,
         prompt: trimmedPrompt,
-        reference_images: base64Images,
+        reference_images: referenceUrls,
         translate_prompt: translatePrompt,
       };
 
@@ -142,7 +247,7 @@ export default function ImageToImageLeftPanel({
     } finally {
       setIsSubmitting(false);
     }
-  }, [apiModel, images, isSubmitting, prompt, translatePrompt]);
+  }, [apiModel, referenceImages, isUploading, isSubmitting, prompt, translatePrompt]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
@@ -164,12 +269,12 @@ export default function ImageToImageLeftPanel({
           {/* Images */}
           <div className="flex items-center justify-between mb-2">
             <div className="text-sm">Images</div>
-            <div className="text-xs text-white/60">{images.length}/{maxCount}</div>
+            <div className="text-xs text-white/60">{referenceImages.length}/{maxCount}</div>
           </div>
           <ImageGridUploader
             className="mb-6"
             maxCount={maxCount}
-            onChange={(files) => setImages(files)}
+            onChange={handleImagesChange}
           />
 
           {/* Prompt */}
@@ -229,11 +334,14 @@ export default function ImageToImageLeftPanel({
                 "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait"
             )}
-            disabled={!prompt.trim() || images.length === 0 || isSubmitting}
+            disabled={disableSubmit}
             onClick={() => void handleCreate()}
           >
             {isSubmitting ? "创建中..." : "创建"}
           </Button>
+          {isUploading ? (
+            <p className="mt-3 text-sm text-white/70">参考图上传中，请稍候...</p>
+          ) : null}
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
           ) : null}
