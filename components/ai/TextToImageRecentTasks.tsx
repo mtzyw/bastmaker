@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import dayjs from "dayjs";
 import Image from "next/image";
 
 import { getUserCreationsHistory } from "@/actions/creations";
-import { CreationItem } from "@/lib/ai/creations";
+import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Download, Heart, MoreHorizontal, RefreshCcw, Share2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Database } from "@/lib/supabase/types";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -69,12 +73,31 @@ const MODALITY_LABELS: Record<string, string> = {
 };
 
 const PAGE_SIZE = 10;
+const POLL_INTERVAL_MS = 5000;
+
+type AiJobRow = Database["public"]["Tables"]["ai_jobs"]["Row"];
+type AiJobOutputRow = Database["public"]["Tables"]["ai_job_outputs"]["Row"];
 
 function formatProviderName(code?: string | null) {
   if (!code) {
     return "Unknown";
   }
   return PROVIDER_DISPLAY_NAMES[code] ?? code.replace(/^[a-z]/, (c) => c.toUpperCase());
+}
+
+function matchesCategory(item: CreationItem, category: CategoryFilter) {
+  if (category === "全部") {
+    return true;
+  }
+  const allowed = CATEGORY_MODALITY_MAP[category];
+  if (!allowed || allowed.length === 0) {
+    return true;
+  }
+  const modality = getModality(item);
+  if (!modality) {
+    return category === "图片";
+  }
+  return allowed.includes(modality);
 }
 
 function mapStatus(status?: string | null): TaskStatus {
@@ -187,7 +210,60 @@ function parsePrompt(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
+function mapJobRowToCreationItem(row: AiJobRow): CreationItem {
+  const metadata = (row.metadata_json ?? {}) as Record<string, any>;
+  const inputParams = (row.input_params_json ?? {}) as Record<string, any>;
+  const latestStatus =
+    typeof metadata.freepik_latest_status === "string"
+      ? metadata.freepik_latest_status
+      : null;
+  const isImageToImage =
+    typeof metadata.is_image_to_image === "boolean"
+      ? metadata.is_image_to_image
+      : false;
+  const referenceImageCount =
+    typeof metadata.reference_image_count === "number"
+      ? metadata.reference_image_count
+      : 0;
+
+  return {
+    jobId: row.id,
+    providerCode: row.provider_code,
+    providerJobId: row.provider_job_id,
+    status: row.status ?? null,
+    latestStatus,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    costCredits:
+      typeof row.cost_actual_credits === "number"
+        ? row.cost_actual_credits
+        : typeof row.cost_estimated_credits === "number"
+        ? row.cost_estimated_credits
+        : 0,
+    outputs: [],
+    metadata,
+    inputParams,
+    modalityCode:
+      row.modality_code ?? (typeof metadata.modality_code === "string" ? metadata.modality_code : null),
+    modelSlug: row.model_slug_at_submit,
+    errorMessage: row.error_message,
+    seed: row.seed,
+    isImageToImage,
+    referenceImageCount,
+  };
+}
+
+function mapOutputRowToCreationOutput(row: AiJobOutputRow): CreationOutput {
+  return {
+    id: row.id,
+    url: row.url,
+    thumbUrl: row.thumb_url,
+    type: row.type,
+    createdAt: row.created_at,
+  };
+}
+
 function toDisplayTask(job: CreationItem): DisplayTask {
+  const effectiveStatus = job.latestStatus ?? job.status;
   return {
     id: job.jobId,
     provider: formatProviderName(job.providerCode),
@@ -197,7 +273,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     createdAtLabel: dayjs(job.createdAt).format("MM-DD HH:mm"),
     prompt: parsePrompt(job.inputParams?.prompt),
     negativePrompt: parsePrompt(job.inputParams?.negative_prompt) || undefined,
-    status: mapStatus(job.status),
+    status: mapStatus(effectiveStatus),
     errorMessage:
       (typeof job.errorMessage === "string" && job.errorMessage.length > 0
         ? job.errorMessage
@@ -214,18 +290,31 @@ function toDisplayTask(job: CreationItem): DisplayTask {
 
 export default function TextToImageRecentTasks() {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("全部");
-  const [items, setItems] = useState<CreationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const items = useCreationHistoryStore((state) => state.items);
+  const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
+  const appendOutput = useCreationHistoryStore((state) => state.appendOutput);
+  const removeItem = useCreationHistoryStore((state) => state.removeItem);
+  const clearStore = useCreationHistoryStore((state) => state.clear);
 
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      setIsUnauthorized(false);
+  const fetchInFlightRef = useRef(false);
+
+  const loadHistory = useCallback(
+    async ({ withSpinner = false, signal }: { withSpinner?: boolean; signal?: AbortSignal } = {}) => {
+      if (signal?.aborted || fetchInFlightRef.current) {
+        return;
+      }
+
+      fetchInFlightRef.current = true;
+
+      if (withSpinner) {
+        setIsLoading(true);
+        setError(null);
+        setIsUnauthorized(false);
+      }
 
       try {
         const modalityCodes = CATEGORY_MODALITY_MAP[activeCategory];
@@ -235,7 +324,7 @@ export default function TextToImageRecentTasks() {
           modalityCodes: modalityCodes ? [...modalityCodes] : undefined,
         });
 
-        if (cancelled) {
+        if (signal?.aborted) {
           return;
         }
 
@@ -243,36 +332,160 @@ export default function TextToImageRecentTasks() {
           const message = result.error ?? "Failed to load history";
           if (/unauthorized|authentication/i.test(message)) {
             setIsUnauthorized(true);
-            setItems([]);
+            clearStore();
           } else {
             setError(message);
           }
           return;
         }
 
-        setItems(result.data?.items ?? []);
+        mergeItems(result.data?.items ?? []);
+        setError(null);
+        setIsUnauthorized(false);
       } catch (err: any) {
-        if (cancelled) {
+        if (signal?.aborted) {
           return;
         }
         console.error("[TextToImageRecentTasks] load failed", err);
         setError(err?.message ?? "加载失败，请稍后再试");
-        setItems([]);
       } finally {
-        if (!cancelled) {
+        if (!signal?.aborted && withSpinner) {
           setIsLoading(false);
         }
+        fetchInFlightRef.current = false;
       }
+    },
+    [activeCategory, clearStore, mergeItems, setError, setIsLoading, setIsUnauthorized]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadHistory({ withSpinner: true, signal: controller.signal });
+
+    return () => {
+      controller.abort();
+    };
+  }, [loadHistory]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+    let jobChannel: RealtimeChannel | null = null;
+    let outputChannel: RealtimeChannel | null = null;
+
+    const setup = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) {
+        return;
+      }
+
+      jobChannel = supabase
+        .channel(`ai-jobs-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "ai_jobs",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            if (cancelled) {
+              return;
+            }
+            if (payload.eventType === "DELETE") {
+              const oldRow = payload.old as AiJobRow | null;
+              if (oldRow?.id) {
+                removeItem(oldRow.id);
+              }
+              return;
+            }
+            const row = payload.new as AiJobRow | null;
+            if (!row) {
+              return;
+            }
+            mergeItems([mapJobRowToCreationItem(row)]);
+          }
+        )
+        .subscribe();
+
+      outputChannel = supabase
+        .channel(`ai-job-outputs-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "ai_job_outputs",
+          },
+          (payload) => {
+            if (cancelled) {
+              return;
+            }
+            const row = payload.new as AiJobOutputRow | null;
+            if (!row) {
+              return;
+            }
+            appendOutput(row.job_id, mapOutputRowToCreationOutput(row));
+          }
+        )
+        .subscribe();
     };
 
-    fetchData();
+    void setup();
 
     return () => {
       cancelled = true;
+      if (jobChannel) {
+        supabase.removeChannel(jobChannel);
+      }
+      if (outputChannel) {
+        supabase.removeChannel(outputChannel);
+      }
     };
-  }, [activeCategory]);
+  }, [appendOutput, mergeItems, removeItem]);
 
-  const displayTasks = useMemo(() => items.map(toDisplayTask), [items]);
+  const filteredItems = useMemo(() => {
+    if (!items.length) {
+      return [] as CreationItem[];
+    }
+
+    return items
+      .filter((item) => matchesCategory(item, activeCategory))
+      .slice(0, PAGE_SIZE);
+  }, [items, activeCategory]);
+
+  const displayTasks = useMemo(
+    () => filteredItems.map(toDisplayTask),
+    [filteredItems]
+  );
+
+  const hasProcessingTasks = useMemo(
+    () => items.some((item) => mapStatus(item.latestStatus ?? item.status) === "processing"),
+    [items]
+  );
+
+  useEffect(() => {
+    if (!hasProcessingTasks) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const tick = () => {
+      void loadHistory({ signal: controller.signal });
+    };
+
+    const intervalId = window.setInterval(tick, POLL_INTERVAL_MS);
+    tick();
+
+    return () => {
+      controller.abort();
+      window.clearInterval(intervalId);
+    };
+  }, [hasProcessingTasks, loadHistory]);
 
   const renderMedia = (task: DisplayTask) => {
     if (!task.media) {
@@ -497,7 +710,7 @@ export default function TextToImageRecentTasks() {
                   {task.status === "failed"
                     ? "Retry available soon"
                     : task.status === "processing"
-                    ? "Processing..."
+                    ? "生成中..."
                     : "Ready to download"}
                 </span>
               </footer>

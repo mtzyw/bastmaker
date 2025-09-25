@@ -15,6 +15,9 @@ import {
 } from "@/components/ai/text-image-models";
 import { toFreepikAspectRatio } from "@/lib/ai/freepik";
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { CreationItem } from "@/lib/ai/creations";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -26,6 +29,7 @@ export default function TextToImageLeftPanel({
   hideModelSelect?: boolean;
   excludeModels?: string[];
 } = {}) {
+  const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
@@ -75,6 +79,7 @@ export default function TextToImageLeftPanel({
 
   const apiAspectRatio = useMemo(() => toFreepikAspectRatio(aspectRatio), [aspectRatio]);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
+  const modelConfig = useMemo(() => getTextToImageModelConfig(apiModel), [apiModel]);
 
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
@@ -116,6 +121,48 @@ export default function TextToImageLeftPanel({
         updatedBenefits?: { totalAvailableCredits?: number };
       };
 
+      if (taskInfo?.jobId) {
+        const now = new Date().toISOString();
+        const optimisticStatus = taskInfo.status ?? "processing";
+        const isImageToImageModel = modelConfig.defaultModality === "i2i";
+        const optimisticItem: CreationItem = {
+          jobId: taskInfo.jobId,
+          providerCode: modelConfig.providerCode,
+          providerJobId: taskInfo.providerJobId ?? null,
+          status: optimisticStatus,
+          latestStatus: taskInfo.freepikStatus ?? taskInfo.status ?? null,
+          createdAt: now,
+          costCredits:
+            typeof taskInfo.creditsCost === "number"
+              ? taskInfo.creditsCost
+              : modelConfig.creditsCost,
+          outputs: [],
+          metadata: {
+            source: "text-to-image",
+            translate_prompt: translatePrompt,
+            is_image_to_image: isImageToImageModel,
+            reference_image_count: 0,
+            credits_cost: modelConfig.creditsCost,
+            freepik_latest_status: taskInfo.freepikStatus ?? taskInfo.status ?? null,
+            freepik_initial_status: taskInfo.freepikStatus ?? taskInfo.status ?? null,
+            freepik_task_id: taskInfo.providerJobId ?? null,
+          },
+          inputParams: {
+            model: apiModel,
+            prompt: trimmedPrompt,
+            aspect_ratio: apiAspectRatio,
+            translate_prompt: translatePrompt,
+          },
+          modalityCode: modelConfig.defaultModality,
+          modelSlug: apiModel,
+          errorMessage: null,
+          seed: null,
+          isImageToImage: isImageToImageModel,
+          referenceImageCount: 0,
+        };
+        upsertHistoryItem(optimisticItem);
+      }
+
       const parts: string[] = ["任务已提交，请稍后在生成记录页查看进度。"];
 
       if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
@@ -137,7 +184,15 @@ export default function TextToImageLeftPanel({
     } finally {
       setIsSubmitting(false);
     }
-  }, [apiAspectRatio, apiModel, isSubmitting, prompt, translatePrompt]);
+  }, [
+    apiAspectRatio,
+    apiModel,
+    isSubmitting,
+    modelConfig,
+    prompt,
+    translatePrompt,
+    upsertHistoryItem,
+  ]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
