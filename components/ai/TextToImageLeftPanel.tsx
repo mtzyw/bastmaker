@@ -30,13 +30,13 @@ export default function TextToImageLeftPanel({
   excludeModels?: string[];
 } = {}) {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
+  const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState("1:1");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -89,7 +89,72 @@ export default function TextToImageLeftPanel({
 
     setIsSubmitting(true);
     setErrorMessage(null);
-    setStatusMessage(null);
+
+    const optimisticCreatedAt = new Date().toISOString();
+    const isImageToImageModel = modelConfig.defaultModality === "i2i";
+    const buildHistoryItem = ({
+      jobId,
+      status,
+      latestStatus,
+      providerJobId,
+      createdAt,
+      costCredits,
+    }: {
+      jobId: string;
+      status: string;
+      latestStatus?: string | null;
+      providerJobId?: string | null;
+      createdAt?: string;
+      costCredits?: number;
+    }): CreationItem => {
+      const effectiveStatus = status || "processing";
+      const effectiveLatest = latestStatus ?? effectiveStatus;
+      const effectiveCredits = typeof costCredits === "number" ? costCredits : modelConfig.creditsCost;
+
+      return {
+        jobId,
+        providerCode: modelConfig.providerCode,
+        providerJobId: providerJobId ?? null,
+        status: effectiveStatus,
+        latestStatus: effectiveLatest,
+        createdAt: createdAt ?? optimisticCreatedAt,
+        costCredits: effectiveCredits,
+        outputs: [],
+        metadata: {
+          source: "text-to-image",
+          translate_prompt: translatePrompt,
+          is_image_to_image: isImageToImageModel,
+          reference_image_count: 0,
+          credits_cost: effectiveCredits,
+          freepik_latest_status: effectiveLatest,
+          freepik_initial_status: effectiveStatus,
+          freepik_task_id: providerJobId ?? null,
+        },
+        inputParams: {
+          model: apiModel,
+          prompt: trimmedPrompt,
+          aspect_ratio: apiAspectRatio,
+          translate_prompt: translatePrompt,
+        },
+        modalityCode: modelConfig.defaultModality,
+        modelSlug: apiModel,
+        errorMessage: null,
+        seed: null,
+        isImageToImage: isImageToImageModel,
+        referenceImageCount: 0,
+      };
+    };
+
+    const tempJobId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? `temp-${crypto.randomUUID()}`
+        : `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const optimisticTempItem = buildHistoryItem({
+      jobId: tempJobId,
+      status: "processing",
+      latestStatus: "processing",
+    });
+    upsertHistoryItem(optimisticTempItem);
 
     const payload = {
       model: apiModel,
@@ -121,63 +186,29 @@ export default function TextToImageLeftPanel({
         updatedBenefits?: { totalAvailableCredits?: number };
       };
 
+      removeHistoryItem(tempJobId);
+
       if (taskInfo?.jobId) {
-        const now = new Date().toISOString();
         const optimisticStatus = taskInfo.status ?? "processing";
-        const isImageToImageModel = modelConfig.defaultModality === "i2i";
-        const optimisticItem: CreationItem = {
+        const latestStatus = taskInfo.freepikStatus ?? taskInfo.status ?? optimisticStatus;
+        const creditsCost =
+          typeof taskInfo.creditsCost === "number" ? taskInfo.creditsCost : modelConfig.creditsCost;
+
+        const optimisticItem = buildHistoryItem({
           jobId: taskInfo.jobId,
-          providerCode: modelConfig.providerCode,
-          providerJobId: taskInfo.providerJobId ?? null,
           status: optimisticStatus,
-          latestStatus: taskInfo.freepikStatus ?? taskInfo.status ?? null,
-          createdAt: now,
-          costCredits:
-            typeof taskInfo.creditsCost === "number"
-              ? taskInfo.creditsCost
-              : modelConfig.creditsCost,
-          outputs: [],
-          metadata: {
-            source: "text-to-image",
-            translate_prompt: translatePrompt,
-            is_image_to_image: isImageToImageModel,
-            reference_image_count: 0,
-            credits_cost: modelConfig.creditsCost,
-            freepik_latest_status: taskInfo.freepikStatus ?? taskInfo.status ?? null,
-            freepik_initial_status: taskInfo.freepikStatus ?? taskInfo.status ?? null,
-            freepik_task_id: taskInfo.providerJobId ?? null,
-          },
-          inputParams: {
-            model: apiModel,
-            prompt: trimmedPrompt,
-            aspect_ratio: apiAspectRatio,
-            translate_prompt: translatePrompt,
-          },
-          modalityCode: modelConfig.defaultModality,
-          modelSlug: apiModel,
-          errorMessage: null,
-          seed: null,
-          isImageToImage: isImageToImageModel,
-          referenceImageCount: 0,
-        };
+          latestStatus,
+          providerJobId: taskInfo.providerJobId ?? null,
+          createdAt: optimisticCreatedAt,
+          costCredits: creditsCost,
+        });
+
         upsertHistoryItem(optimisticItem);
       }
 
-      const parts: string[] = ["任务已提交，请稍后在生成记录页查看进度。"];
-
-      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
-        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
-      }
-
-      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
-      if (typeof remainingCredits === "number") {
-        parts.push(`当前余额 ${remainingCredits} Credits`);
-      }
-
-      setStatusMessage(parts.join("，"));
-
       console.debug("[text-to-image] submit payload", payload, result);
     } catch (error) {
+      removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
       setErrorMessage(message);
       console.error("[text-to-image] submit error", error);
@@ -192,6 +223,7 @@ export default function TextToImageLeftPanel({
     prompt,
     translatePrompt,
     upsertHistoryItem,
+    removeHistoryItem,
   ]);
 
   return (
@@ -296,9 +328,6 @@ export default function TextToImageLeftPanel({
           </Button>
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
-          {statusMessage ? (
-            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
           ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />

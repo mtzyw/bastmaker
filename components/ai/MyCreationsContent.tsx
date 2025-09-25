@@ -37,20 +37,17 @@ function isVideoOutput(output?: CreationOutput | null) {
   return /\.(mp4|webm|mov)(\?.*)?$/i.test(url);
 }
 
-type FilterKey = "all" | "video" | "video-effects" | "image";
+type FilterKey = "all" | "video" | "image";
 
 const FILTER_OPTIONS: ReadonlyArray<MyCreationsFilterOption> = [
   { value: "all", label: "全部" },
   { value: "video", label: "视频" },
-  { value: "video-effects", label: "AI视频特效" },
   { value: "image", label: "图片" },
 ];
 
 const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => string> = {
   all: (page, pageSize) => `/api/ai/my-creations?page=${page}&pageSize=${pageSize}`,
   video: (page, pageSize) => `/api/ai/my-creations/videos?page=${page}&pageSize=${pageSize}`,
-  "video-effects": (page, pageSize) =>
-    `/api/ai/my-creations/videos?page=${page}&pageSize=${pageSize}`,
   image: (page, pageSize) => `/api/ai/my-creations/images?page=${page}&pageSize=${pageSize}`,
 };
 
@@ -122,7 +119,6 @@ export function MyCreationsContent({
   const [filterStates, setFilterStates] = useState<FilterStateMap>({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
     video: { items: [], totalCount: 0, page: 0, initialized: false },
-    "video-effects": { items: [], totalCount: 0, page: 0, initialized: false },
     image: { items: [], totalCount: 0, page: 0, initialized: false },
   });
   const [loading, setLoading] = useState(false);

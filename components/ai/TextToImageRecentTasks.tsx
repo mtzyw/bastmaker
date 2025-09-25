@@ -24,7 +24,6 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
   { key: "视频" as const, label: "视频" },
-  { key: "AI视频特效" as const, label: "AI视频特效" },
   { key: "图片" as const, label: "图片" },
 ];
 
@@ -56,8 +55,7 @@ type DisplayTask = {
 
 const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefined> = {
   全部: undefined,
-  视频: ["t2v"],
-  "AI视频特效": ["i2v"],
+  视频: ["t2v", "i2v"],
   图片: ["t2i", "i2i"],
 };
 
