@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -54,9 +54,30 @@ const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => st
   image: (page, pageSize) => `/api/ai/my-creations/images?page=${page}&pageSize=${pageSize}`,
 };
 
+const POLL_INTERVAL_MS = 5000;
+const PROCESSING_STATUSES = new Set([
+  "pending",
+  "queued",
+  "processing",
+  "running",
+  "in_progress",
+]);
+
 function buildEndpoint(filter: FilterKey, page: number, pageSize: number): string {
   const builder = FILTER_ENDPOINTS[filter] ?? FILTER_ENDPOINTS.all;
   return builder(page, pageSize);
+}
+
+function getEffectiveStatus(item: CreationItem) {
+  const candidate = item.latestStatus ?? item.status;
+  return typeof candidate === "string" ? candidate.toLowerCase() : null;
+}
+
+function isProcessingStatus(value?: string | null) {
+  if (!value) {
+    return false;
+  }
+  return PROCESSING_STATUSES.has(value.toLowerCase());
 }
 
 function isFilterKey(value: string): value is FilterKey {
@@ -124,6 +145,10 @@ export function MyCreationsContent({
   const items = currentState.items;
   const currentTotal = currentState.totalCount;
   const hasMore = items.length < currentTotal;
+  const hasProcessingItems = useMemo(
+    () => items.some((item) => isProcessingStatus(getEffectiveStatus(item))),
+    [items]
+  );
 
   const handleFilterChange = async (value: string) => {
     if (loading) {
@@ -234,6 +259,110 @@ export function MyCreationsContent({
       setLoading(false);
     }
   };
+
+  const refreshActiveFilter = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await fetch(buildEndpoint(activeFilter, 0, pageSize), {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          signal,
+        });
+
+        const result = (await response.json()) as ApiResponse;
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error ?? response.statusText);
+        }
+
+        const nextItems = result.data?.items ?? [];
+        const nextTotalCount = result.data?.totalCount;
+
+        setFilterStates((prev) => {
+          const prevState = prev[activeFilter] ?? {
+            items: [],
+            totalCount: 0,
+            page: 0,
+            initialized: true,
+          };
+
+          if (nextItems.length === 0) {
+            return {
+              ...prev,
+              [activeFilter]: {
+                ...prevState,
+                items: [],
+                totalCount: typeof nextTotalCount === "number" ? nextTotalCount : prevState.totalCount,
+                page: 0,
+              },
+            };
+          }
+
+          const seen = new Set(nextItems.map((item) => item.jobId));
+          const mergedItems = [
+            ...nextItems,
+            ...prevState.items.filter((item) => !seen.has(item.jobId)),
+          ];
+
+          return {
+            ...prev,
+            [activeFilter]: {
+              ...prevState,
+              items: mergedItems,
+              totalCount: typeof nextTotalCount === "number" ? nextTotalCount : prevState.totalCount,
+              page: prevState.page,
+              initialized: true,
+            },
+          };
+        });
+      } catch (err: any) {
+        if (err?.name === "AbortError") {
+          return;
+        }
+        console.error("[my-creations] polling refresh failed", err);
+      }
+    },
+    [activeFilter, pageSize]
+  );
+
+  useEffect(() => {
+    if (!hasProcessingItems) {
+      return;
+    }
+
+    let controller: AbortController | null = null;
+    let isFetching = false;
+    let cancelled = false;
+
+    const tick = async () => {
+      if (isFetching || cancelled) {
+        return;
+      }
+      controller?.abort();
+      controller = new AbortController();
+      isFetching = true;
+      try {
+        await refreshActiveFilter(controller.signal);
+      } finally {
+        isFetching = false;
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void tick();
+    }, POLL_INTERVAL_MS);
+
+    void tick();
+
+    return () => {
+      cancelled = true;
+      controller?.abort();
+      window.clearInterval(intervalId);
+    };
+  }, [hasProcessingItems, refreshActiveFilter]);
 
   if (!isAuthenticated) {
     return (

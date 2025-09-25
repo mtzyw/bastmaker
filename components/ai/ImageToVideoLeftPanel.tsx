@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -54,7 +55,6 @@ export default function ImageToVideoLeftPanel() {
   const [isUploadingIntro, setIsUploadingIntro] = useState(false);
   const [isUploadingOutro, setIsUploadingOutro] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const isTransitionModel = model === TRANSITION_MODEL;
@@ -134,7 +134,6 @@ export default function ImageToVideoLeftPanel() {
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
     setStatusMessage(null);
 
     try {
@@ -201,7 +200,7 @@ export default function ImageToVideoLeftPanel() {
       console.debug("[image-to-video] submit payload", payload, result);
     } catch (error) {
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
-      setErrorMessage(message);
+      toast.error(message, { duration: 7000, position: "top-center" });
       console.error("[image-to-video] submit error", error);
     } finally {
       setIsSubmitting(false);
@@ -244,7 +243,27 @@ export default function ImageToVideoLeftPanel() {
     }
   };
 
-  const handleCropConfirm = async ({ blob, dataUrl }: { blob: Blob; dataUrl: string }) => {
+  const handleCropConfirm = async ({
+    blob,
+    dataUrl,
+    width,
+    height,
+  }: {
+    blob: Blob;
+    dataUrl: string;
+    width: number;
+    height: number;
+  }) => {
+    const shortestSide = Math.min(width, height);
+    if (!Number.isFinite(shortestSide) || shortestSide <= 360) {
+      const message = "Failed to upload the image. The shorter side should exceed 360 pixels.";
+      toast.error(message, { duration: 7000, position: "top-center" });
+      setCropperOpen(false);
+      if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
+      setCropSource(null);
+      return;
+    }
+
     const fileName = cropSource?.fileName ?? `cropped-${Date.now()}.png`;
     const fileType = cropSource?.fileType ?? blob.type ?? "image/png";
     const croppedFile = new File([blob], fileName, { type: fileType });
@@ -263,7 +282,6 @@ export default function ImageToVideoLeftPanel() {
     if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
     setCropSource(null);
 
-    setErrorMessage(null);
     setIsUploadingPrimary(true);
     try {
       const remoteUrl = await uploadImageToR2(croppedFile, "primary");
@@ -275,7 +293,7 @@ export default function ImageToVideoLeftPanel() {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
-      setErrorMessage(message);
+      toast.error(message, { duration: 7000, position: "top-center" });
     } finally {
       setIsUploadingPrimary(false);
     }
@@ -309,8 +327,6 @@ export default function ImageToVideoLeftPanel() {
     setAsset({ file, previewUrl, remoteUrl: null });
     setUploading(true);
 
-    setErrorMessage(null);
-
     try {
       const remoteUrl = await uploadImageToR2(file, slot);
       setAsset((prev) => {
@@ -321,7 +337,7 @@ export default function ImageToVideoLeftPanel() {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
-      setErrorMessage(message);
+      toast.error(message, { duration: 7000, position: "top-center" });
       setAsset((prev) => {
         if (!prev || prev.file !== file) {
           return prev;
@@ -660,9 +676,6 @@ export default function ImageToVideoLeftPanel() {
             <Sparkles className="w-4 h-4 mr-2" />
             {isSubmitting ? "创建中..." : "创建"}
           </Button>
-          {errorMessage ? (
-            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
           {statusMessage ? (
             <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
           ) : null}

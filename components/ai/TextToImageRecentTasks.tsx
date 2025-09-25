@@ -62,7 +62,7 @@ const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefine
 };
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
-  freepik: "Pollo.ai",
+  freepik: "Bestmaker.ai",
 };
 
 const MODALITY_LABELS: Record<string, string> = {
@@ -547,23 +547,18 @@ export default function TextToImageRecentTasks() {
   if (isLoading) {
     content = (
       <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
-          >
-            <div className="flex items-start gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-48" />
-              </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4">
+          <div className="flex items-start gap-3">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-48" />
             </div>
-            <Skeleton className="h-3 w-full" />
-            <Skeleton className="h-3 w-5/6" />
-            <Skeleton className="h-48 w-full rounded-lg" />
           </div>
-        ))}
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-5/6" />
+          <Skeleton className="h-48 w-full rounded-lg" />
+        </div>
       </div>
     );
   } else if (isUnauthorized) {
@@ -723,7 +718,7 @@ export default function TextToImageRecentTasks() {
 
   return (
     <div className="h-full flex flex-col text-white">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 pt-1">
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <Select
           value={activeCategory}
           onValueChange={(value) => setActiveCategory(value as CategoryFilter)}

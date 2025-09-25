@@ -112,7 +112,8 @@ export async function POST(req: NextRequest) {
 
   if (internalStatus === "failed") {
     const providerError = formatProviderError(task.error);
-    const errorMessage = providerError ?? withDefault(metadata.error_message, "Provider reported failure");
+    const errorMessage =
+      providerError ?? withDefault(metadata.error_message, "Generation failed. Please try again.");
     updates.error_message = errorMessage;
     updatedMetadata.error_message = errorMessage;
   }

@@ -624,7 +624,7 @@ export async function POST(req: NextRequest) {
           (freepikResponse as any)?.error ??
           (freepikResponse as any)?.message
       );
-      const errorMessage = providerError ?? "Provider reported failure";
+      const errorMessage = providerError ?? "Generation failed. Please try again.";
       updates.error_message = errorMessage;
       updatedMetadata.error_message = errorMessage;
 

@@ -28,7 +28,7 @@ type AspectSelectValue = (typeof ASPECT_OPTIONS)[number]["value"];
 type ImageCropperDialogProps = {
   open: boolean;
   imageSrc: string | null;
-  onConfirm: (payload: { blob: Blob; dataUrl: string }) => void;
+  onConfirm: (payload: { blob: Blob; dataUrl: string; width: number; height: number }) => void;
   onCancel: () => void;
 };
 
@@ -106,11 +106,12 @@ export default function ImageCropperDialog({ open, imageSrc, onConfirm, onCancel
     try {
       setIsProcessing(true);
       const blob = await getCroppedImageBlob(imageSrc, croppedAreaPixels);
+      const { width, height } = croppedAreaPixels;
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onloadend = () => {
         const dataUrl = typeof reader.result === "string" ? reader.result : "";
-        onConfirm({ blob, dataUrl });
+        onConfirm({ blob, dataUrl, width, height });
         setIsProcessing(false);
       };
       reader.onerror = () => {

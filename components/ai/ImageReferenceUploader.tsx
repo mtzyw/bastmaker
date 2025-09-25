@@ -79,7 +79,7 @@ export default function ImageReferenceUploader({
     }
   };
 
-  const handleCropConfirm = ({ blob, dataUrl }: { blob: Blob; dataUrl: string }) => {
+  const handleCropConfirm = ({ blob, dataUrl }: { blob: Blob; dataUrl: string; width: number; height: number }) => {
     const fileName = cropSource?.fileName ?? `cropped-${Date.now()}.png`;
     const fileType = cropSource?.fileType ?? blob.type ?? "image/png";
     const croppedFile = new File([blob], fileName, { type: fileType });
