@@ -18,12 +18,12 @@ import { toast } from "sonner";
 
 import type { ViewerJob, ViewerJobAsset } from "@/actions/ai-jobs/public";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { ShareButton, type ShareMode } from "@/components/viewer/ShareButton";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
 
@@ -63,8 +63,23 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
 
   const primaryAsset = getPrimaryAsset(job.assets, job.fallbackUrl);
-  const previewAsset = getPreviewAsset(job.assets);
-  const outputSize = primaryAsset && primaryAsset.width && primaryAsset.height ? `${primaryAsset.width} × ${primaryAsset.height}` : "—";
+  const referenceAsset = job.referenceAssets[0] ?? null;
+  const previewAsset = referenceAsset ?? getPreviewAsset(job.assets);
+
+  const aspectRatioStyle = useMemo(() => {
+    if (!primaryAsset?.width || !primaryAsset?.height) {
+      return undefined;
+    }
+
+    const width = Number(primaryAsset.width);
+    const height = Number(primaryAsset.height);
+
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+      return undefined;
+    }
+
+    return { aspectRatio: `${width} / ${height}` };
+  }, [primaryAsset?.width, primaryAsset?.height]);
 
   const handleCopyPrompt = useCallback(() => {
     if (!job.prompt) {
@@ -83,21 +98,6 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
       }
     }
   }, [job.prompt, t]);
-
-  const handleShareEvent = useCallback(
-    (mode: ShareMode) => {
-      if (typeof window === "undefined") return;
-      const gtag = (window as unknown as { gtag?: (...args: any[]) => void }).gtag;
-      if (typeof gtag === "function") {
-        gtag("event", "share", {
-          method: mode,
-          job_id: job.id,
-          share_slug: job.shareSlug,
-        });
-      }
-    },
-    [job.id, job.shareSlug]
-  );
 
   const quickShare = useCallback(() => {
     if (navigator.share) {
@@ -127,7 +127,13 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     <Card className="mx-auto w-full max-w-[56rem] overflow-hidden border border-white/10 bg-[#0d1026]/95 text-white">
       <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
         <div className="border-b border-white/10 md:border-b-0 md:border-r">
-          <div className="relative aspect-[3/4] w-full bg-[#11132a]">
+          <div
+            className={cn(
+              "relative w-full bg-[#11132a]",
+              aspectRatioStyle ? undefined : "aspect-[3/4]"
+            )}
+            style={aspectRatioStyle}
+          >
             {primaryAsset ? (
               <Image
                 src={primaryAsset.url}
@@ -135,13 +141,13 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
                 fill
                 sizes="(max-width: 1024px) 100vw, 65vw"
                 priority
-                className="object-cover"
+                className="object-contain p-6"
               />
             ) : null}
           </div>
         </div>
 
-        <div className="space-y-4 p-5">
+        <div className="space-y-5 p-6">
           <header className="flex items-center justify-between border-b border-white/10 pb-5">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-white/20">
@@ -167,20 +173,16 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               <span>{t("modalityLabel", { default: "Type" })}</span>
               <span className="text-white/80">{job.modalityLabel ?? job.modality ?? "—"}</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-white/50">
-              <span>{t("outputSize", { default: "Dimensions" })}</span>
-              <span className="text-white/80">{outputSize}</span>
-            </div>
 
             {previewAsset ? (
               <div>
-                <h4 className="text-[11px] font-semibold uppercase tracking-wide text-white/60 mb-1">
+                <h4 className="text-xs font-medium uppercase tracking-wide text-white/50 mb-2">
                   {t("preview", { default: "Reference" })}
                 </h4>
                 <div className="w-16 h-20 overflow-hidden rounded border border-white/10">
                   <Image
                     src={previewAsset.url}
-                    alt="Preview"
+                    alt={previewAsset.alt ?? "Reference"}
                     width={64}
                     height={80}
                     className="h-full w-full object-cover"
@@ -227,7 +229,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           </section>
 
           <section className="space-y-3 border-t border-white/10 pt-5 text-sm text-white">
-            <h4 className="text-sm font-semibold text-white">{t("generateCTA", { default: "Try this model" })}</h4>
+            <h4 className="text-sm font-semibold text-white">{t("generateCTA", { default: "Create Similar Image" })}</h4>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
@@ -248,7 +250,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-white/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/60">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="p-2 text-white/70 hover:text-white">
                   <Heart className="h-4 w-4" />
@@ -268,17 +270,10 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
-              <ShareButton
-                shareUrl={shareUrl}
-                label={headerT("share", { default: "Share" })}
-                copySuccessLabel={headerT("copySuccess", { default: "Link copied" })}
-                onShared={handleShareEvent}
-              />
+              <Button className="bg-pink-600 text-white hover:bg-pink-700 sm:min-w-[160px]">
+                {t("generateCTA", { default: "Create Similar Image" })}
+              </Button>
             </div>
-
-            <Button className="w-full bg-pink-600 text-white hover:bg-pink-700">
-              {t("generateCTA", { default: "Create similar image" })}
-            </Button>
           </section>
         </div>
       </div>

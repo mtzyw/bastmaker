@@ -41,8 +41,7 @@
       "textToImage": "文生图",
       "imageToImage": "图生图",
       "textToVideo": "文生视频",
-      "imageToVideo": "图生视频",
-      "avatar": "AI 头像"
+      "imageToVideo": "图生视频"
     },
     "ownerStats": {
       "description": "仅对你可见的实时分享数据。",

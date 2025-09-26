@@ -41,8 +41,7 @@
       "textToImage": "Text to Image",
       "imageToImage": "Image to Image",
       "textToVideo": "Text to Video",
-      "imageToVideo": "Image to Video",
-      "avatar": "AI Avatar"
+      "imageToVideo": "Image to Video"
     },
     "ownerStats": {
       "description": "Only you can see these live share results.",

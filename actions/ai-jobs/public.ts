@@ -26,6 +26,7 @@ export type ViewerJob = {
   summary: string | null;
   prompt: string | null;
   assets: ViewerJobAsset[];
+  referenceAssets: ViewerJobAsset[];
   fallbackUrl: string | null;
   createdAt: string;
   owner: {
@@ -154,6 +155,42 @@ export async function getViewerJobBySlug(slug: string) {
 
   const assets = assetsFromOutputs.length > 0 ? assetsFromOutputs : assetsFromSnapshot;
 
+  const { data: inputs, error: inputsError } = await supabase
+    .from("ai_job_inputs")
+    .select("index, type, source, url, metadata_json")
+    .eq("job_id", job.id)
+    .order("index", { ascending: true });
+
+  if (inputsError) {
+    console.error("[viewer-job] failed to fetch inputs", inputsError);
+  }
+
+  const referenceSourceLabels: Record<string, string> = {
+    reference: "Reference image",
+    primary: "Source image",
+    tail: "Tail image",
+    intro: "Intro image",
+    outro: "Outro image",
+  };
+
+  const referenceAssets = (inputs ?? [])
+    .filter((input) => typeof input?.url === "string" && input.url.length > 0)
+    .map((input) => {
+      const normalizedSource = typeof input.source === "string" ? input.source.toLowerCase() : "reference";
+      const alt = referenceSourceLabels[normalizedSource] ?? "Reference image";
+
+      return {
+        type: "image" as const,
+        url: input.url as string,
+        thumbUrl: null,
+        posterUrl: null,
+        width: null,
+        height: null,
+        duration: null,
+        alt,
+      } satisfies ViewerJobAsset;
+    });
+
   const fallbackUrl = assets.length > 0 ? assets[0].url : null;
   const metadata = (job.metadata_json ?? {}) as Record<string, any>;
   const prompt = typeof metadata.prompt === "string" ? metadata.prompt : metadata.original_prompt;
@@ -171,6 +208,7 @@ export async function getViewerJobBySlug(slug: string) {
     summary: job.public_summary,
     prompt: typeof prompt === "string" ? prompt : null,
     assets,
+    referenceAssets,
     fallbackUrl,
     createdAt: job.created_at,
     owner: buildOwnerSummary(owner ?? null),

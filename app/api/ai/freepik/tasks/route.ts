@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
 
   const data = parsed.data;
   const trimmedPrompt = data.prompt.trim();
+  const referenceImageUrls = (data.reference_images ?? []).filter(
+    (url): url is string => typeof url === "string" && url.length > 0,
+  );
   if (!trimmedPrompt) {
     return apiResponse.badRequest("Prompt is required");
   }
@@ -101,6 +104,7 @@ export async function POST(req: NextRequest) {
     original_prompt: trimmedPrompt,
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
+    reference_inputs: referenceImageUrls,
   };
 
   const pricingSnapshot = {
@@ -152,6 +156,25 @@ export async function POST(req: NextRequest) {
         is_public: true,
       })
       .eq("id", jobRecord.id);
+  }
+
+  if (referenceImageUrls.length > 0) {
+    const inputRows = referenceImageUrls.map((url, index) => ({
+      job_id: jobRecord.id,
+      index,
+      type: "image",
+      source: "reference",
+      url,
+      metadata_json: {
+        role: "reference",
+        model: data.model,
+      },
+    }));
+
+    const { error: inputsError } = await adminSupabase.from("ai_job_inputs").insert(inputRows);
+    if (inputsError) {
+      console.error("[freepik] failed to record reference inputs", inputsError);
+    }
   }
 
   const deduction: DeductionContext = {

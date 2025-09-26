@@ -454,13 +454,17 @@ export async function POST(req: NextRequest) {
 
   const promptOptimizer = data.prompt_optimizer ?? (data.translate_prompt ?? false);
 
+  const primaryInputSource = data.image_url ?? data.first_frame_image_url ?? null;
+  const tailInputSource = data.tail_image_url ?? data.last_frame_image_url ?? null;
+  const introInputSource = data.intro_image_url ?? null;
+  const outroInputSource = data.outro_image_url ?? null;
+
   const primaryImageUrl =
-    data.image_url ??
-    data.first_frame_image_url ??
+    primaryInputSource ??
     (mode === "text" ? getDefaultTransparentImage(data.aspect_ratio) : undefined);
-  const tailImageUrl = data.tail_image_url ?? data.last_frame_image_url ?? undefined;
-  const introImageUrl = data.intro_image_url ?? undefined;
-  const outroImageUrl = data.outro_image_url ?? undefined;
+  const tailImageUrl = tailInputSource ?? undefined;
+  const introImageUrl = introInputSource ?? undefined;
+  const outroImageUrl = outroInputSource ?? undefined;
   const numericSeed = normalizeSeed(data.seed);
 
   const modalityCode: "t2v" | "i2v" = mode === "text" ? "t2v" : "i2v";
@@ -479,6 +483,12 @@ export async function POST(req: NextRequest) {
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
     credits_cost: modelConfig.creditsCost,
+    reference_inputs: {
+      primary: Boolean(primaryInputSource),
+      tail: Boolean(tailInputSource),
+      intro: Boolean(introInputSource),
+      outro: Boolean(outroInputSource),
+    },
   };
 
   const pricingSnapshot = {
@@ -610,6 +620,44 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const inputRows: Database["public"]["Tables"]["ai_job_inputs"]["Insert"][] = [];
+    let inputIndex = 0;
+
+    const addInput = (url: string | undefined, source: string) => {
+      if (!url) return;
+      inputRows.push({
+        job_id: jobRecord.id,
+        index: inputIndex++,
+        type: "image",
+        source,
+        url,
+        metadata_json: {
+          role: source,
+          mode,
+        },
+      });
+    };
+
+    if (primaryInputSource) {
+      addInput(resolvedPrimaryImageUrl, "primary");
+    }
+    if (tailInputSource) {
+      addInput(resolvedTailImageUrl, "tail");
+    }
+    if (introInputSource) {
+      addInput(resolvedIntroImageUrl, "intro");
+    }
+    if (outroInputSource) {
+      addInput(resolvedOutroImageUrl, "outro");
+    }
+
+    if (inputRows.length > 0) {
+      const { error: inputsError } = await adminSupabase.from("ai_job_inputs").insert(inputRows);
+      if (inputsError) {
+        console.error("[freepik-video] failed to record reference inputs", inputsError);
+      }
+    }
+
     console.log("[freepik-video] request payload", {
       endpoint: apiModel,
       payload,
