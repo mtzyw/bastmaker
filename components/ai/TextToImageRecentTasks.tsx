@@ -291,6 +291,9 @@ export default function TextToImageRecentTasks() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const items = useCreationHistoryStore((state) => state.items);
   const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
@@ -299,10 +302,25 @@ export default function TextToImageRecentTasks() {
   const clearStore = useCreationHistoryStore((state) => state.clear);
 
   const fetchInFlightRef = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const loadHistory = useCallback(
-    async ({ withSpinner = false, signal }: { withSpinner?: boolean; signal?: AbortSignal } = {}) => {
-      if (signal?.aborted || fetchInFlightRef.current) {
+    async ({
+      page = 0,
+      withSpinner = false,
+      signal,
+    }: {
+      page?: number;
+      withSpinner?: boolean;
+      signal?: AbortSignal;
+    } = {}) => {
+      if (signal?.aborted) {
+        return;
+      }
+
+      const appending = page > 0;
+
+      if (appending && fetchInFlightRef.current) {
         return;
       }
 
@@ -314,10 +332,14 @@ export default function TextToImageRecentTasks() {
         setIsUnauthorized(false);
       }
 
+      if (appending) {
+        setIsLoadingMore(true);
+      }
+
       try {
         const modalityCodes = CATEGORY_MODALITY_MAP[activeCategory];
         const result = await getUserCreationsHistory({
-          pageIndex: 0,
+          pageIndex: page,
           pageSize: PAGE_SIZE,
           modalityCodes: modalityCodes ? [...modalityCodes] : undefined,
         });
@@ -331,24 +353,32 @@ export default function TextToImageRecentTasks() {
           if (/unauthorized|authentication/i.test(message)) {
             setIsUnauthorized(true);
             clearStore();
-          } else {
+          } else if (!appending) {
             setError(message);
           }
+          setHasMore(false);
           return;
         }
 
         mergeItems(result.data?.items ?? []);
         setError(null);
         setIsUnauthorized(false);
+        setHasMore(Boolean(result.data?.hasMore));
+        setPageIndex(page);
       } catch (err: any) {
         if (signal?.aborted) {
           return;
         }
         console.error("[TextToImageRecentTasks] load failed", err);
-        setError(err?.message ?? "加载失败，请稍后再试");
+        if (!appending) {
+          setError(err?.message ?? "加载失败，请稍后再试");
+        }
       } finally {
         if (!signal?.aborted && withSpinner) {
           setIsLoading(false);
+        }
+        if (appending) {
+          setIsLoadingMore(false);
         }
         fetchInFlightRef.current = false;
       }
@@ -356,9 +386,18 @@ export default function TextToImageRecentTasks() {
     [activeCategory, clearStore, mergeItems, setError, setIsLoading, setIsUnauthorized]
   );
 
+  const handleLoadMore = useCallback(async () => {
+    if (!hasMore || isLoadingMore || isLoading || fetchInFlightRef.current) {
+      return;
+    }
+    await loadHistory({ page: pageIndex + 1 });
+  }, [hasMore, isLoadingMore, isLoading, loadHistory, pageIndex]);
+
   useEffect(() => {
     const controller = new AbortController();
-    void loadHistory({ withSpinner: true, signal: controller.signal });
+    setPageIndex(0);
+    setHasMore(true);
+    void loadHistory({ page: 0, withSpinner: true, signal: controller.signal });
 
     return () => {
       controller.abort();
@@ -451,9 +490,7 @@ export default function TextToImageRecentTasks() {
       return [] as CreationItem[];
     }
 
-    return items
-      .filter((item) => matchesCategory(item, activeCategory))
-      .slice(0, PAGE_SIZE);
+    return items.filter((item) => matchesCategory(item, activeCategory));
   }, [items, activeCategory]);
 
   const displayTasks = useMemo(
@@ -473,7 +510,7 @@ export default function TextToImageRecentTasks() {
 
     const controller = new AbortController();
     const tick = () => {
-      void loadHistory({ signal: controller.signal });
+      void loadHistory({ page: 0, signal: controller.signal });
     };
 
     const intervalId = window.setInterval(tick, POLL_INTERVAL_MS);
@@ -484,6 +521,32 @@ export default function TextToImageRecentTasks() {
       window.clearInterval(intervalId);
     };
   }, [hasProcessingTasks, loadHistory]);
+
+  useEffect(() => {
+    if (!hasMore) {
+      return;
+    }
+
+    const node = loadMoreRef.current;
+    if (!node) {
+      return;
+    }
+
+    const viewport = node.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && entry.isIntersecting) {
+        void handleLoadMore();
+      }
+    }, { root: viewport ?? undefined, rootMargin: "120px" });
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [handleLoadMore, hasMore]);
 
   const renderMedia = (task: DisplayTask) => {
     if (!task.media) {
@@ -709,6 +772,16 @@ export default function TextToImageRecentTasks() {
               </footer>
             </article>
           ))}
+          <div
+            ref={loadMoreRef}
+            className="py-4 text-center text-xs text-white/50"
+          >
+            {hasMore
+              ? isLoadingMore
+                ? "加载中..."
+                : "继续下拉加载更多"
+              : "没有更多内容啦"}
+          </div>
         </div>
       </ScrollArea>
     );
