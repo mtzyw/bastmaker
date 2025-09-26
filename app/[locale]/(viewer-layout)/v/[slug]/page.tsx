@@ -135,7 +135,7 @@ export default async function ViewerPage({
   return (
     <>
       <ViewerHeader job={job} shareUrl={absoluteShareUrl} generateUrl={generateUrl} />
-      <main className="px-4 pb-16 pt-12 sm:px-6">
+      <main className="px-4 pb-12 pt-4 sm:px-6">
         <ViewerBoard job={job} shareUrl={absoluteShareUrl} />
       </main>
     </>

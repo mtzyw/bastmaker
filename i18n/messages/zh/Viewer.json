@@ -38,9 +38,10 @@
     "preview": "参考图",
     "tags": "标签",
     "actions": {
-      "imageToVideo": "图生视频",
+      "textToImage": "文生图",
       "imageToImage": "图生图",
-      "imageToShorts": "图生短片",
+      "textToVideo": "文生视频",
+      "imageToVideo": "图生视频",
       "avatar": "AI 头像"
     },
     "ownerStats": {

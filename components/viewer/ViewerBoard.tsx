@@ -124,8 +124,8 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     .slice(0, 5);
 
   return (
-    <Card className="mx-auto w-full max-w-[50rem] overflow-hidden border border-white/10 bg-[#0d1026]/95 text-white">
-      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.6fr)_minmax(260px,1fr)]">
+    <Card className="mx-auto w-full max-w-[56rem] overflow-hidden border border-white/10 bg-[#0d1026]/95 text-white">
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
         <div className="border-b border-white/10 md:border-b-0 md:border-r">
           <div className="relative aspect-[3/4] w-full bg-[#11132a]">
             {primaryAsset ? (
@@ -141,7 +141,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           </div>
         </div>
 
-        <div className="space-y-5 p-6">
+        <div className="space-y-4 p-5">
           <header className="flex items-center justify-between border-b border-white/10 pb-5">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-white/20">
@@ -227,29 +227,26 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           </section>
 
           <section className="space-y-3 border-t border-white/10 pt-5 text-sm text-white">
-            <h4 className="text-sm font-semibold text-white">{t("generateCTA", { default: "Generate" })}</h4>
+            <h4 className="text-sm font-semibold text-white">{t("generateCTA", { default: "Try this model" })}</h4>
 
-            <div className="grid gap-1.5">
-              <Button variant="outline" className="justify-start border-white/10 bg-transparent text-white">
-                <Video className="mr-2 h-4 w-4" />
-                {t("actions.imageToVideo", { default: "Image to Video" })}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+                <ImageIcon className="mr-2 h-4 w-4" />
+                {t("actions.textToImage", { default: "Text to Image" })}
               </Button>
-              <Button variant="outline" className="justify-start border-white/10 bg-transparent text-white">
+              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
                 <ImageIcon className="mr-2 h-4 w-4" />
                 {t("actions.imageToImage", { default: "Image to Image" })}
               </Button>
-              <Button variant="outline" className="justify-start border-white/10 bg-transparent text-white">
-                <Zap className="mr-2 h-4 w-4" />
-                {t("actions.imageToShorts", { default: "Image to Shorts" })}
+              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+                <Video className="mr-2 h-4 w-4" />
+                {t("actions.textToVideo", { default: "Text to Video" })}
+              </Button>
+              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+                <Video className="mr-2 h-4 w-4" />
+                {t("actions.imageToVideo", { default: "Image to Video" })}
               </Button>
             </div>
-
-            <Button variant="outline" className="justify-start border-white/10 bg-transparent text-white">
-              <Avatar className="mr-2 h-6 w-6">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">AI</AvatarFallback>
-              </Avatar>
-              {t("actions.avatar", { default: "AI Avatar" })}
-            </Button>
 
             <div className="flex items-center justify-between text-xs text-white/60">
               <div className="flex items-center gap-2">

@@ -38,9 +38,10 @@
     "preview": "参照画像",
     "tags": "タグ",
     "actions": {
-      "imageToVideo": "画像→動画",
+      "textToImage": "テキスト→画像",
       "imageToImage": "画像→画像",
-      "imageToShorts": "画像→ショート動画",
+      "textToVideo": "テキスト→動画",
+      "imageToVideo": "画像→動画",
       "avatar": "AIアバター"
     },
     "ownerStats": {

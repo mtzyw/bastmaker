@@ -38,9 +38,10 @@
     "preview": "Reference",
     "tags": "Tags",
     "actions": {
-      "imageToVideo": "Image to Video",
+      "textToImage": "Text to Image",
       "imageToImage": "Image to Image",
-      "imageToShorts": "Image to Shorts",
+      "textToVideo": "Text to Video",
+      "imageToVideo": "Image to Video",
       "avatar": "AI Avatar"
     },
     "ownerStats": {
