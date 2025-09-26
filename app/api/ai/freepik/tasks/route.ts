@@ -15,6 +15,7 @@ import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { generateShareSlug } from "@/lib/share/slug";
 
 const requestSchema = z.object({
   model: z.string().min(1),
@@ -96,6 +97,10 @@ export async function POST(req: NextRequest) {
     is_image_to_image: isImageToImage,
     reference_image_count: referenceImageCount,
     credits_cost: modelConfig.creditsCost,
+    prompt: trimmedPrompt,
+    original_prompt: trimmedPrompt,
+    model_display_name: modelConfig.displayName,
+    modality_code: modalityCode,
   };
 
   const pricingSnapshot = {
@@ -130,6 +135,23 @@ export async function POST(req: NextRequest) {
   if (insertError || !jobRecord) {
     console.error("[freepik] failed to insert ai_jobs record", insertError);
     return apiResponse.serverError("Failed to create job record");
+  }
+
+  if (jobRecord.share_slug === null || jobRecord.share_slug === undefined) {
+    const shareSlug = generateShareSlug();
+    const publicTitle = trimmedPrompt.length > 80 ? `${trimmedPrompt.slice(0, 77)}...` : trimmedPrompt;
+    const publicSummary = `${modelConfig.displayName} • ${isImageToImage ? "Image to Image" : "Text to Image"}`;
+
+    await adminSupabase
+      .from("ai_jobs")
+      .update({
+        share_slug: shareSlug,
+        public_title: publicTitle || modelConfig.displayName,
+        public_summary: publicSummary,
+        public_assets: [],
+        is_public: true,
+      })
+      .eq("id", jobRecord.id);
   }
 
   const deduction: DeductionContext = {

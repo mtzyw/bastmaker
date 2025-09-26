@@ -26,6 +26,11 @@ export type CreationItem = {
   seed: string | null;
   isImageToImage: boolean;
   referenceImageCount: number;
+  shareSlug: string | null;
+  shareVisitCount: number;
+  shareConversionCount: number;
+  publicTitle: string | null;
+  publicSummary: string | null;
 };
 
 export type CreationsResult = {
@@ -64,7 +69,7 @@ export async function fetchUserCreations(
   let query = supabase
     .from("ai_jobs")
     .select(
-      "id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits,input_params_json,modality_code,model_slug_at_submit,error_message,seed",
+      "id,status,provider_code,provider_job_id,metadata_json,created_at,cost_actual_credits,cost_estimated_credits,input_params_json,modality_code,model_slug_at_submit,error_message,seed,share_slug,share_visit_count,share_conversion_count,public_title,public_summary,public_assets",
       { count: "exact" }
     )
     .eq("user_id", userId);
@@ -138,6 +143,11 @@ export async function fetchUserCreations(
       seed: job.seed,
       isImageToImage,
       referenceImageCount: metadata.reference_image_count ?? 0,
+      shareSlug: job.share_slug ?? null,
+      shareVisitCount: job.share_visit_count ?? 0,
+      shareConversionCount: job.share_conversion_count ?? 0,
+      publicTitle: job.public_title ?? null,
+      publicSummary: job.public_summary ?? null,
     };
   });
 

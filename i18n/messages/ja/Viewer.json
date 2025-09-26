@@ -1,0 +1,56 @@
+{
+  "header": {
+    "title": "作品ギャラリー",
+    "logoAlt": "Nexty ロゴ",
+    "share": "共有",
+    "copySuccess": "リンクをコピーしました",
+    "generateCTA": "自分でも作る",
+    "nav": {
+      "home": "ホーム",
+      "textToImage": "テキスト生成画像",
+      "textToVideo": "テキスト生成動画",
+      "pricing": "料金",
+      "cta": "無料で始める"
+    },
+    "stats": {
+      "visits": "訪問 {count}",
+      "conversions": "招待登録 {count}"
+    }
+  },
+  "details": {
+    "createdAt": "公開日時 {date}",
+    "untitled": "タイトル未設定",
+    "unknownUser": "不明なクリエイター",
+    "creatorLabel": "クリエイター",
+    "share": "共有",
+    "copySuccess": "リンクをコピーしました",
+    "generateCTA": "このモデルを試す",
+    "modelLabel": "モデル",
+    "modalityLabel": "タイプ",
+    "promptLabel": "プロンプト",
+    "copyPrompt": "プロンプトをコピー",
+    "copyPromptSuccess": "プロンプトをコピーしました",
+    "copyPromptError": "コピーに失敗しました",
+    "copyPromptFallback": "プロンプトがありません",
+    "copyPromptManual": "下のプロンプトをコピーしてください",
+    "moreActions": "クイック操作",
+    "outputSize": "出力サイズ",
+    "preview": "参照画像",
+    "tags": "タグ",
+    "actions": {
+      "imageToVideo": "画像→動画",
+      "imageToImage": "画像→画像",
+      "imageToShorts": "画像→ショート動画",
+      "avatar": "AIアバター"
+    },
+    "ownerStats": {
+      "description": "このシェア指標は本人のみ閲覧できます。",
+      "visits": "訪問数 {count}",
+      "conversions": "招待成功 {count}"
+    },
+    "stats": {
+      "visitsLabel": "総訪問数",
+      "conversionsLabel": "招待登録"
+    }
+  }
+}

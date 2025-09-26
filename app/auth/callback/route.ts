@@ -1,5 +1,7 @@
 import { isValidRedirectUrl } from '@/app/auth/utils';
+import { consumeShareAttributionForUser } from '@/lib/share/consume';
 import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -21,6 +23,15 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      const store = await cookies();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        await consumeShareAttributionForUser(user.id, { store });
+      }
+
       return NextResponse.redirect(`${siteUrl}${next}`)
     }
   }

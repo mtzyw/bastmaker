@@ -155,8 +155,14 @@ export type Database = {
           priority: number | null
           provider_code: string | null
           provider_job_id: string | null
+          public_assets: Json | null
+          public_summary: string | null
+          public_title: string | null
           reconciled_at: string | null
           seed: string | null
+          share_conversion_count: number
+          share_slug: string | null
+          share_visit_count: number
           started_at: string | null
           status: string | null
           usage_metrics_json: Json
@@ -183,8 +189,14 @@ export type Database = {
           priority?: number | null
           provider_code?: string | null
           provider_job_id?: string | null
+          public_assets?: Json | null
+          public_summary?: string | null
+          public_title?: string | null
           reconciled_at?: string | null
           seed?: string | null
+          share_conversion_count?: number
+          share_slug?: string | null
+          share_visit_count?: number
           started_at?: string | null
           status?: string | null
           usage_metrics_json?: Json
@@ -211,8 +223,14 @@ export type Database = {
           priority?: number | null
           provider_code?: string | null
           provider_job_id?: string | null
+          public_assets?: Json | null
+          public_summary?: string | null
+          public_title?: string | null
           reconciled_at?: string | null
           seed?: string | null
+          share_conversion_count?: number
+          share_slug?: string | null
+          share_visit_count?: number
           started_at?: string | null
           status?: string | null
           usage_metrics_json?: Json
@@ -559,7 +577,13 @@ export type Database = {
           provider: string
           provider_job_id: string | null
           provider_model: string | null
+          public_assets: Json | null
+          public_summary: string | null
+          public_title: string | null
           request_params: Json
+          share_conversion_count: number
+          share_slug: string | null
+          share_visit_count: number
           status: Database["public"]["Enums"]["job_status"]
           temp_output_url: string | null
           updated_at: string
@@ -576,7 +600,13 @@ export type Database = {
           provider?: string
           provider_job_id?: string | null
           provider_model?: string | null
+          public_assets?: Json | null
+          public_summary?: string | null
+          public_title?: string | null
           request_params: Json
+          share_conversion_count?: number
+          share_slug?: string | null
+          share_visit_count?: number
           status?: Database["public"]["Enums"]["job_status"]
           temp_output_url?: string | null
           updated_at?: string
@@ -593,13 +623,77 @@ export type Database = {
           provider?: string
           provider_job_id?: string | null
           provider_model?: string | null
+          public_assets?: Json | null
+          public_summary?: string | null
+          public_title?: string | null
           request_params?: Json
+          share_conversion_count?: number
+          share_slug?: string | null
+          share_visit_count?: number
           status?: Database["public"]["Enums"]["job_status"]
           temp_output_url?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      job_share_conversions: {
+        Row: {
+          created_at: string
+          id: string
+          invited_user_id: string
+          inviter_user_id: string
+          job_id: string
+          metadata: Json | null
+          reward_granted_at: string | null
+          status: Database["public"]["Enums"]["job_share_conversion_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_user_id: string
+          inviter_user_id: string
+          job_id: string
+          metadata?: Json | null
+          reward_granted_at?: string | null
+          status?: Database["public"]["Enums"]["job_share_conversion_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_user_id?: string
+          inviter_user_id?: string
+          job_id?: string
+          metadata?: Json | null
+          reward_granted_at?: string | null
+          status?: Database["public"]["Enums"]["job_share_conversion_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_share_conversions_invited_user_id_fkey"
+            columns: ["invited_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_share_conversions_inviter_user_id_fkey"
+            columns: ["inviter_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_share_conversions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ai_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -1111,6 +1205,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      grant_share_reward_and_log: {
+        Args: {
+          p_credits_to_add: number
+          p_log_type?: string
+          p_notes?: string
+          p_related_job_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       grant_subscription_credits_and_log: {
         Args: {
           p_credits_to_set: number
@@ -1126,6 +1230,14 @@ export type Database = {
           one_time_credits_balance: number
           subscription_credits_balance: number
         }[]
+      }
+      increment_ai_job_share_conversion: {
+        Args: { p_job_id: string }
+        Returns: undefined
+      }
+      increment_ai_job_share_visit: {
+        Args: { p_job_id: string }
+        Returns: undefined
       }
       initialize_or_reset_yearly_allocation: {
         Args:
@@ -1177,6 +1289,7 @@ export type Database = {
       }
     }
     Enums: {
+      job_share_conversion_status: "pending" | "rewarded" | "dismissed"
       job_status:
         | "starting"
         | "processing"
@@ -1312,6 +1425,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      job_share_conversion_status: ["pending", "rewarded", "dismissed"],
       job_status: ["starting", "processing", "succeeded", "failed", "canceled"],
       post_status: ["draft", "published", "archived"],
       post_visibility: ["public", "logged_in", "subscribers"],

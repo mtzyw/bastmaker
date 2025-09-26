@@ -1,0 +1,56 @@
+{
+  "header": {
+    "title": "作品展示",
+    "logoAlt": "Nexty 标志",
+    "share": "分享",
+    "copySuccess": "链接已复制",
+    "generateCTA": "立即创作",
+    "nav": {
+      "home": "首页",
+      "textToImage": "文生图",
+      "textToVideo": "文生视频",
+      "pricing": "价格",
+      "cta": "免费开始"
+    },
+    "stats": {
+      "visits": "访问 {count}",
+      "conversions": "邀请注册 {count}"
+    }
+  },
+  "details": {
+    "createdAt": "发布于 {date}",
+    "untitled": "未命名作品",
+    "unknownUser": "匿名创作者",
+    "creatorLabel": "创作者",
+    "share": "分享",
+    "copySuccess": "链接已复制",
+    "generateCTA": "去试试这个模型",
+    "modelLabel": "模型",
+    "modalityLabel": "类型",
+    "promptLabel": "提示词",
+    "copyPrompt": "复制提示词",
+    "copyPromptSuccess": "提示词已复制",
+    "copyPromptError": "复制失败",
+    "copyPromptFallback": "暂无提示词",
+    "copyPromptManual": "请复制下方提示词",
+    "moreActions": "快捷操作",
+    "outputSize": "分辨率",
+    "preview": "参考图",
+    "tags": "标签",
+    "actions": {
+      "imageToVideo": "图生视频",
+      "imageToImage": "图生图",
+      "imageToShorts": "图生短片",
+      "avatar": "AI 头像"
+    },
+    "ownerStats": {
+      "description": "仅对你可见的实时分享数据。",
+      "visits": "累计访问 {count}",
+      "conversions": "邀请成功 {count}"
+    },
+    "stats": {
+      "visitsLabel": "总访问量",
+      "conversionsLabel": "邀请注册"
+    }
+  }
+}

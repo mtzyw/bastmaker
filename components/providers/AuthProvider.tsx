@@ -29,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [shareHandled, setShareHandled] = useState(false);
 
   const supabase = createClient();
 
@@ -119,6 +120,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userSubscription.unsubscribe();
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) {
+      setShareHandled(false);
+      return;
+    }
+
+    if (shareHandled) {
+      return;
+    }
+
+    let active = true;
+
+    fetch('/api/share/consume', { method: 'POST' })
+      .catch((error) => {
+        console.error('[share-consume] API call failed', error);
+      })
+      .finally(() => {
+        if (active) {
+          setShareHandled(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user, shareHandled]);
 
   const signInWithGoogle = async (next?: string) => {
     return await supabase.auth.signInWithOAuth({

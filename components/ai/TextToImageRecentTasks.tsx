@@ -16,6 +16,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Download, Heart, MoreHorizontal, RefreshCcw, Share2 } from "lucide-react";
+import { useLocale } from "next-intl";
+import { toast } from "sonner";
+import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
@@ -51,6 +54,9 @@ type DisplayTask = {
   aspectRatio?: string;
   seed?: number;
   favorite?: boolean;
+  shareSlug: string | null;
+  shareVisits: number;
+  shareConversions: number;
 };
 
 const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefined> = {
@@ -283,10 +289,14 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     aspectRatio: parseAspectRatio(job),
     seed: parseSeed(job),
     favorite: Boolean(job.metadata?.is_favorite),
+    shareSlug: job.shareSlug,
+    shareVisits: job.shareVisitCount,
+    shareConversions: job.shareConversionCount,
   };
 }
 
 export default function TextToImageRecentTasks() {
+  const locale = useLocale();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("全部");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -603,6 +613,42 @@ export default function TextToImageRecentTasks() {
     );
   };
 
+  const handleShare = useCallback(
+    async (task: DisplayTask) => {
+      if (!task.shareSlug) {
+        toast.error("暂未生成分享链接");
+        return;
+      }
+
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      const shareUrl = `${window.location.origin}${localePrefix}/v/${task.shareSlug}?source=share`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ url: shareUrl });
+          toast.success("已打开系统分享");
+        } catch (error) {
+          console.warn("[history-share] native share cancelled", error);
+        }
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success("链接已复制");
+        } catch (error) {
+          console.error("[history-share] copy failed", error);
+          toast.error("复制失败，请手动复制");
+        }
+        return;
+      }
+
+      window.prompt("复制链接", shareUrl);
+    },
+    [locale]
+  );
+
   let content: ReactNode = null;
 
   if (isLoading) {
@@ -758,7 +804,8 @@ export default function TextToImageRecentTasks() {
                   size="icon"
                   className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
                   aria-label="Share result"
-                  disabled={task.status !== "succeeded" || !task.media || !task.media.url}
+                  disabled={task.status !== "succeeded" || !task.shareSlug}
+                  onClick={() => handleShare(task)}
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>

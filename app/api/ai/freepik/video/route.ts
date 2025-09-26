@@ -15,6 +15,7 @@ import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { generateShareSlug } from "@/lib/share/slug";
 import {
   generateR2Key,
   getDataFromDataUrl,
@@ -473,6 +474,11 @@ export async function POST(req: NextRequest) {
     aspect_ratio: data.aspect_ratio ?? null,
     duration: duration.numberValue,
     api_model: apiModel,
+    prompt: prompt,
+    original_prompt: prompt,
+    model_display_name: modelConfig.displayName,
+    modality_code: modalityCode,
+    credits_cost: modelConfig.creditsCost,
   };
 
   const pricingSnapshot = {
@@ -509,6 +515,23 @@ export async function POST(req: NextRequest) {
   if (insertError || !jobRecord) {
     console.error("[freepik-video] failed to insert ai_jobs record", insertError);
     return apiResponse.serverError("Failed to create job record");
+  }
+
+  if (jobRecord.share_slug === null || jobRecord.share_slug === undefined) {
+    const shareSlug = generateShareSlug();
+    const publicTitle = prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt;
+    const publicSummary = `${modelConfig.displayName} • ${mode === "text" ? "Text to Video" : "Image to Video"}`;
+
+    await adminSupabase
+      .from("ai_jobs")
+      .update({
+        share_slug: shareSlug,
+        public_title: publicTitle || modelConfig.displayName,
+        public_summary: publicSummary,
+        public_assets: [],
+        is_public: true,
+      })
+      .eq("id", jobRecord.id);
   }
 
   const deduction = {

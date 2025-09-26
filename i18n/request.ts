@@ -20,6 +20,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       FluxKontextPro: (await import(`./messages/${locale}/FluxKontextPro.json`)).default,
       MultiImageKontextPro: (await import(`./messages/${locale}/MultiImageKontextPro.json`)).default,
       MyCreations: (await import(`./messages/${locale}/MyCreations.json`)).default,
+      Viewer: (await import(`./messages/${locale}/Viewer.json`)).default,
 
       // Dashboard - User
       CreditHistory: (await import(`./messages/${locale}/Dashboard/User/CreditHistory.json`)).default,

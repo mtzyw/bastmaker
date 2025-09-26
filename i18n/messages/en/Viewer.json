@@ -1,0 +1,56 @@
+{
+  "header": {
+    "title": "Creation Showcase",
+    "logoAlt": "Nexty logo",
+    "share": "Share",
+    "copySuccess": "Link copied to clipboard",
+    "generateCTA": "Create your own",
+    "nav": {
+      "home": "Home",
+      "textToImage": "Text to Image",
+      "textToVideo": "Text to Video",
+      "pricing": "Pricing",
+      "cta": "Start for Free"
+    },
+    "stats": {
+      "visits": "{count, plural, one {# visit} other {# visits}}",
+      "conversions": "{count, plural, one {# signup} other {# signups}}"
+    }
+  },
+  "details": {
+    "createdAt": "Published {date}",
+    "untitled": "Untitled creation",
+    "unknownUser": "Unknown creator",
+    "creatorLabel": "Creator",
+    "share": "Share",
+    "copySuccess": "Link copied to clipboard",
+    "generateCTA": "Try this model",
+    "modelLabel": "Model",
+    "modalityLabel": "Type",
+    "promptLabel": "Prompt",
+    "copyPrompt": "Copy prompt",
+    "copyPromptSuccess": "Prompt copied",
+    "copyPromptError": "Copy failed",
+    "copyPromptFallback": "No prompt available",
+    "copyPromptManual": "Copy the prompt below",
+    "moreActions": "Quick actions",
+    "outputSize": "Dimensions",
+    "preview": "Reference",
+    "tags": "Tags",
+    "actions": {
+      "imageToVideo": "Image to Video",
+      "imageToImage": "Image to Image",
+      "imageToShorts": "Image to Shorts",
+      "avatar": "AI Avatar"
+    },
+    "ownerStats": {
+      "description": "Only you can see these live share results.",
+      "visits": "{count, plural, one {# visit recorded} other {# visits recorded}}",
+      "conversions": "{count, plural, one {# invited signup} other {# invited signups}}"
+    },
+    "stats": {
+      "visitsLabel": "Total visits",
+      "conversionsLabel": "Invited signups"
+    }
+  }
+}

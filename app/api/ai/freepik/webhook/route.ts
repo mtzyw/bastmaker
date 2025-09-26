@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
   if (internalStatus === "completed" && generatedOutputs.length > 0) {
     const { data: existingOutputs } = await adminSupabase
       .from("ai_job_outputs")
-      .select("url")
+      .select("url, type, thumb_url, width, height, duration")
       .eq("job_id", job.id);
 
     const existingUrls = new Set(existingOutputs?.map((item) => item.url).filter(Boolean));
@@ -149,7 +149,50 @@ export async function POST(req: NextRequest) {
       await adminSupabase.from("ai_job_outputs").insert(rowsToInsert);
     }
 
-    updatedMetadata.output_count = generatedOutputs.length;
+    const existingAssets = (existingOutputs ?? [])
+      .filter((output) => Boolean(output.url))
+      .map((output) => {
+        const type = (output.type ?? "").toLowerCase();
+        const normalizedType = type.startsWith("video")
+          ? "video"
+          : type.startsWith("image")
+            ? "image"
+            : "unknown";
+
+        return {
+          type: normalizedType,
+          url: output.url,
+          thumbUrl: output.thumb_url,
+          posterUrl: output.thumb_url,
+          width: output.width,
+          height: output.height,
+          duration: output.duration,
+        };
+      });
+
+    const insertedAssets = rowsToInsert
+      .filter((row) => Boolean(row.url))
+      .map((row) => ({
+        type: outputType,
+        url: row.url,
+        thumbUrl: null,
+        posterUrl: null,
+        width: null,
+        height: null,
+        duration: null,
+      }));
+
+    const assetMap = new Map<string, any>();
+    [...existingAssets, ...insertedAssets].forEach((asset) => {
+      if (!asset.url) return;
+      if (!assetMap.has(asset.url)) {
+        assetMap.set(asset.url, asset);
+      }
+    });
+
+    updatedMetadata.output_count = assetMap.size;
+
+    updates.public_assets = Array.from(assetMap.values());
   }
 
   if (internalStatus === "failed" && job.cost_actual_credits && job.cost_actual_credits > 0 && !metadata.refund_issued) {
