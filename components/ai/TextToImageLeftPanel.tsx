@@ -37,6 +37,7 @@ export default function TextToImageLeftPanel({
   const [aspectRatio, setAspectRatio] = useState("1:1");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -99,6 +100,7 @@ export default function TextToImageLeftPanel({
       providerJobId,
       createdAt,
       costCredits,
+      publicVisible,
     }: {
       jobId: string;
       status: string;
@@ -106,6 +108,7 @@ export default function TextToImageLeftPanel({
       providerJobId?: string | null;
       createdAt?: string;
       costCredits?: number;
+      publicVisible: boolean;
     }): CreationItem => {
       const effectiveStatus = status || "processing";
       const effectiveLatest = latestStatus ?? effectiveStatus;
@@ -129,6 +132,7 @@ export default function TextToImageLeftPanel({
           freepik_latest_status: effectiveLatest,
           freepik_initial_status: effectiveStatus,
           freepik_task_id: providerJobId ?? null,
+          is_public: publicVisible,
         },
         inputParams: {
           model: apiModel,
@@ -153,6 +157,7 @@ export default function TextToImageLeftPanel({
       jobId: tempJobId,
       status: "processing",
       latestStatus: "processing",
+      publicVisible: isPublic,
     });
     upsertHistoryItem(optimisticTempItem);
 
@@ -161,6 +166,7 @@ export default function TextToImageLeftPanel({
       prompt: trimmedPrompt,
       aspect_ratio: apiAspectRatio,
       translate_prompt: translatePrompt,
+      is_public: isPublic,
     };
 
     try {
@@ -201,6 +207,7 @@ export default function TextToImageLeftPanel({
           providerJobId: taskInfo.providerJobId ?? null,
           createdAt: optimisticCreatedAt,
           costCredits: creditsCost,
+          publicVisible: isPublic,
         });
 
         upsertHistoryItem(optimisticItem);
@@ -303,6 +310,13 @@ export default function TextToImageLeftPanel({
       {/* 固定底部按钮；上方内容单独滚动 */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           {/* 固定区域：Output + credits */}
           <div className="mb-3">
             <div className="mb-2 text-sm">Output Image Number</div>

@@ -23,6 +23,7 @@ const requestSchema = z.object({
   aspect_ratio: z.string().optional(),
   reference_images: z.array(z.string().min(1)).max(5).optional(),
   translate_prompt: z.boolean().optional(),
+  is_public: z.boolean().optional(),
 });
 
 type FreepikTaskPayload = {
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
+  const isPublic = data.is_public ?? true;
   const trimmedPrompt = data.prompt.trim();
   const referenceImageUrls = (data.reference_images ?? []).filter(
     (url): url is string => typeof url === "string" && url.length > 0,
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
     reference_inputs: referenceImageUrls,
+    is_public: isPublic,
   };
 
   const pricingSnapshot = {
@@ -132,6 +135,7 @@ export async function POST(req: NextRequest) {
       metadata_json: metadataJson,
       cost_estimated_credits: modelConfig.creditsCost,
       pricing_snapshot_json: pricingSnapshot,
+      is_public: isPublic,
     })
     .select()
     .single();
@@ -153,7 +157,7 @@ export async function POST(req: NextRequest) {
         public_title: publicTitle || modelConfig.displayName,
         public_summary: publicSummary,
         public_assets: [],
-        is_public: true,
+        is_public: isPublic,
       })
       .eq("id", jobRecord.id);
   }
