@@ -575,14 +575,22 @@ export async function POST(req: NextRequest) {
   const webhookUrl = getWebhookUrl();
 
   let payload: Record<string, unknown>;
+  let resolvedPrimaryImageUrl: string | undefined;
+  let resolvedTailImageUrl: string | undefined;
+  let resolvedIntroImageUrl: string | undefined;
+  let resolvedOutroImageUrl: string | undefined;
   try {
-    const [resolvedPrimaryImageUrl, resolvedTailImageUrl, resolvedIntroImageUrl, resolvedOutroImageUrl] =
-      await Promise.all([
-        ensureR2Url(primaryImageUrl, "primary"),
-        ensureR2Url(tailImageUrl, "tail"),
-        ensureR2Url(introImageUrl, "intro"),
-        ensureR2Url(outroImageUrl, "outro"),
-      ]);
+    [
+      resolvedPrimaryImageUrl,
+      resolvedTailImageUrl,
+      resolvedIntroImageUrl,
+      resolvedOutroImageUrl,
+    ] = await Promise.all([
+      ensureR2Url(primaryImageUrl, "primary"),
+      ensureR2Url(tailImageUrl, "tail"),
+      ensureR2Url(introImageUrl, "intro"),
+      ensureR2Url(outroImageUrl, "outro"),
+    ]);
 
     payload = buildFreepikVideoPayload({
       endpoint: apiModel,
@@ -593,10 +601,10 @@ export async function POST(req: NextRequest) {
       resolution: data.resolution,
       durationNumber: duration.numberValue,
       durationString: duration.stringValue,
-      imageUrl: resolvedPrimaryImageUrl,
-      tailImageUrl: resolvedTailImageUrl,
-      introImageUrl: resolvedIntroImageUrl,
-      outroImageUrl: resolvedOutroImageUrl,
+      imageUrl: resolvedPrimaryImageUrl ?? undefined,
+      tailImageUrl: resolvedTailImageUrl ?? undefined,
+      introImageUrl: resolvedIntroImageUrl ?? undefined,
+      outroImageUrl: resolvedOutroImageUrl ?? undefined,
       seed: numericSeed,
       cfgScale: data.cfg_scale,
       staticMask: data.static_mask,
@@ -623,7 +631,7 @@ export async function POST(req: NextRequest) {
     const inputRows: Database["public"]["Tables"]["ai_job_inputs"]["Insert"][] = [];
     let inputIndex = 0;
 
-    const addInput = (url: string | undefined, source: string) => {
+    const addInput = (url: string | null | undefined, source: string) => {
       if (!url) return;
       inputRows.push({
         job_id: jobRecord.id,

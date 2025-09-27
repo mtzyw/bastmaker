@@ -54,6 +54,10 @@ function getPreviewAsset(assets: ViewerJobAsset[]) {
   return assets[0];
 }
 
+function isVideoAsset(asset: ViewerJobAsset | null | undefined) {
+  return asset?.type === "video";
+}
+
 export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const headerT = useTranslations("Viewer.header");
   const t = useTranslations("Viewer.details");
@@ -63,8 +67,61 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
 
   const primaryAsset = getPrimaryAsset(job.assets, job.fallbackUrl);
-  const referenceAsset = job.referenceAssets[0] ?? null;
-  const previewAsset = referenceAsset ?? getPreviewAsset(job.assets);
+  const referenceAssets = job.referenceAssets;
+  const previewAsset = referenceAssets.length > 0 ? referenceAssets[0] : getPreviewAsset(job.assets);
+
+  const renderPrimaryAsset = useMemo(() => {
+    if (!primaryAsset) return null;
+
+    if (isVideoAsset(primaryAsset)) {
+      return (
+        <video
+          src={primaryAsset.url}
+          controls
+          playsInline
+          poster={primaryAsset.posterUrl ?? primaryAsset.thumbUrl ?? undefined}
+          className="h-full w-full object-contain p-2"
+        />
+      );
+    }
+
+    return (
+      <Image
+        src={primaryAsset.url}
+        alt={primaryAsset.alt ?? "Generated image"}
+        fill
+        sizes="(max-width: 1024px) 100vw, 65vw"
+        priority
+        className="object-contain p-6"
+      />
+    );
+  }, [primaryAsset]);
+
+  const renderReferenceThumb = useCallback((asset: ViewerJobAsset) => {
+    if (isVideoAsset(asset)) {
+      return (
+        <video
+          key={asset.url}
+          src={asset.url}
+          controls
+          playsInline
+          poster={asset.posterUrl ?? asset.thumbUrl ?? undefined}
+          className="h-full w-full object-cover"
+        />
+      );
+    }
+
+    return (
+      <Image
+        key={asset.url}
+        src={asset.url}
+        alt={asset.alt ?? "Reference"}
+        width={64}
+        height={80}
+        className="h-full w-full object-cover"
+      />
+    );
+  }, []);
 
   const aspectRatioStyle = useMemo(() => {
     if (!primaryAsset?.width || !primaryAsset?.height) {
@@ -134,16 +191,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
             )}
             style={aspectRatioStyle}
           >
-            {primaryAsset ? (
-              <Image
-                src={primaryAsset.url}
-                alt={primaryAsset.alt ?? "Generated image"}
-                fill
-                sizes="(max-width: 1024px) 100vw, 65vw"
-                priority
-                className="object-contain p-6"
-              />
-            ) : null}
+            {renderPrimaryAsset}
           </div>
         </div>
 
@@ -174,19 +222,29 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               <span className="text-white/80">{job.modalityLabel ?? job.modality ?? "—"}</span>
             </div>
 
-            {previewAsset ? (
+            {referenceAssets.length > 0 ? (
+              <div>
+                <h4 className="text-xs font-medium uppercase tracking-wide text-white/50 mb-2">
+                  {t("preview", { default: "Reference" })}
+                </h4>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {referenceAssets.map((asset) => (
+                    <div
+                      key={asset.url}
+                      className="h-20 w-16 shrink-0 overflow-hidden rounded border border-white/10"
+                    >
+                      {renderReferenceThumb(asset)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : previewAsset ? (
               <div>
                 <h4 className="text-xs font-medium uppercase tracking-wide text-white/50 mb-2">
                   {t("preview", { default: "Reference" })}
                 </h4>
                 <div className="w-16 h-20 overflow-hidden rounded border border-white/10">
-                  <Image
-                    src={previewAsset.url}
-                    alt={previewAsset.alt ?? "Reference"}
-                    width={64}
-                    height={80}
-                    className="h-full w-full object-cover"
-                  />
+                  {renderReferenceThumb(previewAsset)}
                 </div>
               </div>
             ) : null}

@@ -40,20 +40,36 @@ export type ViewerJob = {
   };
 };
 
-function normaliseAssets(row: Database["public"]["Tables"]["ai_job_outputs"]["Row"]): ViewerJobAsset | null {
-  const typeRaw = (row.type ?? "").toLowerCase();
-  const baseType = typeRaw.startsWith("video")
-    ? "video"
-    : typeRaw.startsWith("image")
-      ? "image"
-      : "unknown";
+function detectAssetType(typeInput?: string | null, mimeType?: string | null, url?: string | null): ViewerJobAsset["type"] {
+  const lowerType = (typeInput ?? "").toLowerCase();
+  const lowerMime = (mimeType ?? "").toLowerCase();
+  const lowerUrl = (url ?? "").toLowerCase();
 
+  const videoHints = ["video", "mp4", "webm", "mov", "avi", "mkv", "m4v"];
+  const imageHints = ["image", "png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "bmp"];
+
+  const includesHint = (value: string, hints: string[]) => hints.some((hint) => value.includes(hint));
+
+  if (includesHint(lowerType, videoHints) || includesHint(lowerMime, videoHints) || videoHints.some((ext) => lowerUrl.endsWith(`.${ext}`))) {
+    return "video";
+  }
+
+  if (includesHint(lowerType, imageHints) || includesHint(lowerMime, imageHints) || imageHints.some((ext) => lowerUrl.endsWith(`.${ext}`))) {
+    return "image";
+  }
+
+  return "unknown";
+}
+
+function normaliseAssets(row: Database["public"]["Tables"]["ai_job_outputs"]["Row"]): ViewerJobAsset | null {
   if (!row.url) {
     return null;
   }
 
+  const type = detectAssetType(row.type, row.mime_type, row.url);
+
   return {
-    type: baseType,
+    type,
     url: row.url,
     thumbUrl: row.thumb_url,
     posterUrl: row.thumb_url,
@@ -69,12 +85,11 @@ function normaliseSnapshotAsset(asset: unknown): ViewerJobAsset | null {
   const url = typeof raw.url === "string" ? raw.url : null;
   if (!url) return null;
 
-  const typeRaw = typeof raw.type === "string" ? raw.type.toLowerCase() : "";
-  const type: ViewerJobAsset["type"] = typeRaw.startsWith("video")
-    ? "video"
-    : typeRaw.startsWith("image")
-      ? "image"
-      : "unknown";
+  const type = detectAssetType(
+    typeof raw.type === "string" ? raw.type : null,
+    typeof raw.mimeType === "string" ? raw.mimeType : typeof raw.mime_type === "string" ? (raw.mime_type as string) : null,
+    url
+  );
 
   return {
     type,
