@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 
 import { getViewerJobBySlug } from "@/actions/ai-jobs/public";
 
+type RouteParams = Promise<{ slug: string }>;
+
 export async function GET(
   _request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: RouteParams }
 ) {
-  const slug = params.slug;
+  const { slug } = await params;
 
   if (!slug) {
     return NextResponse.json({ success: false, error: "Missing slug" }, { status: 400 });

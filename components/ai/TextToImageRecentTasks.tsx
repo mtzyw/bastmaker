@@ -314,6 +314,9 @@ export default function TextToImageRecentTasks() {
   const [isViewerLoading, setIsViewerLoading] = useState(false);
   const [viewerError, setViewerError] = useState<string | null>(null);
   const viewerFetchRef = useRef<AbortController | null>(null);
+  const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
+  const prefetchingSlugsRef = useRef<Set<string>>(new Set());
+  const prefetchAbortControllersRef = useRef<Map<string, AbortController>>(new Map());
 
   const items = useCreationHistoryStore((state) => state.items);
   const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
@@ -568,32 +571,34 @@ export default function TextToImageRecentTasks() {
     };
   }, [handleLoadMore, hasMore]);
 
-  const handleOpenViewer = useCallback(
-    (task: DisplayTask) => {
-      if (!task.shareSlug) {
+  useEffect(() => {
+    return () => {
+      prefetchAbortControllersRef.current.forEach((controller) => controller.abort());
+      prefetchAbortControllersRef.current.clear();
+      prefetchingSlugsRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    displayTasks.forEach((task) => {
+      if (task.status !== "succeeded") {
         return;
       }
 
-      if (viewerFetchRef.current) {
-        viewerFetchRef.current.abort();
+      const slug = task.shareSlug;
+      if (!slug) {
+        return;
       }
+
+      if (prefetchedJobsRef.current.has(slug) || prefetchingSlugsRef.current.has(slug)) {
+        return;
+      }
+
       const controller = new AbortController();
-      viewerFetchRef.current = controller;
+      prefetchingSlugsRef.current.add(slug);
+      prefetchAbortControllersRef.current.set(slug, controller);
 
-      setPreviewTask(task);
-      setViewerJob(null);
-      setViewerError(null);
-      setIsViewerLoading(true);
-
-      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
-      if (typeof window !== "undefined") {
-        const nextUrl = `${localePrefix}/v/${task.shareSlug}`;
-        window.history.pushState({ modal: task.shareSlug }, "", nextUrl);
-      } else {
-        router.push(`${localePrefix}/v/${task.shareSlug}`, { scroll: false });
-      }
-
-      fetch(`/api/viewer/${task.shareSlug}`, { signal: controller.signal })
+      fetch(`/api/viewer/${slug}`, { signal: controller.signal })
         .then(async (response) => {
           if (!response.ok) {
             const json = await response.json().catch(() => ({}));
@@ -603,7 +608,81 @@ export default function TextToImageRecentTasks() {
           if (!json?.success || !json?.data) {
             throw new Error(json?.error ?? "加载失败");
           }
-          setViewerJob(json.data as ViewerJob);
+          const job = json.data as ViewerJob;
+          prefetchedJobsRef.current.set(slug, job);
+
+          if (previewTask?.shareSlug === slug) {
+            setViewerJob(job);
+            setIsViewerLoading(false);
+            setViewerError(null);
+          }
+        })
+        .catch((error: any) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          console.warn("[TextToImageRecentTasks] prefetch failed", error);
+        })
+        .finally(() => {
+          prefetchingSlugsRef.current.delete(slug);
+          prefetchAbortControllersRef.current.delete(slug);
+        });
+    });
+  }, [displayTasks, previewTask]);
+
+  const handleOpenViewer = useCallback(
+    (task: DisplayTask) => {
+      if (!task.shareSlug) {
+        return;
+      }
+
+      const slug = task.shareSlug;
+
+      if (viewerFetchRef.current) {
+        viewerFetchRef.current.abort();
+        viewerFetchRef.current = null;
+      }
+
+      setPreviewTask(task);
+      setViewerError(null);
+
+      const cachedJob = prefetchedJobsRef.current.get(slug) ?? null;
+      if (cachedJob) {
+        setViewerJob(cachedJob);
+        setIsViewerLoading(false);
+      } else {
+        setViewerJob(null);
+        setIsViewerLoading(true);
+      }
+
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      if (typeof window !== "undefined") {
+        const nextUrl = `${localePrefix}/v/${slug}`;
+        window.history.pushState({ modal: slug }, "", nextUrl);
+      } else {
+        router.push(`${localePrefix}/v/${slug}`, { scroll: false });
+      }
+
+      if (cachedJob || prefetchingSlugsRef.current.has(slug)) {
+        return;
+      }
+
+      const controller = new AbortController();
+      viewerFetchRef.current = controller;
+
+      fetch(`/api/viewer/${slug}`, { signal: controller.signal })
+        .then(async (response) => {
+          if (!response.ok) {
+            const json = await response.json().catch(() => ({}));
+            throw new Error(json?.error ?? "加载失败");
+          }
+          const json = await response.json();
+          if (!json?.success || !json?.data) {
+            throw new Error(json?.error ?? "加载失败");
+          }
+          const job = json.data as ViewerJob;
+          prefetchedJobsRef.current.set(slug, job);
+          setViewerJob(job);
         })
         .catch((error: any) => {
           if (controller.signal.aborted) {
@@ -612,11 +691,12 @@ export default function TextToImageRecentTasks() {
           setViewerError(error?.message ?? "加载失败");
         })
         .finally(() => {
-          if (controller.signal.aborted) {
-            return;
+          if (viewerFetchRef.current === controller) {
+            viewerFetchRef.current = null;
           }
-          setIsViewerLoading(false);
-          viewerFetchRef.current = null;
+          if (!controller.signal.aborted) {
+            setIsViewerLoading(false);
+          }
         });
     },
     [locale, router]
