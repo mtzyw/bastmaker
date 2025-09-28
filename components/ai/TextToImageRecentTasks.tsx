@@ -11,6 +11,7 @@ import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,11 +19,14 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, Download, Heart, MoreHorizontal, RefreshCcw, Share2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
-import { DEFAULT_LOCALE } from "@/i18n/routing";
+import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import type { ViewerJob } from "@/actions/ai-jobs/public";
+import { ViewerBoard } from "@/components/viewer/ViewerBoard";
+import { siteConfig } from "@/config/site";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -297,6 +301,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
 
 export default function TextToImageRecentTasks() {
   const locale = useLocale();
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("全部");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -304,6 +309,11 @@ export default function TextToImageRecentTasks() {
   const [pageIndex, setPageIndex] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [previewTask, setPreviewTask] = useState<DisplayTask | null>(null);
+  const [viewerJob, setViewerJob] = useState<ViewerJob | null>(null);
+  const [isViewerLoading, setIsViewerLoading] = useState(false);
+  const [viewerError, setViewerError] = useState<string | null>(null);
+  const viewerFetchRef = useRef<AbortController | null>(null);
 
   const items = useCreationHistoryStore((state) => state.items);
   const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
@@ -558,38 +568,127 @@ export default function TextToImageRecentTasks() {
     };
   }, [handleLoadMore, hasMore]);
 
+  const handleOpenViewer = useCallback(
+    (task: DisplayTask) => {
+      if (!task.shareSlug) {
+        return;
+      }
+
+      if (viewerFetchRef.current) {
+        viewerFetchRef.current.abort();
+      }
+      const controller = new AbortController();
+      viewerFetchRef.current = controller;
+
+      setPreviewTask(task);
+      setViewerJob(null);
+      setViewerError(null);
+      setIsViewerLoading(true);
+
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      if (typeof window !== "undefined") {
+        const nextUrl = `${localePrefix}/v/${task.shareSlug}`;
+        window.history.pushState({ modal: task.shareSlug }, "", nextUrl);
+      } else {
+        router.push(`${localePrefix}/v/${task.shareSlug}`, { scroll: false });
+      }
+
+      fetch(`/api/viewer/${task.shareSlug}`, { signal: controller.signal })
+        .then(async (response) => {
+          if (!response.ok) {
+            const json = await response.json().catch(() => ({}));
+            throw new Error(json?.error ?? "加载失败");
+          }
+          const json = await response.json();
+          if (!json?.success || !json?.data) {
+            throw new Error(json?.error ?? "加载失败");
+          }
+          setViewerJob(json.data as ViewerJob);
+        })
+        .catch((error: any) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          setViewerError(error?.message ?? "加载失败");
+        })
+        .finally(() => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          setIsViewerLoading(false);
+          viewerFetchRef.current = null;
+        });
+    },
+    [locale, router]
+  );
+
+  const closePreview = useCallback(() => {
+    if (viewerFetchRef.current) {
+      viewerFetchRef.current.abort();
+      viewerFetchRef.current = null;
+    }
+    setPreviewTask(null);
+    setViewerJob(null);
+    setViewerError(null);
+    setIsViewerLoading(false);
+  }, []);
+
   const renderMedia = (task: DisplayTask) => {
     if (!task.media) {
       return null;
     }
 
+    const viewerSlug = task.shareSlug;
+    const canPreview = Boolean(viewerSlug) && task.status === "succeeded";
+
+    const wrapWithInteraction = (node: ReactNode) => {
+      if (!canPreview) {
+        return <div className="w-full max-w-[260px]">{node}</div>;
+      }
+
+      return (
+        <button
+          type="button"
+          onClick={() => handleOpenViewer(task)}
+          className={cn(
+            "group relative block w-full max-w-[260px] focus:outline-none",
+            "transition"
+          )}
+        >
+          {node}
+          <span className="pointer-events-none absolute inset-0 rounded-lg border border-white/20 bg-black/40 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+            查看详情
+          </span>
+        </button>
+      );
+    };
+
     if (task.media.kind === "video") {
       if (task.media.url) {
-        return (
-          <div className="w-full max-w-[260px]">
-            <video
-              src={task.media.url}
-              poster={task.media.thumbUrl ?? undefined}
-              className="w-full h-auto rounded-lg border border-white/10 bg-black/40"
-              controls
-              preload="metadata"
-            />
-          </div>
+        const videoNode = (
+          <video
+            src={task.media.url}
+            poster={task.media.thumbUrl ?? undefined}
+            className="w-full h-auto rounded-lg border border-white/10 bg-black/40"
+            controls
+            preload="metadata"
+          />
         );
+        return wrapWithInteraction(videoNode);
       }
       if (task.media.thumbUrl) {
-        return (
-          <div className="w-full max-w-[260px]">
-            <Image
-              src={task.media.thumbUrl}
-              alt="Video preview"
-              width={720}
-              height={405}
-              className="w-full h-auto rounded-lg border border-white/10 object-cover"
-              unoptimized
-            />
-          </div>
+        const thumbNode = (
+          <Image
+            src={task.media.thumbUrl}
+            alt="Video preview"
+            width={720}
+            height={405}
+            className="w-full h-auto rounded-lg border border-white/10 object-cover"
+            unoptimized
+          />
         );
+        return wrapWithInteraction(thumbNode);
       }
       return null;
     }
@@ -599,18 +698,18 @@ export default function TextToImageRecentTasks() {
       return null;
     }
 
-    return (
-      <div className="w-full max-w-[260px]">
-        <Image
-          src={imageSrc}
-          alt="生成结果"
-          width={512}
-          height={512}
-          className="w-full h-auto rounded-lg border border-white/10 object-cover"
-          unoptimized
-        />
-      </div>
+    const imageNode = (
+      <Image
+        src={imageSrc}
+        alt="生成结果"
+        width={512}
+        height={512}
+        className="w-full h-auto rounded-lg border border-white/10 object-cover"
+        unoptimized
+      />
     );
+
+    return wrapWithInteraction(imageNode);
   };
 
   const handleShare = useCallback(
@@ -648,6 +747,30 @@ export default function TextToImageRecentTasks() {
     },
     [locale]
   );
+
+  useEffect(() => {
+    if (!previewTask || typeof window === "undefined") {
+      return;
+    }
+
+    const handlePopState = () => {
+      closePreview();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [previewTask, closePreview]);
+
+  useEffect(() => {
+    return () => {
+      if (viewerFetchRef.current) {
+        viewerFetchRef.current.abort();
+        viewerFetchRef.current = null;
+      }
+    };
+  }, []);
 
   let content: ReactNode = null;
 
@@ -855,6 +978,41 @@ export default function TextToImageRecentTasks() {
         <div className="flex items-center text-sm text-white/70" />
       </div>
       {content}
+      <Dialog
+        open={Boolean(previewTask)}
+        onOpenChange={(open) => {
+          if (!open && previewTask) {
+            if (typeof window !== "undefined") {
+              window.history.back();
+            } else {
+              closePreview();
+            }
+          }
+        }}
+      >
+        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#14141e] text-white sm:max-w-[68rem]">
+          {isViewerLoading ? (
+            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+              加载中...
+            </div>
+          ) : viewerError ? (
+            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+              {viewerError}
+            </div>
+          ) : viewerJob ? (
+            <ViewerBoard
+              job={viewerJob}
+              shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${
+                locale === DEFAULT_LOCALE ? "" : `/${locale}`
+              }/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
+            />
+          ) : (
+            <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
+              暂无预览内容
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
