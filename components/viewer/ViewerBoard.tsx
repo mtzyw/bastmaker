@@ -12,12 +12,10 @@ import {
   Copy,
   Video,
   ImageIcon,
-  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { ViewerJob, ViewerJobAsset } from "@/actions/ai-jobs/public";
-import { useAuth } from "@/components/providers/AuthProvider";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,7 +59,6 @@ function isVideoAsset(asset: ViewerJobAsset | null | undefined) {
 export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const headerT = useTranslations("Viewer.header");
   const t = useTranslations("Viewer.details");
-  const { user } = useAuth();
 
   const createdAtLabel = useMemo(() => dayjs(job.createdAt).format(DATE_FORMAT), [job.createdAt]);
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
@@ -181,12 +178,12 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     .slice(0, 5);
 
   return (
-    <Card className="mx-auto w-full max-w-[56rem] overflow-hidden border border-white/10 bg-[#0d1026]/95 text-white">
-      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
-        <div className="border-b border-white/10 md:border-b-0 md:border-r">
+    <Card className="mx-auto w-full min-h-[28rem] max-w-[56rem] border border-white/10 bg-[#14141e] text-white md:h-[calc(100vh-6rem)] md:max-h-[900px] md:overflow-hidden">
+      <div className="grid h-full min-h-0 grid-cols-1 md:h-full md:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
+        <div className="border-b border-white/10 md:flex md:min-h-0 md:flex-col md:border-b-0 md:border-r">
           <div
             className={cn(
-              "relative w-full bg-[#11132a]",
+              "relative w-full bg-[#14141e] md:flex-1 md:min-h-0",
               aspectRatioStyle ? undefined : "aspect-[3/4]"
             )}
             style={aspectRatioStyle}
@@ -195,7 +192,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           </div>
         </div>
 
-        <div className="space-y-5 p-6">
+        <div className="flex h-full min-h-0 flex-col gap-5 p-6">
           <header className="flex items-center justify-between border-b border-white/10 pb-5">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-white/20">
@@ -212,7 +209,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
             </Badge>
           </header>
 
-          <section className="space-y-3 text-xs text-white/70">
+          <section className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1 text-xs text-white/70">
             <div className="flex items-center justify-between text-xs text-white/50">
               <span>{t("modelLabel", { default: "Model" })}</span>
               <span className="text-white/80">{job.modelLabel ?? "—"}</span>
@@ -266,7 +263,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               <Textarea
                 value={job.prompt ?? "—"}
                 readOnly
-                className="min-h-[48px] bg-[#05070f] border-white/10 text-white/80 text-xs resize-none"
+                className="min-h-[48px] bg-[#14141e] border-white/10 text-white/80 text-xs resize-none"
               />
             </div>
 

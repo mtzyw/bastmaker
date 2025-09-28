@@ -24,7 +24,7 @@ export function ViewerHeader({ job: _job, shareUrl: _shareUrl, generateUrl }: Vi
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black/40 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#14141e] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-6">
           <I18nLink href="/" className="flex items-center gap-2" prefetch>
