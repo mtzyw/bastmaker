@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getViewerJobBySlug } from "@/actions/ai-jobs/public";
+import { createClient } from "@/lib/supabase/server";
 
 type RouteParams = Promise<{ slug: string }>;
 
@@ -14,7 +15,18 @@ export async function GET(
     return NextResponse.json({ success: false, error: "Missing slug" }, { status: 400 });
   }
 
-  const result = await getViewerJobBySlug(slug);
+  let userId: string | undefined;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? undefined;
+  } catch {
+    userId = undefined;
+  }
+
+  const result = await getViewerJobBySlug(slug, { allowPrivateForUserId: userId });
 
   if (!result.success || !result.data) {
     const status = result.customCode === "NOT_FOUND" ? 404 : 500;

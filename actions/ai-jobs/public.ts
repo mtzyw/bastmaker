@@ -113,7 +113,11 @@ function buildOwnerSummary(user: Database["public"]["Tables"]["users"]["Row"] | 
   };
 }
 
-export async function getViewerJobBySlug(slug: string) {
+type ViewerJobOptions = {
+  allowPrivateForUserId?: string;
+};
+
+export async function getViewerJobBySlug(slug: string, options?: ViewerJobOptions) {
   if (!slug) {
     return actionResponse.notFound("Missing slug", "NOT_FOUND");
   }
@@ -123,10 +127,9 @@ export async function getViewerJobBySlug(slug: string) {
   const { data: job, error: jobError } = await supabase
     .from("ai_jobs")
     .select(
-      "id, user_id, share_slug, modality_code, model_slug_at_submit, public_title, public_summary, public_assets, metadata_json, share_visit_count, share_conversion_count, created_at"
+      "id, user_id, is_public, share_slug, modality_code, model_slug_at_submit, public_title, public_summary, public_assets, metadata_json, share_visit_count, share_conversion_count, created_at"
     )
     .eq("share_slug", slug)
-    .eq("is_public", true)
     .maybeSingle();
 
   if (jobError) {
@@ -135,6 +138,11 @@ export async function getViewerJobBySlug(slug: string) {
   }
 
   if (!job) {
+    return actionResponse.notFound("Job not found", "NOT_FOUND");
+  }
+
+  const isOwner = options?.allowPrivateForUserId && job.user_id === options.allowPrivateForUserId;
+  if (!job.is_public && !isOwner) {
     return actionResponse.notFound("Job not found", "NOT_FOUND");
   }
 
