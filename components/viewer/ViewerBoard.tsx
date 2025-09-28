@@ -194,15 +194,9 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
 
         <div className="flex h-full min-h-0 flex-col gap-5 p-6">
           <header className="flex items-center justify-between border-b border-white/10 pb-5">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border border-white/20">
-                <AvatarImage src={job.owner?.avatarUrl ?? undefined} alt={job.owner?.displayName ?? "Creator"} />
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col text-sm">
-                <span className="font-medium text-white">{job.owner?.displayName ?? t("unknownUser")}</span>
-                <span className="text-white/60">{createdAtLabel}</span>
-              </div>
+            <div className="flex flex-col text-sm">
+              <span className="font-medium text-white">{job.owner?.displayName ?? t("unknownUser")}</span>
+              <span className="text-white/60">{createdAtLabel}</span>
             </div>
             <Badge variant="secondary" className="bg-white/10 text-white">
               {job.modalityLabel ?? "AI"}
