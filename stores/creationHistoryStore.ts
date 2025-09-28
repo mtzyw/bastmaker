@@ -17,6 +17,28 @@ function sortItems(items: CreationItem[]) {
     .slice(0, 100);
 }
 
+function buildFingerprint(item: CreationItem) {
+  const source = item.metadata?.source ?? null;
+  const modality = item.modalityCode ?? item.metadata?.modality_code ?? null;
+  const model = item.inputParams?.model ?? item.modelSlug ?? null;
+  const prompt = item.inputParams?.prompt ?? item.metadata?.prompt ?? null;
+  const aspectRatio = item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio ?? null;
+  const resolution = item.inputParams?.resolution ?? item.metadata?.resolution ?? null;
+  const mode = item.metadata?.mode ?? item.inputParams?.mode ?? null;
+  const referenceCount = item.referenceImageCount ?? item.metadata?.reference_image_count ?? null;
+
+  return JSON.stringify({
+    source,
+    modality,
+    model,
+    prompt,
+    aspectRatio,
+    resolution,
+    mode,
+    referenceCount,
+  });
+}
+
 type CreationHistoryState = {
   items: CreationItem[];
   mergeItems: (incoming: CreationItem[]) => void;
@@ -40,7 +62,23 @@ export const useCreationHistoryStore = create<CreationHistoryState>((set) => ({
         map.set(item.jobId, item);
       });
 
+      const tempFingerprints = new Map<string, string>();
+      state.items.forEach((item) => {
+        if (item.jobId.startsWith("temp-")) {
+          tempFingerprints.set(item.jobId, buildFingerprint(item));
+        }
+      });
+
       incoming.forEach((item) => {
+        const fingerprint = buildFingerprint(item);
+        for (const [tempId, tempFingerprint] of tempFingerprints.entries()) {
+          if (tempFingerprint === fingerprint) {
+            map.delete(tempId);
+            tempFingerprints.delete(tempId);
+            break;
+          }
+        }
+
         const existing = map.get(item.jobId);
         if (existing) {
           map.set(item.jobId, {
@@ -51,9 +89,9 @@ export const useCreationHistoryStore = create<CreationHistoryState>((set) => ({
                 ? item.outputs
                 : existing.outputs,
           });
-        } else {
-          map.set(item.jobId, item);
         }
+
+        map.set(item.jobId, item);
       });
 
       return { items: sortItems(Array.from(map.values())) };

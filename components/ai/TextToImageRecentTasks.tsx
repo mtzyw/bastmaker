@@ -36,6 +36,8 @@ const CATEGORY_OPTIONS = [
 
 type CategoryFilter = (typeof CATEGORY_OPTIONS)[number]["key"];
 
+const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片"];
+
 type TaskStatus = "failed" | "succeeded" | "processing";
 
 type TaskMedia =
@@ -85,6 +87,11 @@ const POLL_INTERVAL_MS = 5000;
 
 type AiJobRow = Database["public"]["Tables"]["ai_jobs"]["Row"];
 type AiJobOutputRow = Database["public"]["Tables"]["ai_job_outputs"]["Row"];
+
+type TextToImageRecentTasksProps = {
+  initialCategory?: CategoryFilter;
+  categories?: readonly CategoryFilter[];
+};
 
 function formatProviderName(code?: string | null) {
   if (!code) {
@@ -299,10 +306,22 @@ function toDisplayTask(job: CreationItem): DisplayTask {
   };
 }
 
-export default function TextToImageRecentTasks() {
+export default function TextToImageRecentTasks({
+  initialCategory = "全部",
+  categories = DEFAULT_CATEGORY_ORDER,
+}: TextToImageRecentTasksProps = {}) {
+  const normalizedCategories = useMemo(() => {
+    const unique = Array.from(new Set(categories));
+    return unique.length > 0 ? (unique as CategoryFilter[]) : [...DEFAULT_CATEGORY_ORDER];
+  }, [categories]);
+  const resolvedInitialCategory = useMemo(() => {
+    return normalizedCategories.includes(initialCategory)
+      ? initialCategory
+      : normalizedCategories[0] ?? "全部";
+  }, [initialCategory, normalizedCategories]);
   const locale = useLocale();
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("全部");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>(resolvedInitialCategory);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -426,6 +445,16 @@ export default function TextToImageRecentTasks() {
       controller.abort();
     };
   }, [loadHistory]);
+
+  useEffect(() => {
+    if (!normalizedCategories.includes(activeCategory)) {
+      setActiveCategory(resolvedInitialCategory);
+    }
+  }, [activeCategory, normalizedCategories, resolvedInitialCategory]);
+
+  useEffect(() => {
+    setActiveCategory(resolvedInitialCategory);
+  }, [resolvedInitialCategory]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -1045,10 +1074,10 @@ export default function TextToImageRecentTasks() {
           onValueChange={(value) => setActiveCategory(value as CategoryFilter)}
         >
           <SelectTrigger className="w-[160px] bg-white/5 border border-white/10 text-white/80 focus:ring-0 focus:ring-offset-0">
-            <SelectValue placeholder="全部" />
+            <SelectValue placeholder={normalizedCategories[0] ?? "全部"} />
           </SelectTrigger>
           <SelectContent className="bg-[#1C1B1A] text-white border border-white/10">
-            {CATEGORY_OPTIONS.map((option) => (
+            {CATEGORY_OPTIONS.filter((option) => normalizedCategories.includes(option.key)).map((option) => (
               <SelectItem key={option.key} value={option.key}>
                 {option.label}
               </SelectItem>

@@ -1,5 +1,6 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import TextToVideoLeftPanel from "@/components/ai/TextToVideoLeftPanel";
+import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { Metadata } from "next";
@@ -39,6 +40,7 @@ export default function TextToVideoPage() {
       sections={sections}
       withSidebar={false}
       section2Left={<TextToVideoLeftPanel />}
+      section2Right={<TextToImageRecentTasks initialCategory="视频" categories={["视频", "全部", "图片"]} />}
     />
   );
 }

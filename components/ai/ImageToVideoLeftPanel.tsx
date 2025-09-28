@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,9 @@ import {
   getAllowedVideoLengths,
   getModelOption,
 } from "@/components/ai/video-models";
+import { CreationItem } from "@/lib/ai/creations";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { getVideoModelConfig } from "@/lib/ai/video-config";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
@@ -34,6 +37,8 @@ const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
 const TRANSITION_MODEL = "PixVerse V5 Transition";
 
 export default function ImageToVideoLeftPanel() {
+  const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
+  const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(DEFAULT_VIDEO_MODEL);
@@ -58,6 +63,7 @@ export default function ImageToVideoLeftPanel() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const isTransitionModel = model === TRANSITION_MODEL;
+  const videoModelConfig = useMemo(() => getVideoModelConfig(model), [model]);
 
   const uploadImageToR2 = useCallback(async (file: File, kind: UploadKind): Promise<string> => {
     const formData = new FormData();
@@ -114,7 +120,7 @@ export default function ImageToVideoLeftPanel() {
   const isSingleVideoLength = allowedVideoLengths.length === 1;
   const resolutionOptions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
   const selectedModel = getModelOption(model);
-  const creditsCost = selectedModel?.credits ?? 0;
+  const creditsCost = videoModelConfig.creditsCost ?? selectedModel?.credits ?? 0;
   const hasPrompt = prompt.trim().length > 0;
   const isImageMode = !isTransitionModel;
   const hasImage = Boolean(uploadedImage?.remoteUrl);
@@ -136,7 +142,124 @@ export default function ImageToVideoLeftPanel() {
     setIsSubmitting(true);
     setStatusMessage(null);
 
+    const optimisticCreatedAt = new Date().toISOString();
+    let tempJobId: string | null = null;
+
     try {
+      let primaryImageUrl: string | null = null;
+      let introImageUrl: string | null = null;
+      let outroImageUrl: string | null = null;
+
+      if (isImageMode) {
+        if (!uploadedImage) {
+          throw new Error("请上传参考图片");
+        }
+        primaryImageUrl = await resolveImageSource(uploadedImage);
+      } else {
+        if (!introImage || !outroImage) {
+          throw new Error("请上传首尾图片");
+        }
+        introImageUrl = await resolveImageSource(introImage);
+        outroImageUrl = await resolveImageSource(outroImage);
+      }
+
+      const referenceFlags = {
+        primary: Boolean(primaryImageUrl),
+        tail: false,
+        intro: Boolean(introImageUrl),
+        outro: Boolean(outroImageUrl),
+      };
+      const referenceCount = Object.values(referenceFlags).reduce(
+        (total, flag) => total + (flag ? 1 : 0),
+        0
+      );
+
+      const buildHistoryItem = ({
+        jobId,
+        status,
+        latestStatus,
+        providerJobId,
+        createdAt,
+        costCredits,
+      }: {
+        jobId: string;
+        status: string;
+        latestStatus?: string | null;
+        providerJobId?: string | null;
+        createdAt?: string;
+        costCredits?: number;
+      }): CreationItem => {
+        const effectiveStatus = status || "processing";
+        const effectiveLatest = latestStatus ?? effectiveStatus;
+        const effectiveCredits =
+          typeof costCredits === "number" ? costCredits : videoModelConfig.creditsCost;
+
+        return {
+          jobId,
+          providerCode: videoModelConfig.providerCode,
+          providerJobId: providerJobId ?? null,
+          status: effectiveStatus,
+          latestStatus: effectiveLatest,
+          createdAt: createdAt ?? optimisticCreatedAt,
+          costCredits: effectiveCredits,
+          outputs: [],
+          metadata: {
+            source: "video",
+            mode,
+            translate_prompt: translatePrompt,
+            resolution,
+            duration: Number(videoLength),
+            credits_cost: effectiveCredits,
+            freepik_latest_status: effectiveLatest,
+            freepik_initial_status: effectiveStatus,
+            freepik_task_id: providerJobId ?? null,
+            modality_code: "i2v",
+            prompt: trimmedPrompt,
+            original_prompt: trimmedPrompt,
+            reference_inputs: referenceFlags,
+            reference_image_count: referenceCount,
+            reference_image_urls: [
+              primaryImageUrl,
+              introImageUrl,
+              outroImageUrl,
+            ].filter((url): url is string => Boolean(url)),
+          },
+          inputParams: {
+            mode,
+            model,
+            prompt: trimmedPrompt,
+            translate_prompt: translatePrompt,
+            resolution,
+            video_length: videoLength,
+            duration: Number(videoLength),
+            image_url: primaryImageUrl,
+            first_frame_image_url: primaryImageUrl,
+            intro_image_url: introImageUrl,
+            outro_image_url: outroImageUrl,
+          },
+          modalityCode: "i2v",
+          modelSlug: model,
+          errorMessage: null,
+          seed: null,
+          isImageToImage: true,
+          referenceImageCount: referenceCount,
+          shareSlug: null,
+          shareVisitCount: 0,
+          shareConversionCount: 0,
+          publicTitle: null,
+          publicSummary: null,
+        };
+      };
+
+      tempJobId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? `temp-${crypto.randomUUID()}`
+          : `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      upsertHistoryItem(
+        buildHistoryItem({ jobId: tempJobId, status: "processing", latestStatus: "processing" })
+      );
+
       const payload: Record<string, unknown> = {
         mode,
         model,
@@ -147,19 +270,15 @@ export default function ImageToVideoLeftPanel() {
         duration: Number(videoLength),
       };
 
-      if (isImageMode) {
-        if (!uploadedImage) {
-          throw new Error("请上传参考图片");
-        }
-        const imageSource = await resolveImageSource(uploadedImage);
-        payload.image_url = imageSource;
-        payload.first_frame_image_url = imageSource;
-      } else {
-        if (!introImage || !outroImage) {
-          throw new Error("请上传首尾图片");
-        }
-        payload.intro_image_url = await resolveImageSource(introImage);
-        payload.outro_image_url = await resolveImageSource(outroImage);
+      if (primaryImageUrl) {
+        payload.image_url = primaryImageUrl;
+        payload.first_frame_image_url = primaryImageUrl;
+      }
+      if (introImageUrl) {
+        payload.intro_image_url = introImageUrl;
+      }
+      if (outroImageUrl) {
+        payload.outro_image_url = outroImageUrl;
       }
 
       const response = await fetch("/api/ai/freepik/video", {
@@ -184,6 +303,28 @@ export default function ImageToVideoLeftPanel() {
         updatedBenefits?: { totalAvailableCredits?: number };
       };
 
+      removeHistoryItem(tempJobId);
+
+      if (taskInfo?.jobId) {
+        const optimisticStatus = taskInfo.status ?? "processing";
+        const latestStatus = taskInfo.freepikStatus ?? optimisticStatus;
+        const credits =
+          typeof taskInfo.creditsCost === "number"
+            ? taskInfo.creditsCost
+            : videoModelConfig.creditsCost;
+
+        upsertHistoryItem(
+          buildHistoryItem({
+            jobId: taskInfo.jobId,
+            status: optimisticStatus,
+            latestStatus,
+            providerJobId: taskInfo.providerJobId ?? null,
+            createdAt: optimisticCreatedAt,
+            costCredits: credits,
+          })
+        );
+      }
+
       const parts: string[] = ["视频任务已提交，请稍后在生成记录页查看进度。"];
 
       if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
@@ -199,13 +340,32 @@ export default function ImageToVideoLeftPanel() {
 
       console.debug("[image-to-video] submit payload", payload, result);
     } catch (error) {
+      if (tempJobId) {
+        removeHistoryItem(tempJobId);
+      }
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
       toast.error(message, { duration: 7000, position: "top-center" });
       console.error("[image-to-video] submit error", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [disableSubmit, isImageMode, mode, prompt, resolveImageSource, translatePrompt, resolution, videoLength, uploadedImage, introImage, outroImage]);
+  }, [
+    disableSubmit,
+    introImage,
+    isImageMode,
+    mode,
+    model,
+    outroImage,
+    prompt,
+    removeHistoryItem,
+    resolveImageSource,
+    translatePrompt,
+    resolution,
+    upsertHistoryItem,
+    videoLength,
+    videoModelConfig,
+    uploadedImage,
+  ]);
 
   useEffect(() => {
     return () => {

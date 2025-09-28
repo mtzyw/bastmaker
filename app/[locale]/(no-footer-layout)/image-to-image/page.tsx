@@ -1,5 +1,6 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import ImageToImageLeftPanel from "@/components/ai/ImageToImageLeftPanel";
+import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { Metadata } from "next";
@@ -39,6 +40,7 @@ export default function ImageToImagePage() {
       sections={sections}
       withSidebar={false}
       section2Left={<ImageToImageLeftPanel excludeModels={["Flux Dev", "Hyperflux", "Google Imagen4"]} />}
+      section2Right={<TextToImageRecentTasks initialCategory="图片" categories={["图片", "全部", "视频"]} />}
     />
   );
 }

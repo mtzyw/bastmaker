@@ -8,6 +8,9 @@ import { Wand2, Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import { CreationItem } from "@/lib/ai/creations";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { getVideoModelConfig } from "@/lib/ai/video-config";
 import {
   AspectRatio,
   DEFAULT_VIDEO_LENGTH,
@@ -27,6 +30,8 @@ const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
 const EXCLUDED_MODELS = new Set(["PixVerse V5 Transition"]);
 
 export default function TextToVideoLeftPanel() {
+  const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
+  const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const textToVideoOptions = useMemo(
     () => VIDEO_MODEL_SELECT_OPTIONS.filter((option) => !EXCLUDED_MODELS.has(option.value)),
     []
@@ -52,6 +57,7 @@ export default function TextToVideoLeftPanel() {
     [model, textToVideoOptions]
   );
   const activeModel = hasValidModel ? model : DEFAULT_VIDEO_MODEL;
+  const videoModelConfig = useMemo(() => getVideoModelConfig(activeModel), [activeModel]);
 
   useEffect(() => {
     if (!hasValidModel) {
@@ -96,7 +102,7 @@ export default function TextToVideoLeftPanel() {
   const resolutionOptions = VIDEO_RESOLUTION_PRESETS[activeModel] ?? [FALLBACK_RESOLUTION];
   const aspectOptions = VIDEO_ASPECT_PRESETS[activeModel] ?? [FALLBACK_ASPECT_RATIO];
   const selectedModel = textToVideoOptions.find((option) => option.value === activeModel);
-  const creditsCost = selectedModel?.credits ?? 0;
+  const creditsCost = videoModelConfig.creditsCost ?? selectedModel?.credits ?? 0;
   const hasPrompt = prompt.trim().length > 0;
 
   const handleCreate = useCallback(async () => {
@@ -110,18 +116,108 @@ export default function TextToVideoLeftPanel() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    const payload = {
-      mode: "text" as const,
-      model: activeModel,
-      prompt: trimmedPrompt,
-      translate_prompt: translatePrompt,
-      resolution,
-      video_length: videoLength,
-      duration: Number(videoLength),
-      aspect_ratio: aspectRatio,
+    const optimisticCreatedAt = new Date().toISOString();
+    let tempJobId: string | null = null;
+
+    const buildHistoryItem = ({
+      jobId,
+      status,
+      latestStatus,
+      providerJobId,
+      createdAt,
+      costCredits,
+    }: {
+      jobId: string;
+      status: string;
+      latestStatus?: string | null;
+      providerJobId?: string | null;
+      createdAt?: string;
+      costCredits?: number;
+    }): CreationItem => {
+      const effectiveStatus = status || "processing";
+      const effectiveLatest = latestStatus ?? effectiveStatus;
+      const effectiveCredits =
+        typeof costCredits === "number" ? costCredits : videoModelConfig.creditsCost;
+
+      return {
+        jobId,
+        providerCode: videoModelConfig.providerCode,
+        providerJobId: providerJobId ?? null,
+        status: effectiveStatus,
+        latestStatus: effectiveLatest,
+        createdAt: createdAt ?? optimisticCreatedAt,
+        costCredits: effectiveCredits,
+        outputs: [],
+        metadata: {
+          source: "video",
+          mode: "text",
+          translate_prompt: translatePrompt,
+          resolution,
+          aspect_ratio: aspectRatio,
+          duration: Number(videoLength),
+          credits_cost: effectiveCredits,
+          freepik_latest_status: effectiveLatest,
+          freepik_initial_status: effectiveStatus,
+          freepik_task_id: providerJobId ?? null,
+          modality_code: "t2v",
+          prompt: trimmedPrompt,
+          original_prompt: trimmedPrompt,
+          reference_inputs: {
+            primary: false,
+            tail: false,
+            intro: false,
+            outro: false,
+          },
+          reference_image_count: 0,
+        },
+        inputParams: {
+          model: activeModel,
+          prompt: trimmedPrompt,
+          resolution,
+          video_length: videoLength,
+          duration: Number(videoLength),
+          aspect_ratio: aspectRatio,
+          translate_prompt: translatePrompt,
+          mode: "text",
+        },
+        modalityCode: "t2v",
+        modelSlug: activeModel,
+        errorMessage: null,
+        seed: null,
+        isImageToImage: false,
+        referenceImageCount: 0,
+        shareSlug: null,
+        shareVisitCount: 0,
+        shareConversionCount: 0,
+        publicTitle: null,
+        publicSummary: null,
+      };
     };
 
     try {
+      tempJobId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? `temp-${crypto.randomUUID()}`
+          : `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      const optimisticItem = buildHistoryItem({
+        jobId: tempJobId,
+        status: "processing",
+        latestStatus: "processing",
+      });
+      upsertHistoryItem(optimisticItem);
+
+      const payload = {
+        mode: "text" as const,
+        model: activeModel,
+        prompt: trimmedPrompt,
+        translate_prompt: translatePrompt,
+        resolution,
+        video_length: videoLength,
+        duration: Number(videoLength),
+        aspect_ratio: aspectRatio,
+      };
+
       const response = await fetch("/api/ai/freepik/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,6 +240,27 @@ export default function TextToVideoLeftPanel() {
         updatedBenefits?: { totalAvailableCredits?: number };
       };
 
+      removeHistoryItem(tempJobId);
+
+      if (taskInfo?.jobId) {
+        const optimisticStatus = taskInfo.status ?? "processing";
+        const latestStatus = taskInfo.freepikStatus ?? optimisticStatus;
+        const credits =
+          typeof taskInfo.creditsCost === "number"
+            ? taskInfo.creditsCost
+            : videoModelConfig.creditsCost;
+
+        const persistedItem = buildHistoryItem({
+          jobId: taskInfo.jobId,
+          status: optimisticStatus,
+          latestStatus,
+          providerJobId: taskInfo.providerJobId ?? null,
+          createdAt: optimisticCreatedAt,
+          costCredits: credits,
+        });
+        upsertHistoryItem(persistedItem);
+      }
+
       const parts: string[] = ["视频任务已提交，请稍后在生成记录页查看进度。"];
 
       if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
@@ -159,13 +276,27 @@ export default function TextToVideoLeftPanel() {
 
       console.debug("[text-to-video] submit payload", payload, result);
     } catch (error) {
+      if (tempJobId) {
+        removeHistoryItem(tempJobId);
+      }
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
       setErrorMessage(message);
       console.error("[text-to-video] submit error", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [activeModel, aspectRatio, isSubmitting, prompt, resolution, translatePrompt, videoLength]);
+  }, [
+    activeModel,
+    aspectRatio,
+    isSubmitting,
+    prompt,
+    removeHistoryItem,
+    resolution,
+    translatePrompt,
+    upsertHistoryItem,
+    videoLength,
+    videoModelConfig,
+  ]);
 
   return (
     <div className="w-full h-full text-white flex flex-col">

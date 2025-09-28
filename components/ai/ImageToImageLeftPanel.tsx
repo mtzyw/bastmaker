@@ -14,6 +14,9 @@ import {
   TEXT_TO_IMAGE_MODEL_OPTIONS,
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
+import { CreationItem } from "@/lib/ai/creations";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -34,6 +37,8 @@ export default function ImageToImageLeftPanel({
 }: {
   excludeModels?: string[];
 }) {
+  const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
+  const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
@@ -152,6 +157,7 @@ export default function ImageToImageLeftPanel({
 
   const maxCount = getMaxCountByModel(model);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
+  const modelConfig = useMemo(() => getTextToImageModelConfig(apiModel), [apiModel]);
   const isUploading = referenceImages.some((item) => item.uploading);
   const hasPendingUploads = referenceImages.some((item) => !item.remoteUrl);
   const disableSubmit =
@@ -188,6 +194,9 @@ export default function ImageToImageLeftPanel({
     setErrorMessage(null);
     setStatusMessage(null);
 
+    const optimisticCreatedAt = new Date().toISOString();
+    let tempJobId: string | null = null;
+
     try {
       const referenceUrls = referenceImages
         .map((item) => item.remoteUrl)
@@ -196,6 +205,82 @@ export default function ImageToImageLeftPanel({
       if (referenceUrls.length === 0) {
         throw new Error("参考图上传失败，请重新上传");
       }
+
+      const referenceCount = referenceUrls.length;
+      const buildHistoryItem = ({
+        jobId,
+        status,
+        latestStatus,
+        providerJobId,
+        createdAt,
+        costCredits,
+      }: {
+        jobId: string;
+        status: string;
+        latestStatus?: string | null;
+        providerJobId?: string | null;
+        createdAt?: string;
+        costCredits?: number;
+      }): CreationItem => {
+        const effectiveStatus = status || "processing";
+        const effectiveLatest = latestStatus ?? effectiveStatus;
+        const effectiveCredits =
+          typeof costCredits === "number" ? costCredits : modelConfig.creditsCost;
+
+        return {
+          jobId,
+          providerCode: modelConfig.providerCode,
+          providerJobId: providerJobId ?? null,
+          status: effectiveStatus,
+          latestStatus: effectiveLatest,
+          createdAt: createdAt ?? optimisticCreatedAt,
+          costCredits: effectiveCredits,
+          outputs: [],
+        metadata: {
+          source: "image-to-image",
+          translate_prompt: translatePrompt,
+          credits_cost: effectiveCredits,
+          freepik_latest_status: effectiveLatest,
+          freepik_initial_status: effectiveStatus,
+          freepik_task_id: providerJobId ?? null,
+          modality_code: "i2i",
+          prompt: trimmedPrompt,
+          original_prompt: trimmedPrompt,
+          is_image_to_image: true,
+          reference_image_count: referenceCount,
+          reference_images: referenceUrls,
+          reference_inputs: {
+            primary: referenceCount > 0,
+          },
+        },
+          inputParams: {
+            model: apiModel,
+            prompt: trimmedPrompt,
+            reference_images: referenceUrls,
+            translate_prompt: translatePrompt,
+          },
+          modalityCode: "i2i",
+          modelSlug: apiModel,
+          errorMessage: null,
+          seed: null,
+          isImageToImage: true,
+          referenceImageCount: referenceCount,
+          shareSlug: null,
+          shareVisitCount: 0,
+          shareConversionCount: 0,
+          publicTitle: null,
+          publicSummary: null,
+        };
+      };
+
+      tempJobId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? `temp-${crypto.randomUUID()}`
+          : `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      upsertHistoryItem(
+        buildHistoryItem({ jobId: tempJobId, status: "processing", latestStatus: "processing" })
+      );
 
       const payload = {
         model: apiModel,
@@ -226,6 +311,28 @@ export default function ImageToImageLeftPanel({
         updatedBenefits?: { totalAvailableCredits?: number };
       };
 
+      removeHistoryItem(tempJobId);
+
+      if (taskInfo?.jobId) {
+        const optimisticStatus = taskInfo.status ?? "processing";
+        const latestStatus = taskInfo.freepikStatus ?? optimisticStatus;
+        const credits =
+          typeof taskInfo.creditsCost === "number"
+            ? taskInfo.creditsCost
+            : modelConfig.creditsCost;
+
+        upsertHistoryItem(
+          buildHistoryItem({
+            jobId: taskInfo.jobId,
+            status: optimisticStatus,
+            latestStatus,
+            providerJobId: taskInfo.providerJobId ?? null,
+            createdAt: optimisticCreatedAt,
+            costCredits: credits,
+          })
+        );
+      }
+
       const parts: string[] = ["任务已提交，请稍后在生成记录页查看进度。"];
 
       if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
@@ -241,13 +348,26 @@ export default function ImageToImageLeftPanel({
 
       console.debug("[image-to-image] submit payload", payload, result);
     } catch (error) {
+      if (tempJobId) {
+        removeHistoryItem(tempJobId);
+      }
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
       setErrorMessage(message);
       console.error("[image-to-image] submit error", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [apiModel, referenceImages, isUploading, isSubmitting, prompt, translatePrompt]);
+  }, [
+    apiModel,
+    isSubmitting,
+    isUploading,
+    modelConfig,
+    prompt,
+    referenceImages,
+    removeHistoryItem,
+    translatePrompt,
+    upsertHistoryItem,
+  ]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
