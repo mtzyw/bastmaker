@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   const referenceImageCount = data.reference_images?.length ?? 0;
 
   const metadataJson = {
-    source: "text-to-image",
+    source: isImageToImage ? "image-to-image" : "text-to-image",
     translate_prompt: data.translate_prompt ?? false,
     is_image_to_image: isImageToImage,
     reference_image_count: referenceImageCount,
@@ -106,7 +106,12 @@ export async function POST(req: NextRequest) {
     original_prompt: trimmedPrompt,
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
-    reference_inputs: referenceImageUrls,
+    ...(referenceImageCount > 0
+      ? {
+          reference_inputs: { primary: true },
+          reference_images: referenceImageUrls,
+        }
+      : {}),
     is_public: isPublic,
   };
 

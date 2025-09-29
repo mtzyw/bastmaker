@@ -469,6 +469,17 @@ export async function POST(req: NextRequest) {
 
   const modalityCode: "t2v" | "i2v" = mode === "text" ? "t2v" : "i2v";
 
+  const referenceInputs = {
+    primary: Boolean(primaryInputSource),
+    tail: Boolean(tailInputSource),
+    intro: Boolean(introInputSource),
+    outro: Boolean(outroInputSource),
+  };
+  const referenceImageCount = Object.values(referenceInputs).reduce(
+    (total, flag) => total + (flag ? 1 : 0),
+    0
+  );
+
   const metadataJson = {
     source: "video",
     mode,
@@ -483,12 +494,8 @@ export async function POST(req: NextRequest) {
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
     credits_cost: modelConfig.creditsCost,
-    reference_inputs: {
-      primary: Boolean(primaryInputSource),
-      tail: Boolean(tailInputSource),
-      intro: Boolean(introInputSource),
-      outro: Boolean(outroInputSource),
-    },
+    reference_inputs: referenceInputs,
+    reference_image_count: referenceImageCount,
   };
 
   const pricingSnapshot = {
@@ -666,6 +673,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const referenceImageUrls = [
+      referenceInputs.primary ? resolvedPrimaryImageUrl : null,
+      referenceInputs.tail ? resolvedTailImageUrl : null,
+      referenceInputs.intro ? resolvedIntroImageUrl : null,
+      referenceInputs.outro ? resolvedOutroImageUrl : null,
+    ].filter((url): url is string => typeof url === "string" && url.length > 0);
+
     console.log("[freepik-video] request payload", {
       endpoint: apiModel,
       payload,
@@ -687,6 +701,8 @@ export async function POST(req: NextRequest) {
       freepik_initial_status: freepikStatus,
       freepik_latest_status: freepikStatus,
       freepik_last_event_at: new Date().toISOString(),
+      reference_image_urls: referenceImageUrls,
+      reference_image_count: referenceImageUrls.length,
     };
 
     const updates: Database["public"]["Tables"]["ai_jobs"]["Update"] = {
