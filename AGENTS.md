@@ -1,33 +1,33 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- The App Router lives under `app/`; co-locate route-specific helpers or API handlers beside their segment.
-- Shared UI primitives belong in `components/` with PascalCase filenames; feature-scoped utilities stay near their consumer, while cross-cutting logic sits in `lib/`.
-- Place hooks under `hooks/`, Zustand stores in `stores/`, and markdown or localized content inside `blogs/`, `docs/`, `content/`, `data/`, `emails/`, or `i18n/`. Static assets and global styles stay in `public/` and `styles/`.
+- `app/` houses the Next.js App Router; keep route-specific UI, loaders, and API handlers beside their segment. Feature folders such as `ai-sidebar/` and `text-to-image-generator/` own their local helpers.
+- Shared UI primitives live in `components/` (PascalCase files), with design tokens in `styles/` and Tailwind config in `tailwind.config.ts`.
+- Cross-cutting logic sits in `lib/` and typed interfaces in `types/` and `interface/`. Hooks belong in `hooks/`, Zustand stores in `stores/`, and Supabase workflows in `supabase/`.
+- Static assets stay in `public/`; authored content uses `blogs/`, `content/`, `docs/`, `emails/`, and localized strings in `i18n/`.
 
 ## Build, Test, and Development Commands
-- `pnpm install` syncs dependencies; run after pulling new packages.
-- `pnpm dev` starts the Next.js App Router at http://localhost:3000 for local QA.
-- `pnpm build` compiles production bundles; follow with `pnpm start` for smoke tests.
-- Guard performance budgets with `pnpm analyze`; enforce lint rules via `pnpm lint`.
-- Database workflows rely on Supabase helpers: `pnpm db:push`, `db:pull`, `db:new-migration`, `db:reset`, `db:gen-types`, and the wrapper `pnpm db:update`.
+- `pnpm install` syncs dependencies; rerun after pulling lockfile changes.
+- `pnpm dev` starts the App Router at `http://localhost:3000`; use for local QA.
+- `pnpm build` creates the production bundle; follow with `pnpm start` for smoke tests.
+- `pnpm analyze` inspects bundle size; `pnpm lint` enforces ESLint and Tailwind rules.
+- Supabase helpers: `pnpm db:push`, `pnpm db:pull`, `pnpm db:new-migration`, `pnpm db:reset`, `pnpm db:gen-types`, or the wrapper `pnpm db:update`.
 
 ## Coding Style & Naming Conventions
-- TypeScript runs in `strict` mode; give explicit types for props, APIs, and Supabase payloads.
-- Favor `@/` imports over deep relative paths; Tailwind classes stay inline until repetition justifies a shared component.
-- Components, providers, and hooks follow `ComponentName.tsx`, `ProviderName.tsx`, and `useName.ts`; utilities default to kebab-case filenames.
+- TypeScript runs in `strict` mode; annotate props, API payloads, and Supabase queries explicitly.
+- Favor `@/` aliases instead of deep relatives. Keep Tailwind classes inline until repetition justifies extraction.
+- Components, providers, and hooks follow `ComponentName.tsx`, `ProviderName.tsx`, and `useName.ts`. Utilities default to kebab-case filenames.
 
 ## Testing Guidelines
-- Vitest with React Testing Library powers unit coverage. Mirror source filenames (`Component.test.tsx`) or place suites in `__tests__/`.
-- Run targeted suites with `npx vitest run`; add a `pnpm test` script before automation flows.
-- Document any coverage gaps when filing PRs, prioritizing mission-critical routes under `app/` and brittle utilities in `lib/`.
+- Vitest with React Testing Library powers unit suites. Mirror source files (`Component.test.tsx`) or use `__tests__/`.
+- Run targeted suites with `npx vitest run`; add a `pnpm test` script before automation.
+- Document coverage gaps for critical `app/` routes and brittle utilities in `lib/`.
 
 ## Commit & Pull Request Guidelines
-- Write short, imperative commits (e.g., `fix: guard empty session`); prefixes such as `feat`, `fix`, `chore`, and `docs(scope): summary` match existing history.
-- Pull requests must link issues, describe user-facing changes, attach screenshots for UI updates, and flag Supabase or environment impacts.
-- List verification steps (commands run, migrations applied) and regenerate Supabase types before requesting review.
+- Write short, imperative commits (`feat: add sidebar layout`, `fix: guard empty session`). Prefixes such as `feat`, `fix`, `chore`, and `docs(scope): summary` match current history.
+- Pull requests must link issues, describe user-facing changes, attach UI screenshots, and flag Supabase or environment impacts.
+- List verification steps (commands run, migrations executed) and regenerate Supabase types before requesting review.
 
 ## Security & Configuration Tips
-- Start from `.env.example`, copy to `.env.local`, and keep secrets out of version control.
-- Prefix browser-safe settings with `NEXT_PUBLIC_`; keep Supabase service keys server-side.
-- After schema changes, run `pnpm db:update` to push migrations, refresh generated types, and avoid drift.
+- Copy `.env.example` to `.env.local`; never commit secrets. Browser-safe keys require the `NEXT_PUBLIC_` prefix.
+- After schema changes, run `pnpm db:update` to push migrations and refresh generated types to avoid drift.

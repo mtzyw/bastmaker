@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "@/i18n/routing"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter, usePathname } from "@/i18n/routing"
 import { Button } from "@/components/ui/button"
 import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -13,7 +13,6 @@ interface MenuItem {
   id: string
   label: string
   icon: React.ReactNode
-  isActive?: boolean
 }
 
 interface MenuSection {
@@ -46,7 +45,6 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
           id: "text-to-video",
           label: "文字转视频",
           icon: <Type className="w-5 h-5" />,
-          isActive: true,
         },
         {
           id: "image-to-video",
@@ -82,7 +80,6 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
           id: "text-to-image",
           label: "文字转图片",
           icon: <Type className="w-5 h-5" />,
-          isActive: true,
         },
         {
           id: "image-to-image",
@@ -103,18 +100,41 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
   ]
 
   // Determine initial active item: prefer the first item with isActive, else the first item overall
-  const initialActiveId = (() => {
-    for (const section of menuSections) {
-      const found = section.items.find((it) => it.isActive)
-      if (found) return found.id
-    }
+  const fallbackActiveId = (() => {
     for (const section of menuSections) {
       if (section.items.length) return section.items[0].id
     }
     return ""
   })()
 
-  const [activeId, setActiveId] = useState<string>(initialActiveId)
+  const pathname = usePathname()
+
+  const normalizePathname = (path?: string | null) => {
+    if (!path) return "/"
+    const normalized = path.replace(/^\/[a-z]{2}(?=\/|$)/i, "")
+    return normalized.length > 0 ? normalized : "/"
+  }
+
+  const activeIdFromPath = useMemo(() => {
+    const path = normalizePathname(pathname)
+    if (path.startsWith("/video-effects")) return "ai-video-effects"
+    if (path.startsWith("/text-to-video")) return "text-to-video"
+    if (path.startsWith("/image-to-video")) return "image-to-video"
+    if (path.startsWith("/text-to-image")) return "text-to-image"
+    if (path.startsWith("/image-to-image")) return "image-to-image"
+    if (path.startsWith("/my-creations")) return "assets"
+    if (path.startsWith("/explore")) return "explore"
+    if (path === "/" || path.startsWith("/creation")) return "creation-center"
+    return ""
+  }, [pathname])
+
+  const [activeId, setActiveId] = useState<string>(activeIdFromPath || fallbackActiveId)
+
+  useEffect(() => {
+    if (activeIdFromPath && activeIdFromPath !== activeId) {
+      setActiveId(activeIdFromPath)
+    }
+  }, [activeIdFromPath, activeId])
 
   const handleItemClick = (itemId: string) => {
     setActiveId(itemId)
@@ -123,6 +143,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     if (itemId === "image-to-image") { router.push("/image-to-image"); onNavigate && onNavigate(); }
     if (itemId === "text-to-video") { router.push("/text-to-video"); onNavigate && onNavigate(); }
     if (itemId === "image-to-video") { router.push("/image-to-video"); onNavigate && onNavigate(); }
+    if (itemId === "ai-video-effects") { router.push("/video-effects"); onNavigate && onNavigate(); }
     if (itemId === "assets") { router.push("/my-creations"); onNavigate && onNavigate(); }
   }
 
