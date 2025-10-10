@@ -94,22 +94,13 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
             {GALLERY_ITEMS.map((item) => (
               <article
                 key={item.title}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-black/30"
+                className="overflow-hidden rounded-2xl border border-white/10 bg-black/30"
               >
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 transition duration-300 group-hover:from-white/20" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 transition duration-300 hover:from-white/20" />
                   <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.3em] text-white/30">
                     Preview
                   </div>
-                </div>
-                <div className="flex flex-col gap-3 px-5 py-6 text-white">
-                  <div>
-                    <h4 className="text-lg font-semibold">{item.title}</h4>
-                    <p className="mt-2 text-sm text-white/60 leading-relaxed">{item.description}</p>
-                  </div>
-                  <Button variant="secondary" className="self-start bg-white/10 text-white hover:bg-white/20">
-                    {item.cta}
-                  </Button>
                 </div>
               </article>
             ))}
