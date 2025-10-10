@@ -2,50 +2,28 @@ import { Button } from "@/components/ui/button";
 import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
 import { cn } from "@/lib/utils";
 
-type GalleryItem = {
-  title: string;
-  description: string;
-  cta: string;
-};
-
-const GALLERY_ITEMS: GalleryItem[] = [
-  {
-    title: "自然亲吻瞬间",
-    description: "捕捉真实情侣间的亲昵氛围，让每一个细节都充满故事感。",
-    cta: "查看案例",
-  },
-  {
-    title: "电影级光影",
-    description: "模拟黄金时刻的柔和光线，赋予画面更具感染力的氛围。",
-    cta: "立即体验",
-  },
-  {
-    title: "动漫风格转换",
-    description: "将真实人物转化为动漫角色，营造独特的浪漫视觉。",
-    cta: "了解更多",
-  },
+const GALLERY_ITEMS = [
+  { title: "自然亲吻瞬间", description: "捕捉真实情侣间的亲昵氛围，让每一个细节都充满故事感。", cta: "查看案例" },
+  { title: "电影级光影", description: "模拟黄金时刻的柔和光线，赋予画面更具感染力的氛围。", cta: "立即体验" },
+  { title: "动漫风格转换", description: "将真实人物转化为动漫角色，营造独特的浪漫视觉。", cta: "了解更多" },
 ];
 
 const IMMERSIVE_FEATURES = [
   {
     title: "逼真的人工智能接吻和法式接吻视频",
-    description:
-      "体验我们逼真的 AI 接吻和法式接吻视频生成能力。借助先进的算法，生成的动画动作流畅、表情富有情感，宛若真实发生。",
+    description: "体验我们逼真的 AI 接吻和法式接吻视频生成能力。借助先进的算法，生成的动画动作流畅、表情富有情感，宛若真实发生。",
   },
   {
     title: "无限的接吻方式",
-    description:
-      "Pollo AI 提供多样的接吻模板，包括温柔之吻、法式接吻以及趣味场景，自由组合细节，打造理想中的浪漫故事。",
+    description: "Pollo AI 提供多样的接吻模板，包括温柔之吻、法式接吻以及趣味场景，自由组合细节，打造理想中的浪漫故事。",
   },
   {
     title: "多种配对选项",
-    description:
-      "支持情侣、朋友或虚拟角色等多种组合，AI 接吻视频生成器都能满足，轻松完成个性化创作。",
+    description: "支持情侣、朋友或虚拟角色等多种组合，AI 接吻视频生成器都能满足，轻松完成个性化创作。",
   },
   {
     title: "适合各种应用",
-    description:
-      "广泛适用于营销活动、社交媒体或个人纪念内容，为观众带来既真诚又吸引人的表达方式。",
+    description: "广泛适用于营销活动、社交媒体或个人纪念内容，为观众带来既真诚又吸引人的表达方式。",
   },
 ];
 
@@ -64,12 +42,7 @@ const VALUE_CARDS = [
   },
 ];
 
-const EXTRA_EFFECTS = [
-  "AI 拥抱生成器",
-  "浪漫烟花特效",
-  "宠物拥抱特效",
-  "婚礼誓言特效",
-];
+const EXTRA_EFFECTS = ["AI 拥抱生成器", "浪漫烟花特效", "宠物拥抱特效", "婚礼誓言特效"];
 
 const FAQ_ITEMS = [
   {
@@ -115,6 +88,34 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
           </div>
         </section>
 
+        <section className="space-y-6">
+          <h3 className="text-2xl md:text-3xl font-semibold text-center">精选案例预览</h3>
+          <div className="grid gap-6 md:grid-cols-3">
+            {GALLERY_ITEMS.map((item) => (
+              <article
+                key={item.title}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-black/30"
+              >
+                <div className="relative aspect-video overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 transition duration-300 group-hover:from-white/20" />
+                  <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.3em] text-white/30">
+                    Preview
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 px-5 py-6 text-white">
+                  <div>
+                    <h4 className="text-lg font-semibold">{item.title}</h4>
+                    <p className="mt-2 text-sm text-white/60 leading-relaxed">{item.description}</p>
+                  </div>
+                  <Button variant="secondary" className="self-start bg-white/10 text-white hover:bg-white/20">
+                    {item.cta}
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="space-y-14">
           {IMMERSIVE_FEATURES.map((feature, index) => {
             const isReverse = index % 2 !== 0;
@@ -148,34 +149,6 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
           })}
         </section>
 
-        <section className="space-y-6">
-          <h3 className="text-2xl md:text-3xl font-semibold text-center">精选案例预览</h3>
-          <div className="grid gap-6 md:grid-cols-3">
-            {GALLERY_ITEMS.map((item) => (
-              <article
-                key={item.title}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-black/30"
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 transition duration-300 group-hover:from-white/20" />
-                  <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.3em] text-white/30">
-                    Preview
-                  </div>
-                </div>
-                <div className="flex flex-col gap-3 px-5 py-6 text-white">
-                  <div>
-                    <h4 className="text-lg font-semibold">{item.title}</h4>
-                    <p className="mt-2 text-sm text-white/60 leading-relaxed">{item.description}</p>
-                  </div>
-                  <Button variant="secondary" className="self-start bg-white/10 text-white hover:bg-white/20">
-                    {item.cta}
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
         <section className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-center">
           <div className="space-y-4">
             <h3 className="text-2xl md:text-3xl font-semibold">如何快速使用 {effect.title}</h3>
@@ -193,7 +166,9 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 <span className="font-semibold text-white/90">步骤 3：</span> 调整公开可见性、复制保护等选项，点击创建即可生成视频。
               </li>
             </ol>
-            <Button className="bg-white text-gray-900 hover:bg-white/90">查看详细教程</Button>
+            <Button className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]">
+              查看详细教程
+            </Button>
           </div>
           <div className="rounded-[32px] border border-white/10 bg-black/30 p-6">
             <div className="aspect-[3/4] rounded-3xl border border-white/10 bg-gradient-to-b from-white/15 to-transparent" />
@@ -242,25 +217,6 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 <p className="mt-2 text-sm text-white/65 leading-relaxed">{a}</p>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className="overflow-hidden rounded-[40px] border border-white/10 bg-gradient-to-r from-purple-600/40 via-purple-500/30 to-indigo-600/40 p-10 text-center">
-          <h3 className="text-2xl md:text-3xl font-semibold">开始体验更懂情绪的浪漫 AI 接吻视频</h3>
-          <p className="mt-3 text-sm text-white/70">
-            使用现成模板快速生成，支持批量输出与多端适配，助力短视频和营销内容快速上线。
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button size="lg" className="bg-white text-gray-900 hover:bg-white/90">
-              立即创建
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className={cn("border-white/30 text-white hover:bg-white/10")}
-            >
-              联系我们了解方案
-            </Button>
           </div>
         </section>
       </div>
