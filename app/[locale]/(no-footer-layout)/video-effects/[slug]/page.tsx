@@ -1,6 +1,7 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
 import { VideoEffectsEditorPreview } from "@/components/ai/VideoEffectsEditorPreview";
+import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
@@ -65,6 +66,7 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       withSidebar={false}
       section2Left={<VideoEffectsEditorLeftPanel effect={effect} />}
       section2Right={<VideoEffectsEditorPreview effect={effect} />}
+      mergedSectionContent={<VideoEffectsDetailContent effect={effect} />}
     />
   );
 }
