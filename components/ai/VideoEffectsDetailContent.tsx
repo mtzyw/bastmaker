@@ -97,10 +97,15 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 className="overflow-hidden rounded-2xl border border-white/10 bg-black/30"
               >
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 transition duration-300 hover:from-white/20" />
-                  <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.3em] text-white/30">
-                    Preview
-                  </div>
+                  <video
+                    className="h-full w-full object-cover"
+                    src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
+                    playsInline
+                    muted
+                    loop
+                    autoPlay
+                  />
+                  <div className="pointer-events-none absolute inset-0 border border-white/10" />
                 </div>
               </article>
             ))}
@@ -132,8 +137,15 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                   </button>
                 </div>
                 <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40">
-                  <div className="aspect-[4/3] md:aspect-video" />
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-white/5" />
+                  <video
+                    className="aspect-[4/3] md:aspect-video w-full object-cover"
+                    src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
+                    playsInline
+                    muted
+                    loop
+                    autoPlay
+                  />
+                  <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10" />
                 </div>
               </div>
             );

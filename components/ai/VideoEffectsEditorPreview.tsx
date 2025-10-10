@@ -6,11 +6,8 @@ export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefin
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-white/40">实时预览</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-white/40">预览视频</p>
           <h2 className="mt-2 text-3xl font-semibold text-white md:text-4xl">{effect.title}</h2>
-          <p className="mt-2 text-sm text-white/60">
-            根据上传素材和输出设置，预览合成结果并调整细节。
-          </p>
         </div>
         {effect.badge && (
           <Badge className="rounded-full bg-red-500 px-3 py-1 text-xs uppercase tracking-widest text-white">
@@ -25,11 +22,15 @@ export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefin
           <div className="flex h-full min-h-[380px] flex-col rounded-[32px] border border-white/10 bg-black/30 p-6">
             <div className="flex-1">
               <div className="relative mx-auto h-full max-w-2xl rounded-[28px] border border-white/10 bg-black/40 p-4">
-                <div className="aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-800 to-black">
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-white/40">
-                    <span>预览区域</span>
-                    <span className="text-[10px] tracking-[0.4em] text-white/30">等待素材上传</span>
-                  </div>
+                <div className="aspect-video w-full overflow-hidden rounded-3xl border border-white/10">
+                  <video
+                    className="h-full w-full object-cover"
+                    src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
+                    playsInline
+                    muted
+                    loop
+                    autoPlay
+                  />
                 </div>
                 <div className="pointer-events-none absolute inset-0 rounded-[28px] ring-1 ring-white/5" />
               </div>
