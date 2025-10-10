@@ -32,9 +32,9 @@ const TOGGLE_OPTIONS: readonly ToggleOption[] = [
 
 export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectDefinition }) {
   return (
-    <div className="flex h-full flex-col">
-      <ScrollArea className="flex-1">
-        <div className="flex flex-col gap-6 pb-16 pr-2">
+    <div className="w-full h-full text-white flex flex-col">
+      <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]" scrollbarClassName="!right-0">
+        <div className="flex flex-col gap-6 pt-3 pb-16 pr-2 md:pr-7">
           <div className="space-y-3">
             <Link
               href="/video-effects"
@@ -91,10 +91,6 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectDef
           </section>
 
           <section className="space-y-4">
-            <header>
-              <span className="text-sm font-medium text-white/90">输出设置</span>
-              <p className="mt-1 text-xs text-white/50">补充场景属性，提升生成质量。</p>
-            </header>
             <div className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
               {TOGGLE_OPTIONS.map((toggle) => (
                 <div
@@ -119,19 +115,6 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectDef
             </div>
           </section>
 
-          <section className="space-y-3">
-            <header className="flex items-center gap-2">
-              <span className="text-sm font-medium text-white/90">进阶提示词</span>
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] uppercase tracking-wider text-white/40">
-                可选
-              </span>
-            </header>
-            <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/60">
-              <p>• 补充镜头运动，如“肩背视角，慢速推进”。</p>
-              <p>• 描述表情细节，例如“轻闭双眼，嘴角上扬”。</p>
-              <p>• 指定背景或光效，以获得稳定表现。</p>
-            </div>
-          </section>
         </div>
       </ScrollArea>
 
