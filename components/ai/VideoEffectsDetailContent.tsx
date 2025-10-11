@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
+import { VIDEO_EFFECTS, type VideoEffectDefinition } from "@/lib/video-effects/effects";
 import { cn } from "@/lib/utils";
 import { Smile, Award, Layers } from "lucide-react";
 
@@ -46,7 +47,25 @@ const VALUE_CARDS = [
   },
 ];
 
-const EXTRA_EFFECTS = ["AI 拥抱生成器", "浪漫烟花特效", "宠物拥抱特效", "婚礼誓言特效"];
+const FEATURE_VIDEO_SRC =
+  "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4";
+
+function getSuggestedEffects(currentSlug: string): VideoEffectDefinition[] {
+  const candidates = VIDEO_EFFECTS.filter((item) => item.slug !== currentSlug);
+
+  if (candidates.length <= 3) {
+    return candidates.slice(0, 3);
+  }
+
+  const shuffled = [...candidates];
+
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled.slice(0, 3);
+}
 
 const FAQ_ITEMS = [
   {
@@ -76,6 +95,8 @@ const FAQ_ITEMS = [
 ];
 
 export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefinition }) {
+  const suggestedEffects = getSuggestedEffects(effect.slug);
+
   return (
     <div className="header-bg text-white">
       <div className="container mx-auto px-4 md:px-8 py-16 space-y-16">
@@ -103,7 +124,7 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 <div className="relative aspect-video overflow-hidden">
                   <video
                     className="h-full w-full object-cover"
-                    src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
+                    src={FEATURE_VIDEO_SRC}
                     playsInline
                     muted
                     loop
@@ -143,7 +164,7 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40">
                   <video
                     className="aspect-[4/3] md:aspect-video w-full object-cover"
-                    src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
+                    src={FEATURE_VIDEO_SRC}
                     playsInline
                     muted
                     loop
@@ -176,17 +197,42 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
           </div>
         </section>
 
-        <section className="space-y-4">
-          <h3 className="text-center text-2xl md:text-3xl font-semibold">更多免费 AI 视频特效模板</h3>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {EXTRA_EFFECTS.map((item) => (
-              <div
-                key={item}
-                className="rounded-2xl border border-white/10 bg-black/30 p-6 text-center text-sm text-white/70"
+        <section className="space-y-6">
+          <div className="text-center space-y-2">
+            <h3 className="text-center text-2xl md:text-3xl font-semibold">更多免费 AI 视频特效模板</h3>
+            <p className="text-sm text-white/60">探索更多灵感，快速切换到其他热门模板继续创作。</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {suggestedEffects.map((item) => (
+              <Link
+                key={item.slug}
+                href={`/video-effects/${item.slug}`}
+                className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-white/30 hover:shadow-lg hover:shadow-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                {item}
-              </div>
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <video
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    src={FEATURE_VIDEO_SRC}
+                    muted
+                    playsInline
+                    loop
+                    autoPlay
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/70" />
+                  <span className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-900 opacity-0 shadow-lg transition-opacity duration-300 group-hover:opacity-100">
+                    Use This Effect
+                  </span>
+                </div>
+                <div className="px-4 py-4">
+                  <p className="text-sm font-semibold text-white">{item.title}</p>
+                </div>
+              </Link>
             ))}
+          </div>
+          <div className="flex justify-center">
+            <Button asChild variant="secondary" className="bg-white/10 text-white hover:bg-white/20">
+              <Link href="/video-effects">更多特效</Link>
+            </Button>
           </div>
         </section>
 

@@ -49,8 +49,8 @@ function VideoEffectCard({ effect }: { effect: VideoEffectDefinition }) {
           preload="metadata"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <div className="pointer-events-none absolute inset-0 flex items-start justify-start p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-900 shadow-lg">
+        <div className="pointer-events-none absolute inset-0 flex items-end justify-center pb-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span className="rounded-full bg-white px-5 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-900 shadow-lg">
             Use This Effect
           </span>
         </div>
