@@ -11,6 +11,12 @@ const TEXT_TO_IMAGE_MODEL_CONFIG = {
     creditsCost: 4,
     defaultModality: "t2i",
   },
+  "flux-pro-v1-1": {
+    displayName: "Flux Pro 1.1",
+    providerCode: "freepik",
+    creditsCost: 6,
+    defaultModality: "t2i",
+  },
   "hyperflux": {
     displayName: "Hyperflux",
     providerCode: "freepik",

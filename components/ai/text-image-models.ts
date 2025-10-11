@@ -30,6 +30,15 @@ export const TEXT_TO_IMAGE_MODEL_OPTIONS: VideoModelSelectOption[] = [
     apiValue: FREEPIK_MODEL_MAP["Flux Dev"],
   },
   {
+    value: "Flux Pro 1.1",
+    label: "Flux Pro 1.1",
+    icon: { label: "F", src: MODEL_ICON_PATHS.flux },
+    description: "Flux 专业版 1.1，提供更高写实度和稳定性。",
+    credits: 6,
+    tags: ["写实", "精细"],
+    apiValue: FREEPIK_MODEL_MAP["Flux Pro 1.1"],
+  },
+  {
     value: "Hyperflux",
     label: "Hyperflux",
     icon: { label: "H", src: MODEL_ICON_PATHS.flux },

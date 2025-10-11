@@ -57,7 +57,7 @@ export default function TextToImageLeftPanel({
   }, [availableOptions, forcedModel, model]);
 
   const aspectOptions = useMemo(() => {
-    if (model === "Flux Dev" || model === "Hyperflux") {
+    if (model === "Flux Dev" || model === "Flux Pro 1.1" || model === "Hyperflux") {
       return ["1:1", "9:16", "1:2", "3:4"];
     }
     if (model === "Google Imagen4") {

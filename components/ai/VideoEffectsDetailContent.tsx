@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
 import { cn } from "@/lib/utils";
+import { Smile, Award, Layers } from "lucide-react";
 
 const GALLERY_ITEMS = [
   { title: "自然亲吻瞬间", description: "捕捉真实情侣间的亲昵氛围，让每一个细节都充满故事感。", cta: "查看案例" },
@@ -31,14 +32,17 @@ const VALUE_CARDS = [
   {
     title: "友好的用户界面",
     description: "我们的人工智能接吻视频生成器具有用户友好的界面，任何人都可以轻松创建令人惊叹的视频，无需任何技能。",
+    icon: Smile,
   },
   {
     title: "高质量的结果",
     description: "我们最先进的人工智能可以将您的照片转化为逼真的、高分辨率的接吻视频，动作自然，无水印。",
+    icon: Award,
   },
   {
     title: "支持多种人工智能模型",
     description: "在 KLING、Hailuo 和 Runway 等多种 AI 模型的支持下，我们的 AI 接吻视频制作工具可以满足不同的创作需求。",
+    icon: Layers,
   },
 ];
 
@@ -184,14 +188,16 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
             <p className="text-sm text-white/60">了解我们的 AI 接吻视频生成器的优势，看看它是如何从其他 AI 工具中脱颖而出的。</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            {VALUE_CARDS.map((card) => (
+            {VALUE_CARDS.map(({ title, description, icon: Icon }) => (
               <div
-                key={card.title}
+                key={title}
                 className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-6 text-center"
               >
-                <div className="mx-auto h-12 w-12 rounded-full bg-white/10" />
-                <h4 className="text-lg font-semibold">{card.title}</h4>
-                <p className="text-sm text-white/65 leading-relaxed">{card.description}</p>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                  <Icon className="h-6 w-6 text-white/80" />
+                </div>
+                <h4 className="text-lg font-semibold">{title}</h4>
+                <p className="text-sm text-white/65 leading-relaxed">{description}</p>
               </div>
             ))}
           </div>

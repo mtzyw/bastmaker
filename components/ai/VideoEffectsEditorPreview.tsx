@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
 
 export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefinition }) {
@@ -9,11 +8,7 @@ export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefin
           <p className="text-sm uppercase tracking-[0.3em] text-white/40">预览视频</p>
           <h2 className="mt-2 text-3xl font-semibold text-white md:text-4xl">{effect.title}</h2>
         </div>
-        {effect.badge && (
-          <Badge className="rounded-full bg-red-500 px-3 py-1 text-xs uppercase tracking-widest text-white">
-            {effect.badge}
-          </Badge>
-        )}
+        <div />
       </div>
 
       <div className="mt-10 flex flex-1 min-h-0 flex-col">
