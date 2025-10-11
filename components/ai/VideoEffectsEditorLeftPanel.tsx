@@ -1,11 +1,12 @@
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/i18n/routing";
 import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
-import { ChevronRight, Coins, Crown, Image as ImageIcon, Info, Upload } from "lucide-react";
+import { ChevronRight, Coins, Crown, Info, Upload } from "lucide-react";
 
 type ToggleOption = {
   id: string;
@@ -30,7 +31,53 @@ const TOGGLE_OPTIONS: readonly ToggleOption[] = [
   },
 ];
 
+const PREVIEW_VIDEO_BY_SLUG: Record<string, string> = {
+  "ai-kissing": "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4",
+};
+
+const DEFAULT_PREVIEW_VIDEO =
+  "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4";
+
+function HoverVideoPreview({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const handleMouseEnter = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
+  };
+
+  const handleMouseLeave = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  };
+
+  return (
+    <div
+      className="relative h-16 w-24 overflow-hidden rounded-lg border border-white/10 bg-black/40"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <video
+        ref={videoRef}
+        className="h-full w-full object-cover"
+        src={src}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      />
+      <div className="pointer-events-none absolute inset-0 border border-white/10" />
+    </div>
+  );
+}
+
 export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectDefinition }) {
+  const previewSrc = PREVIEW_VIDEO_BY_SLUG[effect.slug] ?? DEFAULT_PREVIEW_VIDEO;
+
   return (
     <div className="w-full h-full text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]" scrollbarClassName="!right-0">
@@ -65,12 +112,9 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectDef
               </button>
             </header>
             <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="grid h-16 w-24 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/40">
-                <ImageIcon className="h-6 w-6" />
-              </div>
+              <HoverVideoPreview src={previewSrc} />
               <div className="flex-1">
                 <p className="text-sm font-medium text-white">{effect.title}</p>
-                <p className="text-xs text-white/40">内置镜头动作与情绪灯光，可快速输出。</p>
               </div>
             </div>
           </section>

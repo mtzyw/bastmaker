@@ -11,7 +11,6 @@ export const VIDEO_EFFECTS: readonly VideoEffectDefinition[] = [
     slug: "ai-kissing",
     title: "AI接吻视频生成器",
     category: "情侣互动",
-    badge: "Hot",
     description: "自动捕捉亲密互动的表情与动作，适合情侣短片与浪漫剧情。",
   },
   {

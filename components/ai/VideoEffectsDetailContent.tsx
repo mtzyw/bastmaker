@@ -86,8 +86,8 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
             帮助短视频创作者、情感类账号和品牌营销迅速完成高质量作品。
           </p>
           <div className="flex justify-center gap-3 pt-2">
-            <Button size="lg" className="bg-white text-gray-900 hover:bg-white/90">
-              立即开始创作
+            <Button asChild size="lg" className="bg-white text-gray-900 hover:bg-white/90">
+              <a href="#">立即开始创作</a>
             </Button>
           </div>
         </section>
@@ -131,14 +131,14 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
                 <div className="space-y-4">
                   <h3 className="text-2xl md:text-3xl font-semibold">{feature.title}</h3>
                   <p className="text-sm text-white/70 leading-relaxed">{feature.description}</p>
-                  <button
-                    type="button"
+                  <a
+                    href="#"
                     className="relative inline-flex items-center justify-center rounded-full px-6 py-2 text-sm font-semibold"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-r from-lime-400 via-pink-500 to-purple-500 opacity-80 blur-[2px]" />
                     <span className="absolute inset-[1px] rounded-full bg-black" />
                     <span className="relative text-white">免费试用 AI 接吻视频生成器</span>
-                  </button>
+                  </a>
                 </div>
                 <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40">
                   <video
@@ -155,33 +155,6 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectDefin
             );
           })}
         </section>
-
-        <section className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-center">
-          <div className="space-y-4">
-            <h3 className="text-2xl md:text-3xl font-semibold">如何快速使用 {effect.title}</h3>
-            <p className="text-sm text-white/60">
-              按照以下步骤操作，几分钟即可生成结构完整、情绪真实的短视频内容。
-            </p>
-            <ol className="space-y-3 text-sm text-white/70">
-              <li>
-                <span className="font-semibold text-white/90">步骤 1：</span> 上传两人近景素材，或从历史库选择已生成的参考。
-              </li>
-              <li>
-                <span className="font-semibold text-white/90">步骤 2：</span> 在提示词中描述场景、光线与情绪。例如“傍晚草坪，暖色灯光，轻笑对视”。
-              </li>
-              <li>
-                <span className="font-semibold text-white/90">步骤 3：</span> 调整公开可见性、复制保护等选项，点击创建即可生成视频。
-              </li>
-            </ol>
-            <Button className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]">
-              查看详细教程
-            </Button>
-          </div>
-          <div className="rounded-[32px] border border-white/10 bg-black/30 p-6">
-            <div className="aspect-[3/4] rounded-3xl border border-white/10 bg-gradient-to-b from-white/15 to-transparent" />
-          </div>
-        </section>
-
         <section className="space-y-6">
           <div className="text-center space-y-2">
             <h3 className="text-center text-2xl md:text-3xl font-semibold">我们的免费 AI 接吻视频生成器的优势</h3>
