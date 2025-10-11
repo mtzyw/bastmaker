@@ -1,69 +1,84 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef } from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { VIDEO_EFFECTS, VIDEO_EFFECT_CATEGORIES } from "@/lib/video-effects/effects";
+import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
+import { VIDEO_EFFECTS } from "@/lib/video-effects/effects";
 import { Link } from "@/i18n/routing";
 
-export default function VideoEffectsGallery() {
-  const [activeCategory, setActiveCategory] = useState<string>(VIDEO_EFFECT_CATEGORIES[0]);
+const PREVIEW_VIDEO_URL =
+  "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4";
 
-  const filteredEffects = useMemo(() => {
-    if (activeCategory === "全部特效") {
-      return VIDEO_EFFECTS;
-    }
-    return VIDEO_EFFECTS.filter((effect) => effect.category === activeCategory);
-  }, [activeCategory]);
+function VideoEffectCard({ effect }: { effect: VideoEffectDefinition }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const handleHoverStart = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play().catch(() => {
+      /* ignore play interruptions */
+    });
+  };
+
+  const handleHoverEnd = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  };
 
   return (
+    <Link
+      href={`/video-effects/${effect.slug}`}
+      className="group relative block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+      onMouseEnter={handleHoverStart}
+      onMouseLeave={handleHoverEnd}
+      onFocus={handleHoverStart}
+      onBlur={handleHoverEnd}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm transition duration-300 group-hover:border-white/30 group-hover:shadow-lg group-hover:shadow-blue-500/20">
+        <video
+          ref={videoRef}
+          className="h-full w-full object-cover"
+          src={PREVIEW_VIDEO_URL}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 flex items-start justify-start p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-900 shadow-lg">
+            Use This Effect
+          </span>
+        </div>
+      </div>
+      <p className="mt-3 text-sm font-medium text-white">{effect.title}</p>
+    </Link>
+  );
+}
+
+export default function VideoEffectsGallery() {
+  return (
     <div className="flex h-full flex-col">
-      <header className="mb-6">
-        <h2 className="text-2xl font-semibold text-white md:text-3xl">精选特效</h2>
-        <p className="mt-2 text-sm text-white/60">
-          选择模板即可自动应用镜头动作、光效和表情变化，后续内容可随时替换。
+      <header className="mb-8 space-y-2">
+        <h2 className="text-2xl font-semibold text-white md:text-3xl">
+          Free 100+ AI Video Templates and Effects
+        </h2>
+        <p className="text-sm text-white/60">
+          Pick any template to instantly apply camera moves, lighting presets, and facial expressions.
         </p>
       </header>
 
-      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mb-6">
-        <TabsList className="flex w-full flex-wrap gap-2 bg-white/5 p-1">
-          {VIDEO_EFFECT_CATEGORIES.map((category) => (
-            <TabsTrigger
-              key={category}
-              value={category}
-              className={cn(
-                "flex-1 min-w-[148px] rounded-md px-4 py-2 text-sm transition data-[state=active]:bg-white data-[state=active]:text-gray-900"
-              )}
-            >
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
       <ScrollArea className="flex-1">
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {filteredEffects.map((effect) => (
-            <Link
-              key={effect.slug}
-              href={`/video-effects/${effect.slug}`}
-              className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-            >
-              <article className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-slate-950/80 shadow-lg transition hover:border-white/20 hover:shadow-blue-500/20">
-                <div className="relative aspect-video overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/0 to-white/5 transition duration-300 group-hover:from-white/20" />
-                  <div className="absolute inset-0 flex items-center justify-center text-white/20" />
-                </div>
-                <div className="px-4 pb-5 pt-4 text-white">
-                  <h3 className="text-lg font-semibold leading-tight">{effect.title}</h3>
-                </div>
-              </article>
-            </Link>
+        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-5">
+          {VIDEO_EFFECTS.map((effect) => (
+            <VideoEffectCard key={effect.slug} effect={effect} />
           ))}
         </div>
-        <div className="h-8" />
+        <div className="h-10" />
       </ScrollArea>
     </div>
   );
