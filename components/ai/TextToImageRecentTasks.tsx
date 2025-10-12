@@ -336,6 +336,8 @@ export default function TextToImageRecentTasks({
   const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
   const prefetchingSlugsRef = useRef<Set<string>>(new Set());
   const prefetchAbortControllersRef = useRef<Map<string, AbortController>>(new Map());
+  const hasCapturedInitialSlugsRef = useRef(false);
+  const previousSucceededSlugsRef = useRef<Set<string>>(new Set());
 
   const items = useCreationHistoryStore((state) => state.items);
   const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
@@ -609,31 +611,41 @@ export default function TextToImageRecentTasks({
   }, []);
 
   useEffect(() => {
-    const latestSucceededSlug = (() => {
-      for (const task of displayTasks) {
-        if (task.status !== "succeeded") {
-          continue;
-        }
-        if (!task.shareSlug) {
-          continue;
-        }
-        return task.shareSlug;
-      }
-      return null;
-    })();
+    const succeededSlugs = displayTasks
+      .filter((task) => task.status === "succeeded" && task.shareSlug)
+      .map((task) => task.shareSlug!) as string[];
 
-    if (!latestSucceededSlug) {
+    if (!hasCapturedInitialSlugsRef.current) {
+      if (isLoading) {
+        return;
+      }
+      hasCapturedInitialSlugsRef.current = true;
+      previousSucceededSlugsRef.current = new Set(succeededSlugs);
+      return;
+    }
+
+    let slugToPrefetch: string | null = null;
+    for (const slug of succeededSlugs) {
+      if (!previousSucceededSlugsRef.current.has(slug)) {
+        slugToPrefetch = slug;
+        break;
+      }
+    }
+
+    previousSucceededSlugsRef.current = new Set(succeededSlugs);
+
+    if (!slugToPrefetch) {
       return;
     }
 
     if (
-      prefetchedJobsRef.current.has(latestSucceededSlug) ||
-      prefetchingSlugsRef.current.has(latestSucceededSlug)
+      prefetchedJobsRef.current.has(slugToPrefetch) ||
+      prefetchingSlugsRef.current.has(slugToPrefetch)
     ) {
       return;
     }
 
-    const slug = latestSucceededSlug;
+    const slug = slugToPrefetch;
     const controller = new AbortController();
     prefetchingSlugsRef.current.add(slug);
     prefetchAbortControllersRef.current.set(slug, controller);
@@ -667,7 +679,7 @@ export default function TextToImageRecentTasks({
         prefetchingSlugsRef.current.delete(slug);
         prefetchAbortControllersRef.current.delete(slug);
       });
-  }, [displayTasks, previewTask]);
+  }, [displayTasks, isLoading, previewTask]);
 
   const handleOpenViewer = useCallback(
     (task: DisplayTask) => {
