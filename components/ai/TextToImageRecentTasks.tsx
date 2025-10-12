@@ -609,54 +609,64 @@ export default function TextToImageRecentTasks({
   }, []);
 
   useEffect(() => {
-    displayTasks.forEach((task) => {
-      if (task.status !== "succeeded") {
-        return;
+    const latestSucceededSlug = (() => {
+      for (const task of displayTasks) {
+        if (task.status !== "succeeded") {
+          continue;
+        }
+        if (!task.shareSlug) {
+          continue;
+        }
+        return task.shareSlug;
       }
+      return null;
+    })();
 
-      const slug = task.shareSlug;
-      if (!slug) {
-        return;
-      }
+    if (!latestSucceededSlug) {
+      return;
+    }
 
-      if (prefetchedJobsRef.current.has(slug) || prefetchingSlugsRef.current.has(slug)) {
-        return;
-      }
+    if (
+      prefetchedJobsRef.current.has(latestSucceededSlug) ||
+      prefetchingSlugsRef.current.has(latestSucceededSlug)
+    ) {
+      return;
+    }
 
-      const controller = new AbortController();
-      prefetchingSlugsRef.current.add(slug);
-      prefetchAbortControllersRef.current.set(slug, controller);
+    const slug = latestSucceededSlug;
+    const controller = new AbortController();
+    prefetchingSlugsRef.current.add(slug);
+    prefetchAbortControllersRef.current.set(slug, controller);
 
-      fetch(`/api/viewer/${slug}`, { signal: controller.signal })
-        .then(async (response) => {
-          if (!response.ok) {
-            const json = await response.json().catch(() => ({}));
-            throw new Error(json?.error ?? "加载失败");
-          }
-          const json = await response.json();
-          if (!json?.success || !json?.data) {
-            throw new Error(json?.error ?? "加载失败");
-          }
-          const job = json.data as ViewerJob;
-          prefetchedJobsRef.current.set(slug, job);
+    fetch(`/api/viewer/${slug}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) {
+          const json = await response.json().catch(() => ({}));
+          throw new Error(json?.error ?? "加载失败");
+        }
+        const json = await response.json();
+        if (!json?.success || !json?.data) {
+          throw new Error(json?.error ?? "加载失败");
+        }
+        const job = json.data as ViewerJob;
+        prefetchedJobsRef.current.set(slug, job);
 
-          if (previewTask?.shareSlug === slug) {
-            setViewerJob(job);
-            setIsViewerLoading(false);
-            setViewerError(null);
-          }
-        })
-        .catch((error: any) => {
-          if (controller.signal.aborted) {
-            return;
-          }
-          console.warn("[TextToImageRecentTasks] prefetch failed", error);
-        })
-        .finally(() => {
-          prefetchingSlugsRef.current.delete(slug);
-          prefetchAbortControllersRef.current.delete(slug);
-        });
-    });
+        if (previewTask?.shareSlug === slug) {
+          setViewerJob(job);
+          setIsViewerLoading(false);
+          setViewerError(null);
+        }
+      })
+      .catch((error: any) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        console.warn("[TextToImageRecentTasks] prefetch failed", error);
+      })
+      .finally(() => {
+        prefetchingSlugsRef.current.delete(slug);
+        prefetchAbortControllersRef.current.delete(slug);
+      });
   }, [displayTasks, previewTask]);
 
   const handleOpenViewer = useCallback(
