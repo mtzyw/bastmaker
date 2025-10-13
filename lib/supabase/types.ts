@@ -231,15 +231,155 @@ export type Database = {
           share_conversion_count?: number
           share_slug?: string | null
           share_visit_count?: number
-          started_at?: string | null
-          status?: string | null
-          usage_metrics_json?: Json
-          user_id?: string | null
-          visibility?: string | null
-        }
-        Relationships: []
-      }
-      ai_modalities: {
+      started_at?: string | null
+      status?: string | null
+      usage_metrics_json?: Json
+      user_id?: string | null
+      visibility?: string | null
+    }
+    Relationships: []
+  }
+  video_effect_inputs: {
+    Row: {
+      aspect_ratio_hint: string | null
+      created_at: string
+      display_order: number
+      id: string
+      instructions: string | null
+      is_required: boolean
+      max_size_mb: number | null
+      metadata_json: Json
+      min_resolution: string | null
+      slot: string
+      template_id: string
+      type: string
+      updated_at: string
+    }
+    Insert: {
+      aspect_ratio_hint?: string | null
+      created_at?: string
+      display_order?: number
+      id?: string
+      instructions?: string | null
+      is_required?: boolean
+      max_size_mb?: number | null
+      metadata_json?: Json
+      min_resolution?: string | null
+      slot: string
+      template_id: string
+      type: string
+      updated_at?: string
+    }
+    Update: {
+      aspect_ratio_hint?: string | null
+      created_at?: string
+      display_order?: number
+      id?: string
+      instructions?: string | null
+      is_required?: boolean
+      max_size_mb?: number | null
+      metadata_json?: Json
+      min_resolution?: string | null
+      slot?: string
+      template_id?: string
+      type?: string
+      updated_at?: string
+    }
+    Relationships: [
+      {
+        foreignKeyName: "video_effect_inputs_template_id_fkey"
+        columns: ["template_id"]
+        isOneToOne: false
+        referencedRelation: "video_effect_templates"
+        referencedColumns: ["id"]
+      },
+    ]
+  }
+  video_effect_templates: {
+    Row: {
+      aspect_ratio: string | null
+      category: string | null
+      cfg_scale: number | null
+      created_at: string
+      default_prompt: string | null
+      description: string | null
+      display_order: number
+      duration_seconds: number | null
+      id: string
+      is_active: boolean
+      metadata_json: Json
+      mode: string | null
+      modality_code: string
+      negative_prompt: string | null
+      preview_cover_url: string | null
+      preview_video_url: string | null
+      pricing_credits_override: number | null
+      prompt_variables: Json
+      provider_code: string
+      provider_model: string
+      resolution: string | null
+      seed: number | null
+      slug: string
+      title: string
+      updated_at: string
+    }
+    Insert: {
+      aspect_ratio?: string | null
+      category?: string | null
+      cfg_scale?: number | null
+      created_at?: string
+      default_prompt?: string | null
+      description?: string | null
+      display_order?: number
+      duration_seconds?: number | null
+      id?: string
+      is_active?: boolean
+      metadata_json?: Json
+      mode?: string | null
+      modality_code?: string
+      negative_prompt?: string | null
+      preview_cover_url?: string | null
+      preview_video_url?: string | null
+      pricing_credits_override?: number | null
+      prompt_variables?: Json
+      provider_code?: string
+      provider_model: string
+      resolution?: string | null
+      seed?: number | null
+      slug: string
+      title: string
+      updated_at?: string
+    }
+    Update: {
+      aspect_ratio?: string | null
+      category?: string | null
+      cfg_scale?: number | null
+      created_at?: string
+      default_prompt?: string | null
+      description?: string | null
+      display_order?: number
+      duration_seconds?: number | null
+      id?: string
+      is_active?: boolean
+      metadata_json?: Json
+      mode?: string | null
+      modality_code?: string
+      negative_prompt?: string | null
+      preview_cover_url?: string | null
+      preview_video_url?: string | null
+      pricing_credits_override?: number | null
+      prompt_variables?: Json
+      provider_code?: string
+      provider_model?: string
+      resolution?: string | null
+      seed?: number | null
+      slug?: string
+      title?: string
+      updated_at?: string
+    }
+    Relationships: []
+  }
+  ai_modalities: {
         Row: {
           created_at: string
           description: string | null

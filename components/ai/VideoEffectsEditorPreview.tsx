@@ -1,6 +1,6 @@
-import type { VideoEffectDefinition } from "@/lib/video-effects/effects";
+import type { VideoEffectTemplate } from "@/lib/video-effects/templates";
 
-export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefinition }) {
+export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectTemplate }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-start justify-between gap-4">
@@ -15,14 +15,20 @@ export function VideoEffectsEditorPreview({ effect }: { effect: VideoEffectDefin
         <div className="mx-auto w-full max-w-3xl">
           <div className="relative w-full overflow-hidden rounded-3xl border border-white/10">
             <div className="relative w-full pb-[56.25%]">
-              <video
-                className="absolute inset-0 h-full w-full object-cover"
-                src="https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4"
-                playsInline
-                muted
-                loop
-                autoPlay
-              />
+              {effect.previewVideoUrl ? (
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={effect.previewVideoUrl}
+                  playsInline
+                  muted
+                  loop
+                  autoPlay
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-white/60">
+                  暂无预览视频
+                </div>
+              )}
             </div>
           </div>
         </div>

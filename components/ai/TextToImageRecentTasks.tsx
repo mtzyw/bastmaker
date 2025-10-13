@@ -63,6 +63,8 @@ type DisplayTask = {
   shareSlug: string | null;
   shareVisits: number;
   shareConversions: number;
+  effectSlug?: string | null;
+  effectTitle?: string | null;
 };
 
 const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefined> = {
@@ -279,6 +281,10 @@ function mapOutputRowToCreationOutput(row: AiJobOutputRow): CreationOutput {
 
 function toDisplayTask(job: CreationItem): DisplayTask {
   const effectiveStatus = job.latestStatus ?? job.status;
+  const effectSlug =
+    typeof job.metadata?.effect_slug === "string" ? job.metadata.effect_slug : null;
+  const effectTitle =
+    typeof job.metadata?.effect_title === "string" ? job.metadata.effect_title : null;
   return {
     id: job.jobId,
     provider: formatProviderName(job.providerCode),
@@ -303,6 +309,8 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     shareSlug: job.shareSlug,
     shareVisits: job.shareVisitCount,
     shareConversions: job.shareConversionCount,
+    effectSlug,
+    effectTitle,
   };
 }
 
@@ -967,6 +975,11 @@ export default function TextToImageRecentTasks({
                       <Badge className="border-white/10 bg-white/5 text-white/60">
                         {task.modelLabel}
                       </Badge>
+                      {task.effectSlug ? (
+                        <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200">
+                          特效 · {task.effectTitle ?? task.effectSlug}
+                        </Badge>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-white/50">
                       <span>{task.createdAtLabel}</span>

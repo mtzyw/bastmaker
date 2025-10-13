@@ -7,6 +7,7 @@ import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
+import { fetchVideoEffectTemplate, type VideoEffectTemplate } from "@/lib/video-effects/templates";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -29,7 +30,9 @@ const sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig] = [
 
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const effect = getVideoEffectBySlug(slug);
+  const template = await fetchVideoEffectTemplate(slug).catch(() => null);
+  const fallbackDefinition = getVideoEffectBySlug(slug);
+  const effect = template ?? fallbackDefinition;
 
   return constructMetadata({
     page: "VideoEffectsDetail",
@@ -54,11 +57,44 @@ export async function generateStaticParams() {
 
 export default async function VideoEffectDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const effect = getVideoEffectBySlug(slug);
+  const template = await fetchVideoEffectTemplate(slug).catch(() => null);
+  const fallbackDefinition = getVideoEffectBySlug(slug);
+  const effect = template ?? fallbackDefinition;
 
   if (!effect) {
     notFound();
   }
+
+  const resolvedTemplate: VideoEffectTemplate | null = template
+    ? template
+    : {
+        id: `fallback-${effect.slug}`,
+        slug: effect.slug,
+        title: effect.title,
+        description: effect.description ?? null,
+        category: effect.category ?? null,
+        previewVideoUrl: null,
+        previewCoverUrl: null,
+        modalityCode: "i2v",
+        providerCode: "freepik",
+        providerModel: "",
+        durationSeconds: null,
+        resolution: null,
+        aspectRatio: null,
+        mode: null,
+        cfgScale: null,
+        seed: null,
+        pricingCreditsOverride: null,
+        defaultPrompt: null,
+        negativePrompt: null,
+        promptVariables: [],
+        metadata: {},
+        isActive: true,
+        displayOrder: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        inputs: [],
+      };
 
   const supabase = await createClient();
   const {
@@ -70,8 +106,16 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   const rightSection = shouldShowRecentTasks ? (
     <TextToImageRecentTasks initialCategory="视频" categories={["视频", "全部", "图片"]} />
   ) : (
-    <VideoEffectsEditorPreview effect={effect} />
+    <VideoEffectsEditorPreview effect={resolvedTemplate} />
   );
+  const detailContentEffect =
+    fallbackDefinition ??
+    ({
+      slug: effect.slug,
+      title: effect.title,
+      category: effect.category ?? undefined,
+      description: effect.description ?? undefined,
+    } as (typeof VIDEO_EFFECTS)[number]);
 
   return (
     <PureFourSections
@@ -79,10 +123,10 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       section2Split="25/75"
       sections={sections}
       withSidebar={false}
-      section2Left={<VideoEffectsEditorLeftPanel effect={effect} />}
+      section2Left={<VideoEffectsEditorLeftPanel effect={resolvedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        shouldShowRecentTasks ? null : <VideoEffectsDetailContent effect={effect} />
+        shouldShowRecentTasks ? null : <VideoEffectsDetailContent effect={detailContentEffect} />
       }
       hideMergedSection={shouldShowRecentTasks}
     />

@@ -16,6 +16,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { generateShareSlug } from "@/lib/share/slug";
+import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
 import {
   generateR2Key,
   getDataFromDataUrl,
@@ -24,7 +25,7 @@ import {
 
 const requestSchema = z.object({
   mode: z.enum(["text", "image", "transition"]).optional(),
-  model: z.string().min(1),
+  model: z.string().min(1).optional(),
   api_model: z.string().min(1).optional(),
   prompt: z.string().optional(),
   translate_prompt: z.boolean().optional(),
@@ -44,6 +45,15 @@ const requestSchema = z.object({
   cfg_scale: z.number().min(0).max(1).optional(),
   static_mask: z.string().optional(),
   dynamic_masks: z.unknown().optional(),
+  effect_slug: z.string().min(1).optional(),
+  assets: z
+    .record(
+      z.object({
+        url: z.string().url(),
+      })
+    )
+    .optional(),
+  variables: z.record(z.string(), z.unknown()).optional(),
 });
 
 type ParsedRequest = z.infer<typeof requestSchema>;
@@ -404,10 +414,136 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
-  const mode = resolveMode(data);
+  const effectSlug = typeof data.effect_slug === "string" ? data.effect_slug.trim() : null;
+  const assetsPayload = (data.assets ?? {}) as Record<string, { url: string }>;
+  const variablesPayload = (data.variables ?? {}) as Record<string, unknown>;
 
-  const prompt = data.prompt?.trim() ?? "";
-  if (mode === "text" && !prompt) {
+  let resolvedModelName = data.model ?? "";
+  let resolvedResolution = data.resolution ?? null;
+  let resolvedAspectRatio = data.aspect_ratio ?? null;
+  let resolvedDurationSource: string | number | null = data.duration ?? data.video_length ?? null;
+  let resolvedMode: VideoMode = resolveMode(data);
+  let translatePrompt = data.translate_prompt ?? false;
+  let promptOptimizer = data.prompt_optimizer ?? translatePrompt;
+  let prompt = data.prompt?.trim() ?? "";
+  let negativePrompt = data.negative_prompt;
+  let cfgScaleOverride = data.cfg_scale;
+  let seedOverride = data.seed;
+  let apiModelOverride = data.api_model ?? null;
+  const templateResolvedAssets: Record<string, string> = {};
+
+  let primaryInputSource = data.image_url ?? data.first_frame_image_url ?? null;
+  let tailInputSource = data.tail_image_url ?? data.last_frame_image_url ?? null;
+  let introInputSource = data.intro_image_url ?? null;
+  let outroInputSource = data.outro_image_url ?? null;
+
+  let effectTemplate = effectSlug ? await fetchVideoEffectTemplate(effectSlug) : null;
+  if (effectSlug && !effectTemplate) {
+    return apiResponse.notFound("Effect template not found");
+  }
+
+  if (effectTemplate) {
+    const resolvedAssets: Record<string, string> = {};
+    for (const input of effectTemplate.inputs) {
+      const providedUrl = assetsPayload?.[input.slot]?.url ?? null;
+      let fallbackUrl: string | null = null;
+      switch (input.slot) {
+        case "primary":
+          fallbackUrl = primaryInputSource;
+          break;
+        case "tail":
+          fallbackUrl = tailInputSource;
+          break;
+        case "intro":
+          fallbackUrl = introInputSource;
+          break;
+        case "outro":
+          fallbackUrl = outroInputSource;
+          break;
+        default:
+          fallbackUrl = null;
+      }
+      const finalUrl = providedUrl ?? fallbackUrl;
+      if (!finalUrl) {
+        if (input.isRequired) {
+          return apiResponse.badRequest(`缺少必要素材：${input.slot}`);
+        }
+        continue;
+      }
+      resolvedAssets[input.slot] = finalUrl;
+    }
+
+    if (resolvedAssets.primary) {
+      primaryInputSource = resolvedAssets.primary;
+    }
+    if (resolvedAssets.tail) {
+      tailInputSource = resolvedAssets.tail;
+    }
+    if (resolvedAssets.intro) {
+      introInputSource = resolvedAssets.intro;
+    }
+    if (resolvedAssets.outro) {
+      outroInputSource = resolvedAssets.outro;
+    }
+    Object.assign(templateResolvedAssets, resolvedAssets);
+
+    resolvedModelName =
+      (typeof effectTemplate.metadata?.model_display_name === "string" &&
+      effectTemplate.metadata.model_display_name.length > 0
+        ? effectTemplate.metadata.model_display_name
+        : effectTemplate.providerModel) ?? data.model;
+    apiModelOverride = effectTemplate.providerModel;
+    resolvedResolution = effectTemplate.resolution ?? resolvedResolution;
+    resolvedAspectRatio = effectTemplate.aspectRatio ?? resolvedAspectRatio;
+    if (typeof effectTemplate.durationSeconds === "number") {
+      resolvedDurationSource = effectTemplate.durationSeconds;
+    }
+    resolvedMode =
+      effectTemplate.mode === "transition"
+        ? "transition"
+        : effectTemplate.mode === "image"
+          ? "image"
+          : effectTemplate.mode === "text"
+            ? "text"
+            : effectTemplate.modalityCode === "i2v"
+              ? "image"
+              : effectTemplate.modalityCode === "t2v"
+                ? "text"
+                : resolvedMode;
+
+    if (typeof effectTemplate.cfgScale === "number") {
+      cfgScaleOverride = effectTemplate.cfgScale;
+    }
+    if (typeof effectTemplate.seed === "number") {
+      seedOverride = effectTemplate.seed;
+    }
+
+    if (effectTemplate.defaultPrompt) {
+      const originalPrompt = prompt;
+      prompt = effectTemplate.defaultPrompt.replace(/\{(\w+)\}/g, (_, key: string) => {
+        const value = variablesPayload[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+          return value.trim();
+        }
+        if (key === "user_prompt" && originalPrompt) {
+          return originalPrompt;
+        }
+        return "";
+      });
+    }
+
+    if (effectTemplate.negativePrompt) {
+      negativePrompt = effectTemplate.negativePrompt;
+    }
+  }
+
+  if (!effectTemplate && (!resolvedModelName || resolvedModelName.trim().length === 0)) {
+    return apiResponse.badRequest("Model is required");
+  }
+
+  const mode = resolvedMode;
+
+  if (mode === "text" && (!prompt || prompt.length === 0)) {
     return apiResponse.badRequest("Prompt is required");
   }
 
@@ -431,14 +567,16 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  const modelConfig = getVideoModelConfig(data.model);
+  const modelConfig = getVideoModelConfig(resolvedModelName);
 
-  const apiModel = resolveVideoApiModel(data.model, data.resolution ?? null, data.api_model ?? null);
+  const apiModel = effectTemplate
+    ? effectTemplate.providerModel
+    : resolveVideoApiModel(resolvedModelName, resolvedResolution, apiModelOverride ?? undefined);
   if (!apiModel) {
     return apiResponse.badRequest("未找到对应的模型端点配置");
   }
 
-  const durationSource = data.duration ?? data.video_length;
+  const durationSource = resolvedDurationSource;
   let duration: { numberValue: number; stringValue: string };
   try {
     duration = parseDuration(durationSource ?? null);
@@ -447,69 +585,80 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    ensureAllowedDuration(apiModel, duration.numberValue, duration.stringValue, data.resolution);
+    ensureAllowedDuration(apiModel, duration.numberValue, duration.stringValue, resolvedResolution ?? undefined);
   } catch (error: any) {
     return apiResponse.badRequest(error?.message ?? "Unsupported duration");
   }
 
-  const promptOptimizer = data.prompt_optimizer ?? (data.translate_prompt ?? false);
-
-  const primaryInputSource = data.image_url ?? data.first_frame_image_url ?? null;
-  const tailInputSource = data.tail_image_url ?? data.last_frame_image_url ?? null;
-  const introInputSource = data.intro_image_url ?? null;
-  const outroInputSource = data.outro_image_url ?? null;
-
   const primaryImageUrl =
     primaryInputSource ??
-    (mode === "text" ? getDefaultTransparentImage(data.aspect_ratio) : undefined);
+    (mode === "text" ? getDefaultTransparentImage(resolvedAspectRatio) : undefined);
   const tailImageUrl = tailInputSource ?? undefined;
   const introImageUrl = introInputSource ?? undefined;
   const outroImageUrl = outroInputSource ?? undefined;
-  const numericSeed = normalizeSeed(data.seed);
+  const numericSeed = normalizeSeed(seedOverride);
 
   const modalityCode: "t2v" | "i2v" = mode === "text" ? "t2v" : "i2v";
 
-  const referenceInputs = {
+  const referenceInputs: Record<string, boolean> = {
     primary: Boolean(primaryInputSource),
     tail: Boolean(tailInputSource),
     intro: Boolean(introInputSource),
     outro: Boolean(outroInputSource),
   };
+  if (effectTemplate) {
+    for (const [slot, url] of Object.entries(templateResolvedAssets)) {
+      if (!(slot in referenceInputs)) {
+        referenceInputs[slot] = Boolean(url);
+      }
+    }
+  }
   const referenceImageCount = Object.values(referenceInputs).reduce(
     (total, flag) => total + (flag ? 1 : 0),
     0
   );
 
+  const effectiveCreditsCost =
+    typeof effectTemplate?.pricingCreditsOverride === "number"
+      ? effectTemplate.pricingCreditsOverride
+      : modelConfig.creditsCost;
+
   const metadataJson = {
     source: "video",
     mode,
-    translate_prompt: data.translate_prompt ?? false,
+    translate_prompt: translatePrompt,
     prompt_optimizer: promptOptimizer,
-    resolution: data.resolution ?? null,
-    aspect_ratio: data.aspect_ratio ?? null,
+    resolution: resolvedResolution,
+    aspect_ratio: resolvedAspectRatio,
     duration: duration.numberValue,
     api_model: apiModel,
     prompt: prompt,
     original_prompt: prompt,
     model_display_name: modelConfig.displayName,
     modality_code: modalityCode,
-    credits_cost: modelConfig.creditsCost,
+    credits_cost: effectiveCreditsCost,
     reference_inputs: referenceInputs,
     reference_image_count: referenceImageCount,
+    effect_slug: effectTemplate?.slug ?? null,
+    effect_title: effectTemplate?.title ?? null,
+    negative_prompt: negativePrompt ?? null,
   };
 
   const pricingSnapshot = {
-    credits_cost: modelConfig.creditsCost,
+    credits_cost: effectiveCreditsCost,
     currency: "credits",
     captured_at: new Date().toISOString(),
   };
 
   const inputParams = {
-    model: data.model,
+    model: resolvedModelName,
     prompt: prompt || null,
-    resolution: data.resolution ?? null,
+    resolution: resolvedResolution,
     duration: duration.numberValue,
-    aspect_ratio: data.aspect_ratio ?? null,
+    aspect_ratio: resolvedAspectRatio,
+    effect_slug: effectTemplate?.slug ?? null,
+    provider_model: apiModel,
+    negative_prompt: negativePrompt ?? null,
     mode,
   };
 
@@ -519,11 +668,11 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       provider_code: modelConfig.providerCode,
       modality_code: modalityCode,
-      model_slug_at_submit: data.model,
+      model_slug_at_submit: resolvedModelName,
       status: "pending",
       input_params_json: inputParams,
       metadata_json: metadataJson,
-      cost_estimated_credits: modelConfig.creditsCost,
+      cost_estimated_credits: effectiveCreditsCost,
       pricing_snapshot_json: pricingSnapshot,
     })
     .select()
@@ -553,13 +702,13 @@ export async function POST(req: NextRequest) {
 
   const deduction = {
     wasCharged: false,
-    amount: modelConfig.creditsCost,
+    amount: effectiveCreditsCost,
   };
   let updatedBenefits: any = null;
 
-  if (modelConfig.creditsCost > 0) {
+  if (effectiveCreditsCost > 0) {
     const deductionNote = `AI video generation - ${modelConfig.displayName}`;
-    const deducted = await deductCredits(modelConfig.creditsCost, deductionNote);
+    const deducted = await deductCredits(effectiveCreditsCost, deductionNote);
 
     if (!deducted.success) {
       await adminSupabase
@@ -603,9 +752,9 @@ export async function POST(req: NextRequest) {
       endpoint: apiModel,
       prompt: prompt || undefined,
       promptOptimizer,
-      negativePrompt: data.negative_prompt,
-      aspectRatio: data.aspect_ratio,
-      resolution: data.resolution,
+      negativePrompt: negativePrompt,
+      aspectRatio: resolvedAspectRatio ?? undefined,
+      resolution: resolvedResolution ?? undefined,
       durationNumber: duration.numberValue,
       durationString: duration.stringValue,
       imageUrl: resolvedPrimaryImageUrl ?? undefined,
@@ -613,7 +762,7 @@ export async function POST(req: NextRequest) {
       introImageUrl: resolvedIntroImageUrl ?? undefined,
       outroImageUrl: resolvedOutroImageUrl ?? undefined,
       seed: numericSeed,
-      cfgScale: data.cfg_scale,
+      cfgScale: typeof cfgScaleOverride === "number" ? cfgScaleOverride : undefined,
       staticMask: data.static_mask,
       dynamicMasks: data.dynamic_masks,
       webhookUrl,
@@ -638,12 +787,12 @@ export async function POST(req: NextRequest) {
     const inputRows: Database["public"]["Tables"]["ai_job_inputs"]["Insert"][] = [];
     let inputIndex = 0;
 
-    const addInput = (url: string | null | undefined, source: string) => {
+    const addInput = (url: string | null | undefined, source: string, type = "image") => {
       if (!url) return;
       inputRows.push({
         job_id: jobRecord.id,
         index: inputIndex++,
-        type: "image",
+        type,
         source,
         url,
         metadata_json: {
@@ -665,6 +814,15 @@ export async function POST(req: NextRequest) {
     if (outroInputSource) {
       addInput(resolvedOutroImageUrl, "outro");
     }
+    if (effectTemplate) {
+      effectTemplate.inputs.forEach((input) => {
+        if (["primary", "tail", "intro", "outro"].includes(input.slot)) {
+          return;
+        }
+        const url = templateResolvedAssets[input.slot];
+        addInput(url, input.slot, input.type ?? "image");
+      });
+    }
 
     if (inputRows.length > 0) {
       const { error: inputsError } = await adminSupabase.from("ai_job_inputs").insert(inputRows);
@@ -678,6 +836,9 @@ export async function POST(req: NextRequest) {
       referenceInputs.tail ? resolvedTailImageUrl : null,
       referenceInputs.intro ? resolvedIntroImageUrl : null,
       referenceInputs.outro ? resolvedOutroImageUrl : null,
+      ...Object.entries(templateResolvedAssets)
+        .filter(([slot]) => !["primary", "tail", "intro", "outro"].includes(slot))
+        .map(([, url]) => url),
     ].filter((url): url is string => typeof url === "string" && url.length > 0);
 
     console.log("[freepik-video] request payload", {
