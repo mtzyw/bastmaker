@@ -2,8 +2,10 @@ import PureFourSections, { SectionConfig } from "@/components/sections/PureFourS
 import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
 import { VideoEffectsEditorPreview } from "@/components/ai/VideoEffectsEditorPreview";
 import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
+import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
+import { createClient } from "@/lib/supabase/server";
 import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -58,6 +60,19 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(user);
+
+  const shouldShowRecentTasks = effect.slug === "ai-kissing" && isAuthenticated;
+  const rightSection = shouldShowRecentTasks ? (
+    <TextToImageRecentTasks initialCategory="视频" categories={["视频", "全部", "图片"]} />
+  ) : (
+    <VideoEffectsEditorPreview effect={effect} />
+  );
+
   return (
     <PureFourSections
       leftWidth="13"
@@ -65,8 +80,9 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       sections={sections}
       withSidebar={false}
       section2Left={<VideoEffectsEditorLeftPanel effect={effect} />}
-      section2Right={<VideoEffectsEditorPreview effect={effect} />}
+      section2Right={rightSection}
       mergedSectionContent={<VideoEffectsDetailContent effect={effect} />}
     />
   );
 }
+export const dynamic = "force-dynamic";
