@@ -81,7 +81,10 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       withSidebar={false}
       section2Left={<VideoEffectsEditorLeftPanel effect={effect} />}
       section2Right={rightSection}
-      mergedSectionContent={<VideoEffectsDetailContent effect={effect} />}
+      mergedSectionContent={
+        shouldShowRecentTasks ? null : <VideoEffectsDetailContent effect={effect} />
+      }
+      hideMergedSection={shouldShowRecentTasks}
     />
   );
 }

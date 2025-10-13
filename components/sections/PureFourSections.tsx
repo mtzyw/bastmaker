@@ -38,6 +38,7 @@ export default function PureFourSections({
   section2Right,
   lockSection2Height = true,
   mergedSectionContent,
+  hideMergedSection = false,
 }: {
   leftWidth?: WidthPreset;
   section2Split?: SplitPreset;
@@ -47,6 +48,7 @@ export default function PureFourSections({
   section2Right?: React.ReactNode;
   lockSection2Height?: boolean;
   mergedSectionContent?: React.ReactNode;
+  hideMergedSection?: boolean;
 }) {
   const [s1, s2, s3, s4] = sections;
   const section2HeightClass = lockSection2Height
@@ -130,23 +132,25 @@ export default function PureFourSections({
         </section>
 
         {/* Merged Section 3 + 4 with Footer at the bottom */}
-        <section
-          className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center header-bg text-white"
-        >
-          <div className="w-full">
-            {mergedSectionContent ? (
-              mergedSectionContent
-            ) : (
-              <div className="container mx-auto px-4 md:px-8 py-16">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">{s3.title}</h2>
-                <p className="text-sm opacity-80 mb-8">Pure color block (merged with Section 4).</p>
-                <h3 className="text-xl font-semibold mb-4">{s4.title}</h3>
-                <p className="text-sm opacity-80 mb-10">Footer is embedded below in the merged section.</p>
-              </div>
-            )}
-            <Footer />
-          </div>
-        </section>
+        {!hideMergedSection && (
+          <section
+            className="w-full min-h-screen lg:min-h-[calc(100vh-4rem)] flex items-center header-bg text-white"
+          >
+            <div className="w-full">
+              {mergedSectionContent ? (
+                mergedSectionContent
+              ) : (
+                <div className="container mx-auto px-4 md:px-8 py-16">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">{s3.title}</h2>
+                  <p className="text-sm opacity-80 mb-8">Pure color block (merged with Section 4).</p>
+                  <h3 className="text-xl font-semibold mb-4">{s4.title}</h3>
+                  <p className="text-sm opacity-80 mb-10">Footer is embedded below in the merged section.</p>
+                </div>
+              )}
+              <Footer />
+            </div>
+          </section>
+        )}
         </div>
       </div>
     </div>
