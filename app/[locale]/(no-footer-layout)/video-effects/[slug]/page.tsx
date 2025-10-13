@@ -104,7 +104,11 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
 
   const shouldShowRecentTasks = effect.slug === "ai-kissing" && isAuthenticated;
   const rightSection = shouldShowRecentTasks ? (
-    <TextToImageRecentTasks initialCategory="视频" categories={["视频", "全部", "图片"]} />
+    <TextToImageRecentTasks
+      initialCategory="视频"
+      categories={["视频", "全部", "图片"]}
+      hideEffectBadge
+    />
   ) : (
     <VideoEffectsEditorPreview effect={resolvedTemplate} />
   );

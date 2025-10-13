@@ -93,6 +93,7 @@ type AiJobOutputRow = Database["public"]["Tables"]["ai_job_outputs"]["Row"];
 type TextToImageRecentTasksProps = {
   initialCategory?: CategoryFilter;
   categories?: readonly CategoryFilter[];
+  hideEffectBadge?: boolean;
 };
 
 function formatProviderName(code?: string | null) {
@@ -317,6 +318,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
 export default function TextToImageRecentTasks({
   initialCategory = "全部",
   categories = DEFAULT_CATEGORY_ORDER,
+  hideEffectBadge = false,
 }: TextToImageRecentTasksProps = {}) {
   const normalizedCategories = useMemo(() => {
     const unique = Array.from(new Set(categories));
@@ -975,7 +977,7 @@ export default function TextToImageRecentTasks({
                       <Badge className="border-white/10 bg-white/5 text-white/60">
                         {task.modelLabel}
                       </Badge>
-                      {task.effectSlug ? (
+                      {task.effectSlug && !hideEffectBadge ? (
                         <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200">
                           特效 · {task.effectTitle ?? task.effectSlug}
                         </Badge>
