@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/i18n/routing";
@@ -47,6 +48,7 @@ type LocalAsset = {
 export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTemplate }) {
   const previewSrc = effect.previewVideoUrl ?? DEFAULT_PREVIEW_VIDEO;
   const pricing = effect.pricingCreditsOverride ?? 10;
+  const shouldUseCropper = effect.slug === "ai-kissing";
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const [localAsset, setLocalAsset] = useState<LocalAsset | null>(null);
@@ -54,14 +56,59 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const uploadedBlobUrlRef = useRef<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [cropSource, setCropSource] = useState<{ src: string; fileName: string; fileType: string } | null>(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
 
   useEffect(() => {
     return () => {
-      if (localAsset?.previewUrl) {
+      if (localAsset?.previewUrl && localAsset.previewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(localAsset.previewUrl);
       }
     };
   }, [localAsset?.previewUrl]);
+
+  useEffect(() => {
+    return () => {
+      const current = cropSource?.src;
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+    };
+  }, [cropSource?.src]);
+
+  useEffect(() => {
+    return () => {
+      if (uploadedBlobUrlRef.current) {
+        URL.revokeObjectURL(uploadedBlobUrlRef.current);
+      }
+    };
+  }, []);
+
+  const openCropperWithFile = useCallback((file: File) => {
+    const nextUrl = URL.createObjectURL(file);
+    setCropSource((current) => {
+      if (current?.src) {
+        URL.revokeObjectURL(current.src);
+      }
+      return { src: nextUrl, fileName: file.name, fileType: file.type || "image/png" };
+    });
+    setCropperOpen(true);
+  }, []);
+
+  const handleCropCancel = useCallback(() => {
+    setCropperOpen(false);
+    setCropSource((current) => {
+      if (current?.src) {
+        URL.revokeObjectURL(current.src);
+      }
+      return null;
+    });
+    if (!localAsset) {
+      setOriginalFile(null);
+    }
+  }, [localAsset]);
 
   const uploadImageToR2 = useCallback(async (file: File, kind: string) => {
     const formData = new FormData();
@@ -84,18 +131,98 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     return url;
   }, []);
 
+  const handleCropConfirm = useCallback(
+    async ({
+      blob,
+      dataUrl,
+      width,
+      height,
+    }: {
+      blob: Blob;
+      dataUrl: string;
+      width: number;
+      height: number;
+    }) => {
+      const shortestSide = Math.min(width, height);
+      if (!Number.isFinite(shortestSide) || shortestSide <= 360) {
+        toast.error("上传失败，图片较短边需大于 360 像素", { duration: 6000 });
+        handleCropCancel();
+        return;
+      }
+
+      const currentSource = cropSource;
+      const fileName = currentSource?.fileName ?? `cropped-${Date.now()}.png`;
+      const fileType = currentSource?.fileType ?? blob.type ?? "image/png";
+      const croppedFile = new File([blob], fileName, { type: fileType });
+
+      if (localAsset?.previewUrl && localAsset.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(localAsset.previewUrl);
+      }
+      if (uploadedBlobUrlRef.current) {
+        URL.revokeObjectURL(uploadedBlobUrlRef.current);
+        uploadedBlobUrlRef.current = null;
+      }
+
+      const previewUrl = dataUrl || URL.createObjectURL(blob);
+      uploadedBlobUrlRef.current = previewUrl.startsWith("blob:") ? previewUrl : null;
+
+      setLocalAsset({ file: croppedFile, remoteUrl: null, previewUrl });
+      setOriginalFile(croppedFile);
+      setCropperOpen(false);
+      setCropSource(null);
+
+      if (currentSource?.src) {
+        URL.revokeObjectURL(currentSource.src);
+      }
+
+      setIsUploading(true);
+      try {
+        const remoteUrl = await uploadImageToR2(croppedFile, "primary");
+        setLocalAsset((current) => {
+          if (!current || current.file !== croppedFile) {
+            return current;
+          }
+          return { ...current, remoteUrl };
+        });
+      } catch (error: any) {
+        const message = error instanceof Error ? error.message : "上传失败，请稍后再试";
+        toast.error(message, { duration: 6000 });
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [cropSource, handleCropCancel, localAsset?.previewUrl, uploadImageToR2]
+  );
+
   const handleSelectFile = useCallback(
     async (file: File | null) => {
       if (!file) {
         return;
       }
 
-      if (localAsset?.previewUrl) {
+      if (shouldUseCropper) {
+        if (!file.type.startsWith("image/")) {
+          toast.error("AI接吻特效暂不支持该格式，请上传图片素材", { duration: 6000 });
+          return;
+        }
+        setOriginalFile(file);
+        openCropperWithFile(file);
+        return;
+      }
+
+      if (localAsset?.previewUrl && localAsset.previewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(localAsset.previewUrl);
+      }
+      if (uploadedBlobUrlRef.current) {
+        URL.revokeObjectURL(uploadedBlobUrlRef.current);
+        uploadedBlobUrlRef.current = null;
       }
 
       const previewUrl = URL.createObjectURL(file);
+      uploadedBlobUrlRef.current = previewUrl.startsWith("blob:") ? previewUrl : null;
+
       setLocalAsset({ file, remoteUrl: null, previewUrl });
+      setOriginalFile(null);
       setIsUploading(true);
       try {
         const remoteUrl = await uploadImageToR2(file, "primary");
@@ -113,7 +240,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         setIsUploading(false);
       }
     },
-    [localAsset?.previewUrl, uploadImageToR2]
+    [localAsset?.previewUrl, openCropperWithFile, shouldUseCropper, uploadImageToR2]
   );
 
   const handleCreate = useCallback(async () => {
@@ -277,10 +404,10 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
             </div>
           </section>
 
-          <section>
+          <section className="space-y-3">
+            <div className="text-sm">参考图</div>
             <div
-              className="relative flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-white/20 bg-black/40 px-6 py-12 text-center text-sm text-white/60"
-              onClick={() => inputRef.current?.click()}
+              className="relative"
               onDragOver={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -293,54 +420,75 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                 }
               }}
             >
-              {localAsset ? (
-                <div className="relative w-full max-w-sm overflow-hidden rounded-lg border border-white/15">
-                  {localAsset.previewUrl.endsWith(".mp4") ? (
-                    <video
-                      src={localAsset.previewUrl}
-                      className="w-full object-cover"
-                      muted
-                      loop
-                      autoPlay
-                    />
-                  ) : (
-                    <Image
-                      src={localAsset.previewUrl}
-                      alt="上传预览"
-                      width={512}
-                      height={512}
-                      className="w-full object-cover"
-                    />
-                  )}
-                  {isUploading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white/70">
-                      上传中…
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <Upload className="h-7 w-7 text-white/40" />
-                  <p>点击、拖拽或粘贴素材</p>
-                  <p className="text-xs text-white/40">支持 PNG / JPG / MP4，最大 200MB</p>
-                </div>
-              )}
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white/10 text-white hover:bg-white/20"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  inputRef.current?.click();
-                }}
-                disabled={isUploading || isSubmitting}
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="group relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/8 transition-colors hover:bg-white/12"
               >
-                {localAsset ? "重新选择" : "选择文件"}
-              </Button>
+                {localAsset ? (
+                  <>
+                    {localAsset.previewUrl.endsWith(".mp4") ? (
+                      <video
+                        src={localAsset.previewUrl}
+                        className="max-h-full max-w-full object-contain"
+                        muted
+                        loop
+                        autoPlay
+                      />
+                    ) : (
+                      <Image
+                        src={localAsset.previewUrl}
+                        alt="参考图预览"
+                        width={640}
+                        height={640}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    )}
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-b from-black/35 via-black/15 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="pointer-events-auto bg-black/50 text-white hover:bg-black/60"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (localAsset.previewUrl && localAsset.previewUrl.startsWith("blob:")) {
+                            URL.revokeObjectURL(localAsset.previewUrl);
+                          }
+                          if (uploadedBlobUrlRef.current) {
+                            URL.revokeObjectURL(uploadedBlobUrlRef.current);
+                            uploadedBlobUrlRef.current = null;
+                          }
+                          setLocalAsset(null);
+                          setOriginalFile(null);
+                        }}
+                      >
+                        移除
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-xs text-white/60">
+                    <Upload className="h-6 w-6 text-white/40" />
+                    <p>点击或拖拽上传参考图</p>
+                    <p className="text-white/35">
+                      {shouldUseCropper
+                        ? "支持 PNG / JPG，上传后可裁剪，较短边需大于 360px"
+                        : "支持 PNG / JPG / MP4，最大 200MB"}
+                    </p>
+                  </div>
+                )}
+                {isUploading ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
+                    上传中...
+                  </div>
+                ) : null}
+              </button>
               <input
                 ref={inputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept={shouldUseCropper ? "image/*" : "image/*,video/*"}
                 className="hidden"
                 onChange={(event) => {
                   const file = event.target.files?.[0] ?? null;
@@ -350,6 +498,28 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                   event.target.value = "";
                 }}
               />
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-white/60">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="hover:text-white"
+              >
+                {localAsset ? "重新选择" : "选择图片"}
+              </button>
+              {shouldUseCropper && localAsset ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const fileToUse = originalFile ?? localAsset.file;
+                    openCropperWithFile(fileToUse);
+                  }}
+                  className="hover:text-white"
+                >
+                  重新裁剪
+                </button>
+              ) : null}
+              {localAsset ? <span className="text-white/40">文件：{localAsset.file.name}</span> : null}
             </div>
           </section>
 
@@ -403,6 +573,12 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
+      <ImageCropperDialog
+        open={shouldUseCropper ? cropperOpen : false}
+        imageSrc={shouldUseCropper ? cropSource?.src ?? null : null}
+        onCancel={handleCropCancel}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   );
 }
