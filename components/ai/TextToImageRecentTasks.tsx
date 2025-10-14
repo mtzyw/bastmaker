@@ -1017,16 +1017,20 @@ export default function TextToImageRecentTasks({
               </header>
 
               <div className="space-y-2">
-                <p className="text-sm text-white/70 leading-relaxed">
-                  <span className="text-white">Prompt:</span>{" "}
-                  {task.prompt || "—"}
-                </p>
-                {task.negativePrompt ? (
-                  <p className="text-xs text-white/50">
-                    <span className="text-white/70">Negative:</span>{" "}
-                    {task.negativePrompt}
-                  </p>
-                ) : null}
+                {!task.effectSlug && (
+                  <>
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      <span className="text-white">Prompt:</span>{" "}
+                      {task.prompt || "—"}
+                    </p>
+                    {task.negativePrompt ? (
+                      <p className="text-xs text-white/50">
+                        <span className="text-white/70">Negative:</span>{" "}
+                        {task.negativePrompt}
+                      </p>
+                    ) : null}
+                  </>
+                )}
               </div>
 
               {task.status === "failed" && task.errorMessage ? (

@@ -62,7 +62,11 @@ export async function generateStaticParams() {
 
 export default async function VideoEffectDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const template = await fetchVideoEffectTemplate(slug).catch(() => null);
+  const [template, allEffects] = await Promise.all([
+    fetchVideoEffectTemplate(slug).catch(() => null),
+    listActiveVideoEffects().catch(() => []),
+  ]);
+
   const fallbackDefinition = getVideoEffectBySlug(slug);
   const effect = template ?? fallbackDefinition;
 
@@ -70,7 +74,7 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const resolvedTemplate: VideoEffectTemplate | null = template
+  const resolvedTemplate: VideoEffectTemplate = template
     ? template
     : {
         id: `fallback-${effect.slug}`,
@@ -123,7 +127,7 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       withSidebar={false}
       section2Left={<VideoEffectsEditorLeftPanel effect={resolvedTemplate} />}
       section2Right={rightSection}
-      mergedSectionContent={<VideoEffectsDetailContent effect={resolvedTemplate} />}
+      mergedSectionContent={<VideoEffectsDetailContent effect={resolvedTemplate} allEffects={allEffects} />}
       hideMergedSection={false}
     />
   );

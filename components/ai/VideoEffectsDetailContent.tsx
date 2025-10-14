@@ -7,8 +7,11 @@ import { VideoEffectTemplate } from "@/lib/video-effects/templates";
 
 const PLACEHOLDER_VIDEO_URL = "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4";
 
-function getSuggestedEffects(currentSlug: string): VideoEffectDefinition[] {
-  const candidates = VIDEO_EFFECTS.filter((item) => item.slug !== currentSlug);
+function getSuggestedEffects(
+  currentSlug: string,
+  allEffects: VideoEffectTemplate[]
+): VideoEffectTemplate[] {
+  const candidates = allEffects.filter((item) => item.slug !== currentSlug);
 
   if (candidates.length <= 3) {
     return candidates.slice(0, 3);
@@ -24,8 +27,14 @@ function getSuggestedEffects(currentSlug: string): VideoEffectDefinition[] {
   return shuffled.slice(0, 3);
 }
 
-export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectTemplate }) {
-  const suggestedEffects = getSuggestedEffects(effect.slug);
+export function VideoEffectsDetailContent({ 
+  effect, 
+  allEffects 
+}: { 
+  effect: VideoEffectTemplate;
+  allEffects: VideoEffectTemplate[];
+}) {
+  const suggestedEffects = getSuggestedEffects(effect.slug, allEffects);
   const content = getVideoEffectContent(effect.slug);
   const pageContent = effect.metadata?.pageContent;
 
@@ -148,7 +157,7 @@ export function VideoEffectsDetailContent({ effect }: { effect: VideoEffectTempl
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <video
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    src={pageContent?.mainVideoUrl || PLACEHOLDER_VIDEO_URL}
+                    src={item.previewVideoUrl || PLACEHOLDER_VIDEO_URL}
                     muted
                     playsInline
                     loop
