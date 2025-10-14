@@ -325,8 +325,6 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         throw new Error(message);
       }
 
-      removeHistoryItem(tempJobId);
-
       const taskInfo = json.data as {
         jobId?: string;
         status?: string;
@@ -335,7 +333,15 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         creditsCost?: number;
       };
 
-      if (taskInfo?.jobId) {
+      // Always remove the temporary item first.
+      removeHistoryItem(tempJobId);
+
+      // Then, check if the real item has already been added by the real-time channel.
+      const store = useCreationHistoryStore.getState();
+      const realItemAlreadyExists = store.items.some(item => item.jobId === taskInfo?.jobId);
+
+      // Only add the item from the API response if it's not already in the store.
+      if (taskInfo?.jobId && !realItemAlreadyExists) {
         upsertHistoryItem({
           ...optimisticItem,
           jobId: taskInfo.jobId,
@@ -350,6 +356,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
 
       setStatusMessage("任务已提交，稍后请在右侧记录查看进度。");
     } catch (error: any) {
+      // If anything fails, ensure the temporary item is removed.
       removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : "提交失败，请稍后再试";
       toast.error(message, { duration: 6000 });
