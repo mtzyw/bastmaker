@@ -6,8 +6,12 @@ import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
-import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
-import { fetchVideoEffectTemplate, type VideoEffectTemplate } from "@/lib/video-effects/templates";
+import { getVideoEffectBySlug, type VideoEffectDefinition, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
+import {
+  fetchVideoEffectTemplate,
+  listActiveVideoEffects,
+  type VideoEffectTemplate,
+} from "@/lib/video-effects/templates";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -44,15 +48,16 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
 }
 
 export async function generateStaticParams() {
-  const params: { locale: string; slug: string }[] = [];
-
-  for (const locale of LOCALES) {
-    for (const effect of VIDEO_EFFECTS) {
-      params.push({ locale, slug: effect.slug });
+  try {
+    const templates = await listActiveVideoEffects();
+    if (templates.length > 0) {
+      return templates.flatMap(({ slug }) => LOCALES.map((locale) => ({ locale, slug })));
     }
+  } catch (error) {
+    console.error("[video-effects] failed to build static params from Supabase", error);
   }
 
-  return params;
+  return LOCALES.flatMap((locale) => VIDEO_EFFECTS.map(({ slug }) => ({ locale, slug })));
 }
 
 export default async function VideoEffectDetailPage({ params }: PageProps) {
@@ -112,14 +117,12 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   ) : (
     <VideoEffectsEditorPreview effect={resolvedTemplate} />
   );
-  const detailContentEffect =
-    fallbackDefinition ??
-    ({
-      slug: effect.slug,
-      title: effect.title,
-      category: effect.category ?? undefined,
-      description: effect.description ?? undefined,
-    } as (typeof VIDEO_EFFECTS)[number]);
+  const detailContentEffect: VideoEffectDefinition = {
+    slug: effect.slug,
+    title: effect.title,
+    category: effect.category ?? fallbackDefinition?.category ?? "未分类",
+    description: effect.description ?? fallbackDefinition?.description,
+  };
 
   return (
     <PureFourSections
