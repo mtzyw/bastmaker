@@ -354,7 +354,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         });
       }
 
-      setStatusMessage("任务已提交，稍后请在右侧记录查看进度。");
+
     } catch (error: any) {
       // If anything fails, ensure the temporary item is removed.
       removeHistoryItem(tempJobId);

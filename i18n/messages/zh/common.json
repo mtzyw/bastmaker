@@ -178,6 +178,11 @@
         "name": "R2资源管理",
         "href": "/dashboard/r2-resources",
         "icon": "FileBox"
+      },
+      {
+        "name": "特效管理",
+        "href": "/dashboard/effects",
+        "icon": "Wand"
       }
     ]
   },

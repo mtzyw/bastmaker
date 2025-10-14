@@ -178,6 +178,11 @@
         "name": "R2リソース",
         "href": "/dashboard/r2-resources",
         "icon": "FileBox"
+      },
+      {
+        "name": "エフェクト管理",
+        "href": "/dashboard/effects",
+        "icon": "Wand"
       }
     ]
   },
