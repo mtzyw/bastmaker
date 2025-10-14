@@ -14,6 +14,11 @@ export type VideoEffectInputConfig = {
   displayOrder: number;
 };
 
+export type VideoEffectPageContent = {
+  mainVideoUrl?: string;
+  detailVideoUrls?: string[];
+};
+
 export type VideoEffectTemplate = {
   id: string;
   slug: string;
@@ -35,7 +40,10 @@ export type VideoEffectTemplate = {
   defaultPrompt: string | null;
   negativePrompt: string | null;
   promptVariables: any[];
-  metadata: Record<string, any>;
+  metadata: {
+    pageContent?: VideoEffectPageContent;
+    [key: string]: any;
+  };
   isActive: boolean;
   displayOrder: number;
   createdAt: string;

@@ -107,22 +107,13 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   } = await supabase.auth.getUser();
   const isAuthenticated = Boolean(user);
 
-  const shouldShowRecentTasks = effect.slug === "ai-kissing" && isAuthenticated;
-  const rightSection = shouldShowRecentTasks ? (
+  const rightSection = (
     <TextToImageRecentTasks
       initialCategory="视频"
       categories={["视频", "全部", "图片"]}
       hideEffectBadge
     />
-  ) : (
-    <VideoEffectsEditorPreview effect={resolvedTemplate} />
   );
-  const detailContentEffect: VideoEffectDefinition = {
-    slug: effect.slug,
-    title: effect.title,
-    category: effect.category ?? fallbackDefinition?.category ?? "未分类",
-    description: effect.description ?? fallbackDefinition?.description,
-  };
 
   return (
     <PureFourSections
@@ -132,10 +123,8 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       withSidebar={false}
       section2Left={<VideoEffectsEditorLeftPanel effect={resolvedTemplate} />}
       section2Right={rightSection}
-      mergedSectionContent={
-        shouldShowRecentTasks ? null : <VideoEffectsDetailContent effect={detailContentEffect} />
-      }
-      hideMergedSection={shouldShowRecentTasks}
+      mergedSectionContent={<VideoEffectsDetailContent effect={resolvedTemplate} />}
+      hideMergedSection={false}
     />
   );
 }
