@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FREepik_MODELS } from '@/config/freepik-models';
 import { createVideoEffect } from '@/actions/effects/create';
+import { updateVideoEffect } from '@/actions/effects/update';
 import { toast } from 'sonner';
 import { useRouter } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
@@ -26,8 +27,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Zod schema for form validation
+// Zod schema now includes an optional id for edit mode
 const formSchema = z.object({
+  id: z.string().uuid().optional(),
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1),
   description: z.string().optional(),
@@ -38,57 +40,56 @@ const formSchema = z.object({
   pricing_credits_override: z.coerce.number().int().min(0),
   display_order: z.coerce.number().int(),
   prompt: z.string().min(1),
-  preview_video_url: z.string().url(),
-  mainVideoUrl: z.string().url(),
-  detailVideoUrls: z.array(z.string().url("Invalid URL")).min(7, "Requires 7 URLs"),
+  preview_video_url: z.string().url().or(z.literal('')),
+  mainVideoUrl: z.string().url().or(z.literal('')).optional(),
+  detailVideoUrls: z.array(z.string().url().or(z.literal(''))).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface AddEffectFormDialogProps {
+interface EffectFormDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  effectToEdit?: Record<string, any> | null;
 }
 
-export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialogProps) => {
+export const EffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: EffectFormDialogProps) => {
   const router = useRouter();
-  const [selectedModel, setSelectedModel] = useState(FREepik_MODELS[0]);
+  const isEditMode = !!effectToEdit;
+
+  const [selectedModel, setSelectedModel] = useState(() => {
+    const initialModelName = effectToEdit?.metadata_json?.model_display_name || FREepik_MODELS[0].displayName;
+    return FREepik_MODELS.find(m => m.displayName === initialModelName) || FREepik_MODELS[0];
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      category: '舞蹈演示',
-      pricing_credits_override: 25,
-      display_order: 0,
-      model_display_name: selectedModel.displayName,
-      resolution: selectedModel.options.resolutions[0],
-      duration: selectedModel.options.durations[0],
-      detailVideoUrls: Array(7).fill(''),
-    },
   });
 
   useEffect(() => {
     if (isOpen) {
-        form.reset({
-            category: '舞蹈演示',
-            pricing_credits_override: 25,
-            is_active: true,
-            display_order: 0,
-            model_display_name: FREepik_MODELS[0].displayName,
-            resolution: FREepik_MODELS[0].options.resolutions[0],
-            duration: FREepik_MODELS[0].options.durations[0],
-            detailVideoUrls: Array(7).fill(''),
-            slug: '',
-            title: '',
-            description: '',
-            prompt: '',
-            preview_video_url: '',
-            mainVideoUrl: '',
-        });
-        setSelectedModel(FREepik_MODELS[0]);
+      const defaultValues = {
+        id: effectToEdit?.id || undefined,
+        slug: effectToEdit?.slug || '',
+        title: effectToEdit?.title || '',
+        description: effectToEdit?.description || '',
+        category: effectToEdit?.category || '舞蹈演示',
+        pricing_credits_override: effectToEdit?.pricing_credits_override ?? 25,
+        display_order: effectToEdit?.display_order ?? 0,
+        model_display_name: effectToEdit?.metadata_json?.model_display_name || FREepik_MODELS[0].displayName,
+        resolution: effectToEdit?.metadata_json?.freepik_params?.resolution || FREepik_MODELS[0].options.resolutions[0],
+        duration: effectToEdit?.metadata_json?.freepik_params?.duration || FREepik_MODELS[0].options.durations[0],
+        prompt: effectToEdit?.metadata_json?.freepik_params?.prompt || '',
+        preview_video_url: effectToEdit?.preview_video_url || '',
+        mainVideoUrl: effectToEdit?.metadata_json?.pageContent?.mainVideoUrl || '',
+        detailVideoUrls: effectToEdit?.metadata_json?.pageContent?.detailVideoUrls || Array(7).fill(''),
+      };
+      form.reset(defaultValues);
+      const model = FREepik_MODELS.find(m => m.displayName === defaultValues.model_display_name) || FREepik_MODELS[0];
+      setSelectedModel(model);
     }
-  }, [isOpen]);
+  }, [isOpen, effectToEdit, form]);
 
   const handleModelChange = (displayName: string) => {
     const model = FREepik_MODELS.find(m => m.displayName === displayName);
@@ -102,7 +103,7 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    toast.info('Creating new effect...');
+    const toastId = toast.info(isEditMode ? 'Updating effect...' : 'Creating new effect...');
 
     const formData = new FormData();
     
@@ -117,7 +118,7 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
     }
 
     if (!provider_model) {
-        toast.error('Could not determine provider model from selection.');
+        toast.error('Could not determine provider model from selection.', { id: toastId });
         setIsSubmitting(false);
         return;
     }
@@ -125,19 +126,21 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
     Object.entries(values).forEach(([key, value]) => {
         if (key === 'detailVideoUrls' && Array.isArray(value)) {
             value.forEach((url, index) => { formData.append(`detailVideoUrls.${index}`, url); });
-        } else { formData.append(key, String(value)); }
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+        }
     });
     formData.append('provider_code', 'freepik');
     formData.append('provider_model', provider_model);
 
-    const result = await createVideoEffect(formData);
+    const result = isEditMode ? await updateVideoEffect(formData) : await createVideoEffect(formData);
 
     if (result.success) {
-      toast.success(`Effect '${values.title}' created successfully!`);
+      toast.success(`Effect '${values.title}' ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
       onOpenChange(false); // Close dialog
       router.refresh(); // Refresh server components on the page
     } else {
-      toast.error(result.message || 'An unknown error occurred.');
+      toast.error(result.message || 'An unknown error occurred.', { id: toastId });
       console.error(result.error);
     }
 
@@ -148,12 +151,15 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Add New Video Effect</DialogTitle>
-          <DialogDescription>Create a new effect template by filling out the form below.</DialogDescription>
+          <DialogTitle>{isEditMode ? 'Edit' : 'Add New'} Video Effect</DialogTitle>
+          <DialogDescription>
+            {isEditMode ? `Editing the effect: ${effectToEdit?.title}` : 'Create a new effect template by filling out the form below.'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <ScrollArea className="h-[70vh] pr-6">
             <div className="space-y-8 py-4">
+                {/* Form content remains the same, react-hook-form handles the values */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div>
@@ -185,7 +191,7 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
                     <div className="space-y-4">
                         <div>
                             <Label>Model</Label>
-                            <Select onValueChange={handleModelChange} defaultValue={selectedModel.displayName}>
+                            <Select onValueChange={handleModelChange} value={selectedModel.displayName}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     {FREepik_MODELS.map(model => (
@@ -209,7 +215,7 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
                                 <Controller control={form.control} name="duration" render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={String(field.value)}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>{selectedModel.options.durations.map(dur => <SelectItem key={dur} value={String(dur)}>{String(dur)}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{selectedModel.options.durations.map(dur => <SelectItem key={String(dur)} value={String(dur)}>{String(dur)}</SelectItem>)}</SelectContent>
                                     </Select>
                                 )}/>
                             </div>
@@ -224,7 +230,6 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
                                 <Input id="display_order" type="number" {...form.register('display_order')} />
                             </div>
                         </div>
-                        
                     </div>
                 </div>
 
@@ -256,7 +261,7 @@ export const AddEffectFormDialog = ({ isOpen, onOpenChange }: AddEffectFormDialo
             <DialogClose asChild>
               <Button type="button" variant="secondary">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Creating...' : 'Create Effect'}</Button>
+            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Updating...' : 'Create Effect'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

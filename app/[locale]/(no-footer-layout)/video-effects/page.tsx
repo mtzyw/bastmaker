@@ -6,11 +6,16 @@ import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { VIDEO_EFFECTS } from "@/lib/video-effects/effects";
 import { listActiveVideoEffects } from "@/lib/video-effects/templates";
+import { loadVideoEffectCopy } from "@/lib/video-effects/content";
 import { Metadata } from "next";
 
 type Params = Promise<{ locale: string }>;
 
 type MetadataProps = {
+  params: Params;
+};
+
+type PageProps = {
   params: Params;
 };
 
@@ -37,7 +42,8 @@ function mapFallbackEffects(): VideoEffectsGalleryItem[] {
   }));
 }
 
-export default async function VideoEffectsPage() {
+export default async function VideoEffectsPage({ params }: PageProps) {
+  const { locale } = await params;
   let effects: VideoEffectsGalleryItem[] = [];
 
   try {
@@ -60,12 +66,19 @@ export default async function VideoEffectsPage() {
     effects = mapFallbackEffects();
   }
 
+  const localizedEffects = await Promise.all(
+    effects.map(async (effect) => {
+      const { copy } = await loadVideoEffectCopy(effect.slug, locale as Locale);
+      return copy?.displayTitle ? { ...effect, title: copy.displayTitle } : effect;
+    })
+  );
+
   return (
     <div className="relative w-full text-white">
       <section className="header-bg w-full min-h-[calc(100vh-4rem)]">
         <div className="container mx-auto flex h-full flex-col px-4 pb-16 pt-12 md:px-8">
           <div className="flex-1">
-            <VideoEffectsGallery effects={effects} />
+            <VideoEffectsGallery effects={localizedEffects} />
           </div>
         </div>
       </section>

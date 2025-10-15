@@ -1,0 +1,115 @@
+{
+  "displayTitle": "AI Hugging Video Generator",
+  "seoTitle": "Free AI Hugging Generator Online",
+  "seoDescription": "Create heartfelt hugging scenes in seconds. Upload portraits and let the AI hugging generator deliver cinematic, emotion-rich videos for social posts and campaigns.",
+  "hero": {
+    "heading": "Free AI Hugging Generator Online",
+    "description": "Turn portraits into authentic hugging moments with one click. Our AI smooths motion, lighting, and expression so storytellers and marketers can publish polished clips instantly.",
+    "cta": {
+      "label": "Start Creating",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "Signature Previews",
+    "subheading": "Browse romantic, cozy, and cinematic hugging scenes to spark your next idea."
+  },
+  "galleryItems": [
+    {
+      "title": "Natural Hug Moments",
+      "description": "Capture genuine emotions between two people and preserve every tender detail."
+    },
+    {
+      "title": "Cinematic Lighting",
+      "description": "Simulate golden hour, neon nights, and studio setups for immersive atmospheres."
+    },
+    {
+      "title": "Anime or Photoreal Styles",
+      "description": "Switch between stylized anime and lifelike renders to match your narrative."
+    }
+  ],
+  "features": {
+    "heading": "Immersive Highlights",
+    "items": [
+      {
+        "title": "Realistic Motion Capture",
+        "description": "Advanced body and facial rigs deliver fluid, believable hugging animation.",
+        "ctaLabel": "Try the AI Hugging Generator",
+        "ctaHref": "#"
+      },
+      {
+        "title": "Scene Templates on Demand",
+        "description": "Jump into gardens, rooftops, or night streets with ready-to-use presets.",
+        "ctaLabel": "See More Templates",
+        "ctaHref": "/video-effects"
+      },
+      {
+        "title": "Prompt-Level Control",
+        "description": "Inject custom prompts to fine-tune outfits, lighting, and camera language.",
+        "ctaLabel": "View Prompt Tips",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "Built for Every Use Case",
+        "description": "Perfect for anniversaries, fandom edits, campaign assets, or personal keepsakes.",
+        "ctaLabel": "Explore Use Cases",
+        "ctaHref": "#use-cases"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "Why Creators Love This Tool",
+    "description": "Deliver premium hugging videos in minutes without production overhead.",
+    "items": [
+      {
+        "title": "Friendly Workflow",
+        "description": "Upload portraits and generate clips—no editing skills needed.",
+        "icon": "Smile"
+      },
+      {
+        "title": "High-Quality Output",
+        "description": "Multi-model rendering keeps every frame sharp, clean, and watermark-free.",
+        "icon": "Award"
+      },
+      {
+        "title": "Flexible Model Choice",
+        "description": "Switch between KLING, Hailuo, Runway, and more to match your creative style.",
+        "icon": "Layers"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "More Free AI Video Effects",
+    "description": "Keep exploring and remix the hottest motion and style presets.",
+    "linkLabel": "Browse Effects"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "What is the AI Hugging Video Generator?",
+        "answer": "It is an automated tool that combines two portraits into a warm hugging animation with realistic motion and lighting."
+      },
+      {
+        "question": "How do I create a hugging video?",
+        "answer": "Upload two clear portraits, pick a template or add custom prompts, then generate and download your clip."
+      },
+      {
+        "question": "Do I need video editing skills?",
+        "answer": "No. The interface is beginner friendly—follow the guided steps and export instantly."
+      },
+      {
+        "question": "Where can I use the results?",
+        "answer": "Share on social media, celebrate milestones, enrich brand campaigns, or keep as a personal memory."
+      },
+      {
+        "question": "What photos work best?",
+        "answer": "Use well-lit images where each person faces the camera. Half-body portraits in JPG or PNG deliver optimal results."
+      },
+      {
+        "question": "Is it free to use?",
+        "answer": "Core features are free. Premium resolutions or branded presets may require additional credits."
+      }
+    ]
+  }
+}

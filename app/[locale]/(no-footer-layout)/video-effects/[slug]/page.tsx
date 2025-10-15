@@ -1,12 +1,12 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
-import { VideoEffectsEditorPreview } from "@/components/ai/VideoEffectsEditorPreview";
 import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
-import { getVideoEffectBySlug, type VideoEffectDefinition, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
+import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
+import { loadVideoEffectCopy } from "@/lib/video-effects/content";
 import {
   fetchVideoEffectTemplate,
   listActiveVideoEffects,
@@ -37,11 +37,17 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   const template = await fetchVideoEffectTemplate(slug).catch(() => null);
   const fallbackDefinition = getVideoEffectBySlug(slug);
   const effect = template ?? fallbackDefinition;
+  const { copy } = await loadVideoEffectCopy(slug, locale as Locale);
 
   return constructMetadata({
     page: "VideoEffectsDetail",
-    title: effect ? `${effect.title} | AI Video Effects` : "AI Video Effects",
-    description: effect?.description ?? "Configure AI video effect parameters and preview the result.",
+    title:
+      copy?.seoTitle ??
+      (effect ? `${effect.title} | AI Video Effects` : "AI Video Effects"),
+    description:
+      copy?.seoDescription ??
+      effect?.description ??
+      "Configure AI video effect parameters and preview the result.",
     locale: locale as Locale,
     path: `/video-effects/${slug}`,
   });
@@ -61,7 +67,7 @@ export async function generateStaticParams() {
 }
 
 export default async function VideoEffectDetailPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const [template, allEffects] = await Promise.all([
     fetchVideoEffectTemplate(slug).catch(() => null),
     listActiveVideoEffects().catch(() => []),
@@ -105,6 +111,22 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
         inputs: [],
       };
 
+  const { copy } = await loadVideoEffectCopy(slug, locale as Locale);
+  const localizedTemplate: VideoEffectTemplate =
+    copy?.displayTitle && resolvedTemplate.title !== copy.displayTitle
+      ? { ...resolvedTemplate, title: copy.displayTitle }
+      : resolvedTemplate;
+
+  const localizedAllEffects: VideoEffectTemplate[] = await Promise.all(
+    allEffects.map(async (item) => {
+      if (item.slug === localizedTemplate.slug && copy?.displayTitle) {
+        return { ...item, title: copy.displayTitle };
+      }
+      const { copy: itemCopy } = await loadVideoEffectCopy(item.slug, locale as Locale);
+      return itemCopy?.displayTitle ? { ...item, title: itemCopy.displayTitle } : item;
+    })
+  );
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -125,9 +147,15 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       section2Split="25/75"
       sections={sections}
       withSidebar={false}
-      section2Left={<VideoEffectsEditorLeftPanel effect={resolvedTemplate} />}
+      section2Left={<VideoEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
-      mergedSectionContent={<VideoEffectsDetailContent effect={resolvedTemplate} allEffects={allEffects} />}
+      mergedSectionContent={
+        <VideoEffectsDetailContent
+          effect={localizedTemplate}
+          allEffects={localizedAllEffects}
+          copy={copy}
+        />
+      }
       hideMergedSection={false}
     />
   );
