@@ -623,6 +623,21 @@ export async function POST(req: NextRequest) {
       ? effectTemplate.pricingCreditsOverride
       : modelConfig.creditsCost;
 
+  let resolvedPrimaryImageUrl: string | undefined;
+  let resolvedTailImageUrl: string | undefined;
+  let resolvedIntroImageUrl: string | undefined;
+  let resolvedOutroImageUrl: string | undefined;
+
+  const initialReferenceImageUrls = [
+    primaryImageUrl,
+    tailImageUrl,
+    introImageUrl,
+    outroImageUrl,
+    ...Object.entries(templateResolvedAssets)
+      .filter(([slot]) => !["primary", "tail", "intro", "outro"].includes(slot))
+      .map(([, url]) => url),
+  ].filter((url): url is string => typeof url === "string" && url.length > 0);
+
   const metadataJson = {
     source: "video",
     mode,
@@ -642,6 +657,8 @@ export async function POST(req: NextRequest) {
     effect_slug: effectTemplate?.slug ?? null,
     effect_title: effectTemplate?.title ?? null,
     negative_prompt: negativePrompt ?? null,
+    reference_image_urls: initialReferenceImageUrls,
+    primary_image_url: primaryImageUrl ?? null,
   };
 
   const pricingSnapshot = {
@@ -660,6 +677,8 @@ export async function POST(req: NextRequest) {
     provider_model: apiModel,
     negative_prompt: negativePrompt ?? null,
     mode,
+    reference_image_urls: initialReferenceImageUrls,
+    primary_image_url: primaryImageUrl ?? null,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase
@@ -731,22 +750,20 @@ export async function POST(req: NextRequest) {
   const webhookUrl = getWebhookUrl();
 
   let payload: Record<string, unknown>;
-  let resolvedPrimaryImageUrl: string | undefined;
-  let resolvedTailImageUrl: string | undefined;
-  let resolvedIntroImageUrl: string | undefined;
-  let resolvedOutroImageUrl: string | undefined;
   try {
-    [
-      resolvedPrimaryImageUrl,
-      resolvedTailImageUrl,
-      resolvedIntroImageUrl,
-      resolvedOutroImageUrl,
-    ] = await Promise.all([
+    const results = await Promise.all([
       ensureR2Url(primaryImageUrl, "primary"),
       ensureR2Url(tailImageUrl, "tail"),
       ensureR2Url(introImageUrl, "intro"),
       ensureR2Url(outroImageUrl, "outro"),
     ]);
+
+    [
+      resolvedPrimaryImageUrl,
+      resolvedTailImageUrl,
+      resolvedIntroImageUrl,
+      resolvedOutroImageUrl,
+    ] = results;
 
     payload = buildFreepikVideoPayload({
       endpoint: apiModel,

@@ -113,6 +113,8 @@ export async function POST(req: NextRequest) {
         }
       : {}),
     is_public: isPublic,
+    reference_image_urls: referenceImageUrls,
+    primary_image_url: referenceImageUrls[0] ?? null,
   };
 
   const pricingSnapshot = {
@@ -126,6 +128,8 @@ export async function POST(req: NextRequest) {
     prompt: trimmedPrompt,
     aspect_ratio: data.aspect_ratio ?? null,
     reference_image_count: referenceImageCount,
+    reference_image_urls: referenceImageUrls,
+    primary_image_url: referenceImageUrls[0] ?? null,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase

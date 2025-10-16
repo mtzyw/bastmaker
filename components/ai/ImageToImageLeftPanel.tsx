@@ -252,13 +252,17 @@ export default function ImageToImageLeftPanel({
           reference_inputs: {
             primary: referenceCount > 0,
           },
+          reference_image_urls: referenceUrls,
+          primary_image_url: referenceUrls[0] ?? null,
         },
-          inputParams: {
-            model: apiModel,
-            prompt: trimmedPrompt,
-            reference_images: referenceUrls,
-            translate_prompt: translatePrompt,
-          },
+        inputParams: {
+          model: apiModel,
+          prompt: trimmedPrompt,
+          reference_images: referenceUrls,
+          translate_prompt: translatePrompt,
+          reference_image_urls: referenceUrls,
+          primary_image_url: referenceUrls[0] ?? null,
+        },
           modalityCode: "i2i",
           modelSlug: apiModel,
           errorMessage: null,

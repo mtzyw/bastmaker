@@ -223,6 +223,7 @@ export default function ImageToVideoLeftPanel() {
               introImageUrl,
               outroImageUrl,
             ].filter((url): url is string => Boolean(url)),
+            primary_image_url: primaryImageUrl ?? null,
           },
           inputParams: {
             mode,
@@ -236,6 +237,12 @@ export default function ImageToVideoLeftPanel() {
             first_frame_image_url: primaryImageUrl,
             intro_image_url: introImageUrl,
             outro_image_url: outroImageUrl,
+            reference_image_urls: [
+              primaryImageUrl,
+              introImageUrl,
+              outroImageUrl,
+            ].filter((url): url is string => Boolean(url)),
+            primary_image_url: primaryImageUrl ?? null,
           },
           modalityCode: "i2v",
           modelSlug: model,

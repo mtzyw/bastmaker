@@ -169,6 +169,8 @@ export default function TextToVideoLeftPanel() {
             outro: false,
           },
           reference_image_count: 0,
+          reference_image_urls: [],
+          primary_image_url: null,
         },
         inputParams: {
           model: activeModel,
@@ -179,6 +181,8 @@ export default function TextToVideoLeftPanel() {
           aspect_ratio: aspectRatio,
           translate_prompt: translatePrompt,
           mode: "text",
+          reference_image_urls: [],
+          primary_image_url: null,
         },
         modalityCode: "t2v",
         modelSlug: activeModel,
