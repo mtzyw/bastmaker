@@ -40,7 +40,13 @@ export default function ImageToVideoPage() {
       sections={sections}
       withSidebar={false}
       section2Left={<ImageToVideoLeftPanel />}
-      section2Right={<TextToImageRecentTasks initialCategory="视频" categories={["视频", "全部", "图片"]} />}
+      section2Right={
+        <TextToImageRecentTasks
+          initialCategory="视频"
+          categories={["视频", "全部", "图片"]}
+          hideEffectBadge
+        />
+      }
     />
   );
 }

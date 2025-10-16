@@ -40,7 +40,7 @@ export default function TextToImagePage() {
       sections={sections}
       withSidebar={false}
       section2Left={<TextToImageLeftPanel />}
-      section2Right={<TextToImageRecentTasks />}
+      section2Right={<TextToImageRecentTasks hideEffectBadge />}
     />
   );
 }

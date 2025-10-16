@@ -40,7 +40,13 @@ export default function ImageToImagePage() {
       sections={sections}
       withSidebar={false}
       section2Left={<ImageToImageLeftPanel excludeModels={["Flux Dev", "Hyperflux", "Google Imagen4"]} />}
-      section2Right={<TextToImageRecentTasks initialCategory="图片" categories={["图片", "全部", "视频"]} />}
+      section2Right={
+        <TextToImageRecentTasks
+          initialCategory="图片"
+          categories={["图片", "全部", "视频"]}
+          hideEffectBadge
+        />
+      }
     />
   );
 }

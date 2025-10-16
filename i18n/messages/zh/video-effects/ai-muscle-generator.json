@@ -1,0 +1,111 @@
+{
+  "displayTitle": "AI 肌肉特效生成器",
+  "seoTitle": "免费 AI 肌肉特效生成器",
+  "seoDescription": "上传照片即可生成肌肉健身大片效果，适用于身材改造、健身激励与社交媒体内容。",
+  "hero": {
+    "heading": "免费 AI 肌肉生成器",
+    "description": "上传单张照片，AI 自动增添肌肉线条、光影与汗水效果，让你的角色秒变健身达人。适合打造励志短片、健身号封面或品牌宣传素材。",
+    "cta": {
+      "label": "立即塑形",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "效果预览",
+    "subheading": "多种体型与灯光方案，一键切换不同的健体氛围。"
+  },
+  "galleryItems": [
+    {
+      "title": "竞技舞台肌肉",
+      "description": "高光与阴影凸显肌肉块感，营造健美比赛现场。"
+    },
+    {
+      "title": "街头硬核风",
+      "description": "加入颗粒质感与冷色灯光，打造硬朗街头大片。"
+    },
+    {
+      "title": "写实健身房",
+      "description": "模拟健身房灯光与汗水细节，真实还原训练现场。"
+    }
+  ],
+  "features": {
+    "heading": "核心亮点",
+    "items": [
+      {
+        "title": "智能身体重塑",
+        "description": "AI 自动分析身体结构，精准增加肌肉线条与比例。",
+        "ctaLabel": "马上体验",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "多光影风格",
+        "description": "支持日光、舞台光、霓虹光等效果，快速匹配内容调性。",
+        "ctaLabel": "浏览模板",
+        "ctaHref": "/video-effects"
+      },
+      {
+        "title": "提示词增强控制",
+        "description": "通过提示词决定肌肉夸张程度、服装、背景与表情。",
+        "ctaLabel": "查看提示词技巧",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "多用途输出",
+        "description": "适合健身课程宣传、励志海报、社媒内容或角色塑形。",
+        "ctaLabel": "探索更多用法",
+        "ctaHref": "#use-cases"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "为什么选择我们的 AI 肌肉特效",
+    "description": "几分钟内交付高质量视觉作品，轻松完成身材改造效果。",
+    "items": [
+      {
+        "title": "轻松上手",
+        "description": "上传照片即可渲染，无需绘图或后期经验。",
+        "icon": "Smile"
+      },
+      {
+        "title": "专业级细节",
+        "description": "肌肉纹理、血管、汗水与光影细腻呈现。",
+        "icon": "Award"
+      },
+      {
+        "title": "多模型可选",
+        "description": "集成多家视频与图像模型，自由选择最适合的风格。",
+        "icon": "Layers"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "更多体态与动作特效",
+    "description": "继续探索舞蹈、街头、健身等热门模板。",
+    "linkLabel": "查看全部特效"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "需要上传几张照片？",
+        "answer": "上传一张正面或侧面的清晰照片即可生成肌肉效果。"
+      },
+      {
+        "question": "可以调节肌肉程度吗？",
+        "answer": "可以，通过提示词或高级参数控制力量感与线条夸张度。"
+      },
+      {
+        "question": "是否支持批量处理？",
+        "answer": "支持批量上传素材，适合批量出图或团队运营。"
+      },
+      {
+        "question": "输出支持哪些格式？",
+        "answer": "可导出高清图片或视频，适用于主流社媒和广告投放。"
+      },
+      {
+        "question": "生成是否收费？",
+        "answer": "基础分辨率免费体验，高级模板消耗少量积分。"
+      }
+    ]
+  }
+}

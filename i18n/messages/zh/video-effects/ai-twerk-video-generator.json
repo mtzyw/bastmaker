@@ -1,0 +1,111 @@
+{
+  "displayTitle": "AI 电臀舞视频生成器",
+  "seoTitle": "免费 AI 电臀舞生成器 在线",
+  "seoDescription": "上传照片即可生成节奏感十足的 AI 电臀舞视频，适合舞蹈账号、音乐推广与社交媒体短片。",
+  "hero": {
+    "heading": "免费 AI 电臀舞生成器",
+    "description": "通过 AI 生成劲爆电臀舞视频，自动匹配节奏、灯光和镜头运动，为舞蹈类内容创作者与音乐推广提供高能视觉表现。",
+    "cta": {
+      "label": "立即开跳",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "实例预览",
+    "subheading": "多种舞台与灯光效果，满足街舞、夜店、音乐节等不同场景需求。"
+  },
+  "galleryItems": [
+    {
+      "title": "街头动感",
+      "description": "霓虹灯与镜头跟随营造街头派对氛围。"
+    },
+    {
+      "title": "舞台焦点",
+      "description": "聚光灯聚焦躯干动作，凸显舞台表现力。"
+    },
+    {
+      "title": "节奏特写",
+      "description": "强调臀部律动与动感特写，提升节奏感染力。"
+    }
+  ],
+  "features": {
+    "heading": "核心亮点",
+    "items": [
+      {
+        "title": "智能节奏匹配",
+        "description": "AI 根据音乐节拍自动调整动作与镜头，让舞步更加贴合节奏。",
+        "ctaLabel": "马上试试",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "多场景灯光",
+        "description": "支持夜店、演唱会、街头等灯光模板，一键切换风格。",
+        "ctaLabel": "查看模板",
+        "ctaHref": "/video-effects"
+      },
+      {
+        "title": "提示词自由调控",
+        "description": "通过提示词控制服装、背景、动作强度与镜头角度。",
+        "ctaLabel": "获取提示词技巧",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "多平台适配",
+        "description": "支持竖屏、方屏等多种比例，适合 TikTok、B站、Instagram 等平台发布。",
+        "ctaLabel": "了解用法",
+        "ctaHref": "#use-cases"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "为什么选择我们的电臀舞生成器",
+    "description": "快速输出高质量舞蹈短片，帮助创作者提升账号热度与曝光。",
+    "items": [
+      {
+        "title": "操作简单",
+        "description": "上传照片即可生成舞蹈视频，无需剪辑经验。",
+        "icon": "Smile"
+      },
+      {
+        "title": "动作逼真",
+        "description": "AI 根据人体骨骼生成流畅舞蹈动作，细节自然。",
+        "icon": "Award"
+      },
+      {
+        "title": "模型多样",
+        "description": "支持多家视频模型，可选择最符合内容风格的方案。",
+        "icon": "Layers"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "更多舞蹈与节奏特效",
+    "description": "探索更多街舞、爵士、现代舞等 AI 视频模板。",
+    "linkLabel": "查看更多特效"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "需要提供几张照片？",
+        "answer": "上传一张清晰的全身或半身照片即可生成舞蹈视频。"
+      },
+      {
+        "question": "可以指定音乐吗？",
+        "answer": "可以，在高级设置或提示词中填写音乐节奏与风格关键词。"
+      },
+      {
+        "question": "生成视频的分辨率多高？",
+        "answer": "基础分辨率免费，4K 或特定比例可在高级方案中选择。"
+      },
+      {
+        "question": "是否支持批量生成？",
+        "answer": "支持批量上传素材，适合舞团或品牌大量创作。"
+      },
+      {
+        "question": "需要付费吗？",
+        "answer": "基础模板免费体验，高级灯光或镜头模板需少量积分。"
+      }
+    ]
+  }
+}

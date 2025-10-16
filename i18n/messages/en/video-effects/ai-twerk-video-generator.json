@@ -1,0 +1,111 @@
+{
+  "displayTitle": "AI Twerk Video Generator",
+  "seoTitle": "Free AI Twerk Generator Online",
+  "seoDescription": "Turn portraits into high-energy twerk dance clips—perfect for dance channels, music launches, and viral short-form content.",
+  "hero": {
+    "heading": "Free AI Twerk Generator",
+    "description": "Launch eye-catching twerk videos in seconds. The AI syncs body motion, lighting, and camera moves with the beat, making it ideal for dance creators and music promos.",
+    "cta": {
+      "label": "Start Dancing",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "Preview the Energy",
+    "subheading": "From neon street vibes to spotlight performances, find the rhythm that fits your story."
+  },
+  "galleryItems": [
+    {
+      "title": "Urban Neon",
+      "description": "Fluorescent lighting and handheld motion amplify street-party energy."
+    },
+    {
+      "title": "Stage Focus",
+      "description": "Spotlights lock onto the performer, highlighting every move."
+    },
+    {
+      "title": "Beat Sync Close-ups",
+      "description": "Dynamic close-ups emphasize rhythm, motion, and hype."
+    }
+  ],
+  "features": {
+    "heading": "Key Highlights",
+    "items": [
+      {
+        "title": "Beat-Synced Motion",
+        "description": "AI aligns dance moves and camera flow with your track's BPM for a polished result.",
+        "ctaLabel": "Try It Now",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "Lighting Presets",
+        "description": "Nightclub, concert, and street presets instantly set the mood.",
+        "ctaLabel": "Browse Templates",
+        "ctaHref": "/video-effects"
+      },
+      {
+        "title": "Prompt-Controlled Styling",
+        "description": "Use prompts to fine-tune outfits, backgrounds, move intensity, and camera angles.",
+        "ctaLabel": "Get Prompt Tips",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "Platform-Friendly Formats",
+        "description": "Export in vertical or square ratios ready for TikTok, Instagram, or YouTube Shorts.",
+        "ctaLabel": "See Use Cases",
+        "ctaHref": "#use-cases"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "Why Creators Love This Twerk Generator",
+    "description": "Publish dance clips that boost reach and engagement without manual editing.",
+    "items": [
+      {
+        "title": "Simple Workflow",
+        "description": "Upload a photo, choose a vibe, and export—no editing skills required.",
+        "icon": "Smile"
+      },
+      {
+        "title": "Realistic Choreography",
+        "description": "Advanced body rigs produce fluid, natural dance motion.",
+        "icon": "Award"
+      },
+      {
+        "title": "Model Flexibility",
+        "description": "Switch between multiple AI providers to get the perfect aesthetic.",
+        "icon": "Layers"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "More Dance & Beat Effects",
+    "description": "Explore hip-hop, jazz, and performance-focused templates to keep audiences watching.",
+    "linkLabel": "See All Effects"
+  },
+  "faq": {
+    "heading": "FAQ",
+    "items": [
+      {
+        "question": "How many photos are required?",
+        "answer": "One clear full-body or half-body portrait is enough to create the video."
+      },
+      {
+        "question": "Can I set my own music?",
+        "answer": "Yes—add rhythm or style keywords in prompts or advanced settings to guide the beat."
+      },
+      {
+        "question": "What resolution can I export?",
+        "answer": "Standard resolutions are free; 4K or custom ratios are available in premium tiers."
+      },
+      {
+        "question": "Does it support batch generation?",
+        "answer": "Batch upload is supported, making it great for dance crews and brand campaigns."
+      },
+      {
+        "question": "Is there a cost?",
+        "answer": "Core presets are free; advanced lighting or camera packs require a few credits."
+      }
+    ]
+  }
+}

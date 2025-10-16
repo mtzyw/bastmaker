@@ -1,0 +1,111 @@
+{
+  "displayTitle": "AI Muscle Transformation Generator",
+  "seoTitle": "Free AI Muscle Generator Online",
+  "seoDescription": "Upload a portrait and instantly turn it into a fitness hero visual—ideal for transformation reveals, motivational posts, and brand campaigns.",
+  "hero": {
+    "heading": "Free AI Muscle Generator",
+    "description": "Drop in a single photo and let AI add sculpted muscles, cinematic lighting, and sweat details. Perfect for fitness creators, before-and-after reveals, and aspirational ads.",
+    "cta": {
+      "label": "Start Flexing",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "Preview the Looks",
+    "subheading": "Switch between competition-ready physiques, gritty street edits, and photoreal gym shots."
+  },
+  "galleryItems": [
+    {
+      "title": "Stage Competition",
+      "description": "High-contrast lighting emphasizes every muscle group for show-day impact."
+    },
+    {
+      "title": "Urban Power",
+      "description": "Cold neon tones and grain textures deliver a hardcore street aesthetic."
+    },
+    {
+      "title": "Gym Reality",
+      "description": "Natural lighting and sweat sheen recreate an in-session workout vibe."
+    }
+  ],
+  "features": {
+    "heading": "Key Highlights",
+    "items": [
+      {
+        "title": "Smart Body Sculpting",
+        "description": "AI analyzes proportions and adds realistic muscle definition and veins.",
+        "ctaLabel": "Try It Now",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "Lighting Presets",
+        "description": "Choose daylight, stage lights, or neon for the perfect dramatic tone.",
+        "ctaLabel": "Browse Templates",
+        "ctaHref": "/video-effects"
+      },
+      {
+        "title": "Prompt-Level Control",
+        "description": "Fine-tune muscle volume, outfits, backgrounds, and facial expressions.",
+        "ctaLabel": "See Prompt Tips",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "Multi-Scenario Output",
+        "description": "Use it for transformation ads, class promos, social inspiration, or character design.",
+        "ctaLabel": "Explore Use Cases",
+        "ctaHref": "#use-cases"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "Why Creators Choose This Muscle Generator",
+    "description": "Deliver premium transformation visuals in minutes with no manual retouching.",
+    "items": [
+      {
+        "title": "Beginner Friendly",
+        "description": "Upload, adjust, export—no design or editing background required.",
+        "icon": "Smile"
+      },
+      {
+        "title": "Pro-Level Details",
+        "description": "Muscle fibers, vascularity, and sweat reflections stay sharp and believable.",
+        "icon": "Award"
+      },
+      {
+        "title": "Model Flexibility",
+        "description": "Access multiple providers and pick the model that matches your brand style.",
+        "icon": "Layers"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "More Body & Motion Effects",
+    "description": "Keep experimenting with dance, street, and fitness-inspired templates.",
+    "linkLabel": "View All Effects"
+  },
+  "faq": {
+    "heading": "FAQ",
+    "items": [
+      {
+        "question": "How many photos do I need?",
+        "answer": "One clear portrait or half-body shot is enough to generate the muscle edit."
+      },
+      {
+        "question": "Can I adjust the muscle intensity?",
+        "answer": "Yes—use prompts or advanced settings to control how dramatic the transformation looks."
+      },
+      {
+        "question": "Does it support batch creation?",
+        "answer": "You can upload multiple photos to process a full campaign or team roster."
+      },
+      {
+        "question": "What export formats are available?",
+        "answer": "Download high-resolution images or motion clips suitable for social and ads."
+      },
+      {
+        "question": "Is there a cost?",
+        "answer": "Core renderings are free; premium presets may require a few credits."
+      }
+    ]
+  }
+}

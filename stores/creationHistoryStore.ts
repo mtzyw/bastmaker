@@ -20,22 +20,27 @@ function sortItems(items: CreationItem[]) {
 function buildFingerprint(item: CreationItem) {
   const source = item.metadata?.source ?? null;
   const modality = item.modalityCode ?? item.metadata?.modality_code ?? null;
-  const model = item.inputParams?.model ?? item.modelSlug ?? null;
-  const prompt = item.inputParams?.prompt ?? item.metadata?.prompt ?? null;
-  const aspectRatio = item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio ?? null;
-  const resolution = item.inputParams?.resolution ?? item.metadata?.resolution ?? null;
-  const mode = item.metadata?.mode ?? item.inputParams?.mode ?? null;
-  const referenceCount = item.referenceImageCount ?? item.metadata?.reference_image_count ?? null;
+  const effectSlug =
+    typeof item.metadata?.effect_slug === "string" ? item.metadata.effect_slug : null;
+  const referenceUrls = Array.isArray(item.metadata?.reference_image_urls)
+    ? (item.metadata.reference_image_urls as unknown[])
+        .map((value) => (typeof value === "string" ? value : ""))
+        .filter(Boolean)
+        .sort()
+    : [];
+  const primaryUrl =
+    typeof item.metadata?.primary_image_url === "string"
+      ? item.metadata.primary_image_url
+      : typeof item.inputParams?.image_url === "string"
+      ? item.inputParams.image_url
+      : null;
 
   return JSON.stringify({
     source,
     modality,
-    model,
-    prompt,
-    aspectRatio,
-    resolution,
-    mode,
-    referenceCount,
+    effectSlug,
+    referenceUrls,
+    primaryUrl,
   });
 }
 

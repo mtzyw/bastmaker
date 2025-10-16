@@ -144,11 +144,16 @@ export async function POST(req: NextRequest) {
 
   // 2. Handle the primary user-provided image
   const primaryInputFromRequest = assets?.primary?.url ?? image_url ?? null;
+  const resolvedReferenceUrls: string[] = [];
+  let primaryImageUrl: string | null | undefined = null;
   if (primaryInputFromRequest) {
-    const primaryImageUrl = await ensureR2Url(primaryInputFromRequest, "primary").catch(() => null);
+    primaryImageUrl = await ensureR2Url(primaryInputFromRequest, "primary").catch(() => null);
     const imageParamName = PRIMARY_IMAGE_PARAM_MAP[apiModel!];
     if (imageParamName && primaryImageUrl) {
       payload[imageParamName] = primaryImageUrl;
+    }
+    if (primaryImageUrl) {
+      resolvedReferenceUrls.push(primaryImageUrl);
     }
   }
 
@@ -192,6 +197,9 @@ export async function POST(req: NextRequest) {
     credits_cost: effectiveCreditsCost,
     effect_slug: slug,
     effect_title: title,
+    reference_image_urls: resolvedReferenceUrls,
+    reference_image_count: resolvedReferenceUrls.length,
+    primary_image_url: primaryImageUrl ?? null,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase
@@ -202,7 +210,13 @@ export async function POST(req: NextRequest) {
       modality_code: modalityCode,
       model_slug_at_submit: modelDisplayName,
       status: "pending",
-      input_params_json: { effect_slug: slug, ...payload },
+      input_params_json: {
+        effect_slug: slug,
+        reference_image_urls: resolvedReferenceUrls,
+        image_url: primaryImageUrl ?? null,
+        primary_image_url: primaryImageUrl ?? null,
+        ...payload,
+      },
       metadata_json: metadataJsonForJob,
       cost_estimated_credits: effectiveCreditsCost,
       pricing_snapshot_json: { credits_cost: effectiveCreditsCost, currency: "credits", captured_at: new Date().toISOString() },

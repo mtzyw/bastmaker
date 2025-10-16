@@ -1084,13 +1084,13 @@ export default function TextToImageRecentTasks({
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>
-                <span className="ml-2">
-                  {task.status === "failed"
-                    ? "Retry available soon"
-                    : task.status === "processing"
-                    ? "生成中..."
-                    : "Ready to download"}
-                </span>
+                {task.status !== "succeeded" && (
+                  <span className="ml-2">
+                    {task.status === "failed"
+                      ? "Retry available soon"
+                      : "生成中..."}
+                  </span>
+                )}
               </footer>
             </article>
           ))}
