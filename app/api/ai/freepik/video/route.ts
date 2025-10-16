@@ -629,10 +629,10 @@ export async function POST(req: NextRequest) {
   let resolvedOutroImageUrl: string | undefined;
 
   const initialReferenceImageUrls = [
-    primaryImageUrl,
-    tailImageUrl,
-    introImageUrl,
-    outroImageUrl,
+    primaryInputSource ?? null,
+    tailInputSource ?? null,
+    introInputSource ?? null,
+    outroInputSource ?? null,
     ...Object.entries(templateResolvedAssets)
       .filter(([slot]) => !["primary", "tail", "intro", "outro"].includes(slot))
       .map(([, url]) => url),
@@ -658,7 +658,7 @@ export async function POST(req: NextRequest) {
     effect_title: effectTemplate?.title ?? null,
     negative_prompt: negativePrompt ?? null,
     reference_image_urls: initialReferenceImageUrls,
-    primary_image_url: primaryImageUrl ?? null,
+    primary_image_url: primaryInputSource ?? null,
   };
 
   const pricingSnapshot = {
@@ -678,7 +678,7 @@ export async function POST(req: NextRequest) {
     negative_prompt: negativePrompt ?? null,
     mode,
     reference_image_urls: initialReferenceImageUrls,
-    primary_image_url: primaryImageUrl ?? null,
+    primary_image_url: primaryInputSource ?? null,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase
