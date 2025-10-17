@@ -16,7 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ArrowUp, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
@@ -98,6 +98,8 @@ type TextToImageRecentTasksProps = {
   categories?: readonly CategoryFilter[];
   hideEffectBadge?: boolean;
 };
+
+type TrackedGenerationStatus = "processing" | "completed";
 
 function formatProviderName(code?: string | null) {
   if (!code) {
@@ -347,6 +349,7 @@ export default function TextToImageRecentTasks({
   const [viewerError, setViewerError] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollViewportEl, setScrollViewportEl] = useState<HTMLDivElement | null>(null);
+  const [trackedGeneration, setTrackedGeneration] = useState<Record<string, TrackedGenerationStatus>>({});
   const viewerFetchRef = useRef<AbortController | null>(null);
   const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
   const prefetchingSlugsRef = useRef<Set<string>>(new Set());
@@ -1051,7 +1054,86 @@ export default function TextToImageRecentTasks({
       return;
     }
     scrollViewportEl.scrollTo({ top: 0, behavior: "smooth" });
+    setTrackedGeneration((prev) => {
+      const hasProcessing = Object.values(prev).some((status) => status === "processing");
+      if (hasProcessing || Object.keys(prev).length === 0) {
+        return prev;
+      }
+      return {};
+    });
   }, [scrollViewportEl]);
+
+  useEffect(() => {
+    setTrackedGeneration((prev) => {
+      let next = prev;
+      const ensureNext = () => {
+        if (next === prev) {
+          next = { ...prev };
+        }
+      };
+
+      const observedIds = new Set<string>();
+
+      displayTasks.forEach((task) => {
+        if (task.status === "processing") {
+          observedIds.add(task.id);
+          if (prev[task.id] !== "processing") {
+            ensureNext();
+            next[task.id] = "processing";
+          }
+        } else if (task.status === "succeeded") {
+          if (prev[task.id]) {
+            observedIds.add(task.id);
+            if (prev[task.id] !== "completed") {
+              ensureNext();
+              next[task.id] = "completed";
+            }
+          }
+        } else if (prev[task.id]) {
+          ensureNext();
+          delete next[task.id];
+        }
+      });
+
+      Object.keys(prev).forEach((id) => {
+        if (!observedIds.has(id)) {
+          ensureNext();
+          delete next[id];
+        }
+      });
+
+      return next;
+    });
+  }, [displayTasks]);
+
+  const generationCounts = useMemo(() => {
+    const statuses = Object.values(trackedGeneration);
+    const total = statuses.length;
+    const completed = statuses.filter((status) => status === "completed").length;
+    const processing = total - completed;
+    return { total, completed, processing };
+  }, [trackedGeneration]);
+
+  const generationIndicator = useMemo(() => {
+    if (generationCounts.total === 0) {
+      return null;
+    }
+
+    if (generationCounts.processing > 0) {
+      const text = `Generating ${generationCounts.processing} result${generationCounts.processing > 1 ? "s" : ""} (${generationCounts.completed}/${generationCounts.total})`;
+      return {
+        text,
+        showSpinner: true,
+        ariaLabel: `回到顶部，当前生成中 ${generationCounts.processing} 个任务`,
+      };
+    }
+
+    return {
+      text: `Generated(${generationCounts.completed}/${generationCounts.total})`,
+      showSpinner: false,
+      ariaLabel: `回到顶部，最近完成 ${generationCounts.completed}/${generationCounts.total} 个任务`,
+    };
+  }, [generationCounts]);
 
   let content: ReactNode = null;
 
@@ -1279,12 +1361,25 @@ export default function TextToImageRecentTasks({
         {showScrollTop ? (
           <Button
             variant="secondary"
-            size="icon"
-            className="absolute right-4 top-4 z-10 h-10 w-10 rounded-full bg-white/15 text-white hover:bg-white/25"
+            className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white hover:bg-white/25"
             onClick={scrollToTop}
-            aria-label="回到顶部"
+            aria-label={generationIndicator?.ariaLabel ?? "回到顶部"}
           >
-            <ArrowUp className="h-4 w-4" />
+            {generationIndicator ? (
+              <div className="flex items-center gap-2">
+                {generationIndicator.showSpinner ? (
+                  <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                    <span className="block h-full w-full animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  </span>
+                ) : (
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#dc2e5a]">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  </span>
+                )}
+                <span className="leading-none">{generationIndicator.text}</span>
+              </div>
+            ) : null}
+            <ArrowUp className="h-4 w-4 shrink-0" />
           </Button>
         ) : null}
       </div>
