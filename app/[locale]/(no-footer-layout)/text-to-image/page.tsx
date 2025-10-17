@@ -3,6 +3,7 @@ import TextToImageLeftPanel from "@/components/ai/TextToImageLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
+import { createClient } from "@/lib/supabase/server";
 import { Metadata } from "next";
 
 type Params = Promise<{ locale: string }>;
@@ -32,7 +33,13 @@ const sections: [SectionConfig, SectionConfig, SectionConfig, SectionConfig] = [
   { id: "s4", bg: "#0F172A", fg: "#ffffff", title: "Section 4" },
 ];
 
-export default function TextToImagePage() {
+export default async function TextToImagePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(user);
+
   return (
     <PureFourSections
       leftWidth="13"
@@ -41,6 +48,9 @@ export default function TextToImagePage() {
       withSidebar={false}
       section2Left={<TextToImageLeftPanel />}
       section2Right={<TextToImageRecentTasks hideEffectBadge />}
+      hideMergedSection={isAuthenticated}
     />
   );
 }
+
+export const dynamic = "force-dynamic";
