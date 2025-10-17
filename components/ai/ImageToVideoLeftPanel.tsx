@@ -115,6 +115,20 @@ export default function ImageToVideoLeftPanel() {
     return image.remoteUrl;
   }, []);
 
+  const resetImageSelection = useCallback(() => {
+    if (uploadedBlobUrlRef.current) {
+      URL.revokeObjectURL(uploadedBlobUrlRef.current);
+      uploadedBlobUrlRef.current = null;
+    }
+    if (uploadedImage?.source === "local" && uploadedImage.previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(uploadedImage.previewUrl);
+    }
+    setUploadedImage(null);
+    setImageName(null);
+    setOriginalFile(null);
+    setIsUploadingPrimary(false);
+  }, [uploadedImage]);
+
   useEffect(() => {
     if (!resolution) {
       return;
@@ -561,20 +575,6 @@ export default function ImageToVideoLeftPanel() {
       setIsUploadingPrimary(false);
     }
   };
-
-  const resetImageSelection = useCallback(() => {
-    if (uploadedBlobUrlRef.current) {
-      URL.revokeObjectURL(uploadedBlobUrlRef.current);
-      uploadedBlobUrlRef.current = null;
-    }
-    if (uploadedImage?.source === "local" && uploadedImage.previewUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(uploadedImage.previewUrl);
-    }
-    setUploadedImage(null);
-    setImageName(null);
-    setOriginalFile(null);
-    setIsUploadingPrimary(false);
-  }, [uploadedImage]);
 
   const handleTransitionUpload = async (slot: "intro" | "outro", file: File | null) => {
     if (!file) {
