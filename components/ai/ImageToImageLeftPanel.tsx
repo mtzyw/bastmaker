@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +17,7 @@ import {
 } from "@/components/ai/text-image-models";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 
 const DEFAULT_MAX = 8;
@@ -26,10 +28,13 @@ function getMaxCountByModel(model: string) {
 }
 
 type ReferenceImage = {
-  file: File;
+  id: string;
+  file: File | null;
   remoteUrl: string | null;
+  previewUrl: string;
   uploading: boolean;
   error: string | null;
+  source: "local" | "remote";
 };
 
 export default function ImageToImageLeftPanel({
@@ -39,6 +44,8 @@ export default function ImageToImageLeftPanel({
 }) {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
+  const repromptDraft = useRepromptStore((state) => state.draft);
+  const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
@@ -46,12 +53,29 @@ export default function ImageToImageLeftPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const referenceImagesRef = useRef<ReferenceImage[]>([]);
+
+  useEffect(() => {
+    referenceImagesRef.current = referenceImages;
+  }, [referenceImages]);
+
+  useEffect(() => {
+    return () => {
+      referenceImagesRef.current.forEach((item) => {
+        if (item.source === "local" && item.previewUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      });
+    };
+  }, []);
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
     const filtered = TEXT_TO_IMAGE_MODEL_OPTIONS.filter((option) => !excludeSet.has(option.value));
     return filtered.length > 0 ? filtered : TEXT_TO_IMAGE_MODEL_OPTIONS;
   }, [excludeModels]);
+
+  const maxCount = getMaxCountByModel(model);
 
   useEffect(() => {
     const allowedValues = availableOptions.map((option) => option.value);
@@ -66,16 +90,62 @@ export default function ImageToImageLeftPanel({
     }
   }, [referenceImages.length, errorMessage]);
 
-  const uploadReferenceImage = useCallback(async (file: File) => {
+  useEffect(() => {
+    if (!repromptDraft || repromptDraft.kind !== "image-to-image") {
+      return;
+    }
+
+    setPrompt(repromptDraft.prompt ?? "");
+    setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+
+    if (repromptDraft.model) {
+      const allowedValues = availableOptions.map((option) => option.value);
+      const matchedModel =
+        allowedValues.includes(repromptDraft.model)
+          ? repromptDraft.model
+          : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
+            allowedValues[0] ??
+            TEXT_TO_IMAGE_DEFAULT_MODEL;
+      setModel(matchedModel);
+    }
+
+    const urls = repromptDraft.referenceImageUrls.slice(0, maxCount);
     setReferenceImages((prev) => {
-      const index = prev.findIndex((item) => item.file === file);
-      if (index === -1) {
-        return prev;
-      }
-      const next = [...prev];
-      next[index] = { ...next[index], uploading: true, error: null };
-      return next;
+      prev.forEach((item) => {
+        if (item.source === "local" && item.previewUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      });
+      return urls.map((url, index) => {
+        const id =
+          typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `remote-${Date.now()}-${index}`;
+        return {
+          id,
+          file: null,
+          remoteUrl: url,
+          previewUrl: url,
+          uploading: false,
+          error: null,
+          source: "remote" as const,
+        };
+      });
     });
+
+    if (urls.length > 0) {
+      toast.info("参考图已加载，如需调整请重新上传。");
+    }
+
+    clearRepromptDraft();
+  }, [repromptDraft, availableOptions, clearRepromptDraft, maxCount]);
+
+  const uploadReferenceImage = useCallback(async (imageId: string, file: File) => {
+    setReferenceImages((prev) =>
+      prev.map((item) =>
+        item.id === imageId ? { ...item, uploading: true, error: null } : item
+      )
+    );
 
     try {
       const formData = new FormData();
@@ -98,64 +168,98 @@ export default function ImageToImageLeftPanel({
         throw new Error("图片上传结果异常");
       }
 
-      setReferenceImages((prev) => {
-        const index = prev.findIndex((item) => item.file === file);
-        if (index === -1) {
-          return prev;
-        }
-        const next = [...prev];
-        next[index] = { ...next[index], uploading: false, remoteUrl, error: null };
-        return next;
-      });
+      setReferenceImages((prev) =>
+        prev.map((item) =>
+          item.id === imageId ? { ...item, uploading: false, remoteUrl, error: null } : item
+        )
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
-      setReferenceImages((prev) => {
-        const index = prev.findIndex((item) => item.file === file);
-        if (index === -1) {
-          return prev;
-        }
-        const next = [...prev];
-        next[index] = { ...next[index], uploading: false, remoteUrl: null, error: message };
-        return next;
-      });
+      setReferenceImages((prev) =>
+        prev.map((item) =>
+          item.id === imageId
+            ? { ...item, uploading: false, remoteUrl: null, error: message }
+            : item
+        )
+      );
       setErrorMessage(message);
     }
   }, []);
 
-  const handleImagesChange = useCallback(
+  const handleAddLocalFiles = useCallback(
     (files: File[]) => {
-      const newFiles = files.filter((file) => !referenceImages.some((item) => item.file === file));
+      if (!files || files.length === 0) {
+        return;
+      }
 
-      setReferenceImages((prev) => {
-        const existingMap = new Map(prev.map((item) => [item.file, item] as const));
-        return files.map((file) => {
-          const existing = existingMap.get(file);
-          if (existing) {
-            return existing;
-          }
-          return { file, remoteUrl: null, uploading: true, error: null };
-        });
+      const available = Math.max(0, maxCount - referenceImages.length);
+      if (available <= 0) {
+        return;
+      }
+
+      const limited = files.slice(0, available);
+      const newImages = limited.map((file) => {
+        const id =
+          typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const previewUrl = URL.createObjectURL(file);
+        return {
+          id,
+          file,
+          remoteUrl: null,
+          previewUrl,
+          uploading: true,
+          error: null,
+          source: "local" as const,
+        };
       });
 
-      if (newFiles.length > 0) {
-        if (errorMessage) {
-          setErrorMessage(null);
+      setReferenceImages((prev) => [...prev, ...newImages]);
+
+      if (errorMessage) {
+        setErrorMessage(null);
+      }
+      setStatusMessage(null);
+
+      newImages.forEach((image) => {
+        if (image.file) {
+          void uploadReferenceImage(image.id, image.file);
         }
-        setStatusMessage(null);
-      }
-
-      newFiles.forEach((file) => {
-        void uploadReferenceImage(file);
       });
-
-      if (files.length === 0) {
-        setStatusMessage(null);
-      }
     },
-    [referenceImages, uploadReferenceImage, errorMessage]
+    [maxCount, referenceImages.length, errorMessage, uploadReferenceImage]
   );
 
-  const maxCount = getMaxCountByModel(model);
+  const handleRemoveImage = useCallback((id: string) => {
+    setReferenceImages((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target && target.source === "local" && target.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((item) => item.id !== id);
+    });
+    setStatusMessage(null);
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
+  }, [errorMessage]);
+
+  useEffect(() => {
+    setReferenceImages((prev) => {
+      if (prev.length <= maxCount) {
+        return prev;
+      }
+      const trimmed = prev.slice(0, maxCount);
+      prev.slice(maxCount).forEach((item) => {
+        if (item.source === "local" && item.previewUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      });
+      return trimmed;
+    });
+  }, [maxCount]);
+
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
   const modelConfig = useMemo(() => getTextToImageModelConfig(apiModel), [apiModel]);
   const isUploading = referenceImages.some((item) => item.uploading);
@@ -166,6 +270,13 @@ export default function ImageToImageLeftPanel({
     isSubmitting ||
     isUploading ||
     hasPendingUploads;
+  const gridItems = referenceImages.map((item) => ({
+    id: item.id,
+    url: item.previewUrl,
+    source: item.source,
+    uploading: item.uploading,
+    error: item.error,
+  }));
 
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
@@ -398,7 +509,9 @@ export default function ImageToImageLeftPanel({
           <ImageGridUploader
             className="mb-6"
             maxCount={maxCount}
-            onChange={handleImagesChange}
+            items={gridItems}
+            onAdd={handleAddLocalFiles}
+            onRemove={handleRemoveImage}
           />
 
           {/* Prompt */}

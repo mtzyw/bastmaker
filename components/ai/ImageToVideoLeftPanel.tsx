@@ -23,22 +23,40 @@ import {
 } from "@/components/ai/video-models";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
 type UploadedAsset = {
-  file: File;
+  id: string;
+  file: File | null;
   previewUrl: string;
   remoteUrl: string | null;
+  source: "local" | "remote";
 };
 
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
 const TRANSITION_MODEL = "PixVerse V5 Transition";
 
+const generateAssetId = () =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const createRemoteAsset = (url: string): UploadedAsset => ({
+  id: generateAssetId(),
+  file: null,
+  previewUrl: url,
+  remoteUrl: url,
+  source: "remote",
+});
+
 export default function ImageToVideoLeftPanel() {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
+  const repromptDraft = useRepromptStore((state) => state.draft);
+  const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(DEFAULT_VIDEO_MODEL);
@@ -115,6 +133,77 @@ export default function ImageToVideoLeftPanel() {
       setResolution(allowedResolutions[0]);
     }
   }, [model, resolution]);
+
+  useEffect(() => {
+    if (!repromptDraft || repromptDraft.kind !== "image-to-video") {
+      return;
+    }
+
+    setPrompt(repromptDraft.prompt ?? "");
+    setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+
+    const optionValues = VIDEO_MODEL_SELECT_OPTIONS.map((option) => option.value);
+    const matchedModel =
+      repromptDraft.model && optionValues.includes(repromptDraft.model)
+        ? repromptDraft.model
+        : VIDEO_MODEL_SELECT_OPTIONS.find((option) => option.label === repromptDraft.model)?.value ??
+          optionValues[0] ??
+          DEFAULT_VIDEO_MODEL;
+    setModel(matchedModel);
+
+    const resolutionChoices = VIDEO_RESOLUTION_PRESETS[matchedModel] ?? [FALLBACK_RESOLUTION];
+    const preferredResolution =
+      repromptDraft.resolution && resolutionChoices.includes(repromptDraft.resolution as VideoResolutionValue)
+        ? (repromptDraft.resolution as VideoResolutionValue)
+        : resolutionChoices[0] ?? FALLBACK_RESOLUTION;
+    setResolution(preferredResolution);
+
+    const allowedLengths = getAllowedVideoLengths(matchedModel, preferredResolution);
+    const normalizedDuration =
+      repromptDraft.duration != null ? String(Math.trunc(repromptDraft.duration)) : undefined;
+    let nextVideoLength = allowedLengths[0] ?? DEFAULT_VIDEO_LENGTH;
+    if (
+      repromptDraft.videoLength &&
+      allowedLengths.includes(repromptDraft.videoLength as VideoLengthValue)
+    ) {
+      nextVideoLength = repromptDraft.videoLength as VideoLengthValue;
+    } else if (
+      normalizedDuration &&
+      allowedLengths.includes(normalizedDuration as VideoLengthValue)
+    ) {
+      nextVideoLength = normalizedDuration as VideoLengthValue;
+    }
+    setVideoLength(nextVideoLength);
+
+    resetImageSelection();
+
+    if (repromptDraft.primaryImageUrl) {
+      setUploadedImage(createRemoteAsset(repromptDraft.primaryImageUrl));
+    }
+
+    clearTransitionImage("intro");
+    clearTransitionImage("outro");
+
+    if (repromptDraft.mode === "transition") {
+      setIntroImage(
+        repromptDraft.introImageUrl ? createRemoteAsset(repromptDraft.introImageUrl) : null
+      );
+      setOutroImage(
+        repromptDraft.outroImageUrl ? createRemoteAsset(repromptDraft.outroImageUrl) : null
+      );
+    }
+
+    if (
+      repromptDraft.primaryImageUrl ||
+      repromptDraft.introImageUrl ||
+      repromptDraft.outroImageUrl ||
+      repromptDraft.tailImageUrl
+    ) {
+      toast.info("参考素材信息已加载，请确认后生成。");
+    }
+
+    clearRepromptDraft();
+  }, [repromptDraft, clearRepromptDraft, resetImageSelection]);
 
   const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
@@ -440,9 +529,16 @@ export default function ImageToVideoLeftPanel() {
       uploadedBlobUrlRef.current = null;
     }
 
+    const assetId = generateAssetId();
     const previewUrl = dataUrl || URL.createObjectURL(blob);
     uploadedBlobUrlRef.current = previewUrl.startsWith("blob:") ? previewUrl : null;
-    setUploadedImage({ file: croppedFile, previewUrl, remoteUrl: null });
+    setUploadedImage({
+      id: assetId,
+      file: croppedFile,
+      previewUrl,
+      remoteUrl: null,
+      source: "local",
+    });
     setOriginalFile(croppedFile);
     setImageName(fileName);
     setCropperOpen(false);
@@ -452,68 +548,58 @@ export default function ImageToVideoLeftPanel() {
     setIsUploadingPrimary(true);
     try {
       const remoteUrl = await uploadImageToR2(croppedFile, "primary");
-      setUploadedImage((prev) => {
-        if (!prev || prev.file !== croppedFile) {
-          return prev;
-        }
-        return { ...prev, remoteUrl };
-      });
+      setUploadedImage((prev) =>
+        !prev || prev.id !== assetId ? prev : { ...prev, remoteUrl }
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
       toast.error(message, { duration: 7000, position: "top-center" });
+      setUploadedImage((prev) =>
+        !prev || prev.id !== assetId ? prev : { ...prev, remoteUrl: null }
+      );
     } finally {
       setIsUploadingPrimary(false);
     }
   };
 
-  const resetImageSelection = () => {
+  const resetImageSelection = useCallback(() => {
     if (uploadedBlobUrlRef.current) {
       URL.revokeObjectURL(uploadedBlobUrlRef.current);
       uploadedBlobUrlRef.current = null;
+    }
+    if (uploadedImage?.source === "local" && uploadedImage.previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(uploadedImage.previewUrl);
     }
     setUploadedImage(null);
     setImageName(null);
     setOriginalFile(null);
     setIsUploadingPrimary(false);
-  };
+  }, [uploadedImage]);
 
   const handleTransitionUpload = async (slot: "intro" | "outro", file: File | null) => {
     if (!file) {
       return;
     }
 
+    const assetId = generateAssetId();
     const previewUrl = URL.createObjectURL(file);
     const setAsset = slot === "intro" ? setIntroImage : setOutroImage;
     const currentAsset = slot === "intro" ? introImage : outroImage;
     const setUploading = slot === "intro" ? setIsUploadingIntro : setIsUploadingOutro;
 
-    if (currentAsset?.previewUrl && currentAsset.previewUrl.startsWith("blob:")) {
+    if (currentAsset?.source === "local" && currentAsset.previewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(currentAsset.previewUrl);
     }
-
-    setAsset({ file, previewUrl, remoteUrl: null });
+    setAsset({ id: assetId, file, previewUrl, remoteUrl: null, source: "local" });
     setUploading(true);
 
     try {
       const remoteUrl = await uploadImageToR2(file, slot);
-      setAsset((prev) => {
-        if (!prev || prev.file !== file) {
-          return prev;
-        }
-        return { ...prev, remoteUrl };
-      });
+      setAsset((prev) => (!prev || prev.id !== assetId ? prev : { ...prev, remoteUrl }));
     } catch (error) {
       const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
       toast.error(message, { duration: 7000, position: "top-center" });
-      setAsset((prev) => {
-        if (!prev || prev.file !== file) {
-          return prev;
-        }
-        if (prev.previewUrl.startsWith("blob:")) {
-          URL.revokeObjectURL(prev.previewUrl);
-        }
-        return null;
-      });
+      setAsset((prev) => (!prev || prev.id !== assetId ? prev : { ...prev, remoteUrl: null }));
     } finally {
       setUploading(false);
     }
@@ -688,12 +774,14 @@ export default function ImageToVideoLeftPanel() {
                   <button type="button" onClick={() => imageInputRef.current?.click()} className="hover:text-white">
                     {uploadedImage ? "重新选择" : "选择图片"}
                   </button>
-                  {uploadedImage ? (
+                  {uploadedImage?.file ? (
                     <button
                       type="button"
                       onClick={() => {
                         const fileToUse = originalFile ?? uploadedImage.file;
-                        openCropperWithFile(fileToUse);
+                        if (fileToUse) {
+                          openCropperWithFile(fileToUse);
+                        }
                       }}
                       className="hover:text-white"
                     >

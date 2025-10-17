@@ -17,6 +17,53 @@ export type RegenerationPlan = {
   buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
 };
 
+export type RepromptDraft =
+  | {
+      kind: "text-to-image";
+      route: "/text-to-image";
+      prompt: string;
+      translatePrompt: boolean;
+      model: string;
+      aspectRatio?: string | null;
+      isPublic?: boolean;
+    }
+  | {
+      kind: "image-to-image";
+      route: "/image-to-image";
+      prompt: string;
+      translatePrompt: boolean;
+      model: string;
+      referenceImageUrls: string[];
+    }
+  | {
+      kind: "text-to-video";
+      route: "/text-to-video";
+      prompt: string;
+      translatePrompt: boolean;
+      model: string;
+      resolution?: string | null;
+      videoLength?: string;
+      duration?: number;
+      aspectRatio?: string | null;
+    }
+  | {
+      kind: "image-to-video";
+      route: "/image-to-video";
+      prompt: string;
+      translatePrompt: boolean;
+      model: string;
+      mode: NormalizedVideoMode;
+      resolution?: string | null;
+      videoLength?: string;
+      duration?: number;
+      aspectRatio?: string | null;
+      primaryImageUrl?: string | null;
+      introImageUrl?: string | null;
+      outroImageUrl?: string | null;
+      tailImageUrl?: string | null;
+      additionalAssets?: Record<string, string>;
+    };
+
 type NormalizedVideoMode = "text" | "image" | "transition";
 
 export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
@@ -60,6 +107,50 @@ export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
   }
 
   throw new Error("暂不支持该类型任务的重新生成");
+}
+
+export function buildRepromptDraft(item: CreationItem): RepromptDraft {
+  const effectSlug = getString(item.metadata?.effect_slug ?? item.inputParams?.effect_slug);
+  if (effectSlug) {
+    throw new Error("特效任务暂不支持重新编辑");
+  }
+
+  const modality = getString(item.modalityCode ?? item.metadata?.modality_code);
+  const source = getString(item.metadata?.source);
+  const mode = getString(item.metadata?.mode ?? item.inputParams?.mode) as NormalizedVideoMode | undefined;
+  const isVideoLike =
+    source === "video" ||
+    modality === "t2v" ||
+    modality === "i2v" ||
+    mode === "text" ||
+    mode === "image" ||
+    mode === "transition";
+  const isImageGenerationLike =
+    source === "text-to-image" || source === "image-to-image" || modality === "t2i" || modality === "i2i";
+
+  if (!isVideoLike && (source === "image-to-image" || modality === "i2i" || (item.isImageToImage && isImageGenerationLike))) {
+    return buildImageToImageReprompt(item);
+  }
+
+  if (!isVideoLike && (source === "text-to-image" || modality === "t2i" || isImageGenerationLike)) {
+    return buildTextToImageReprompt(item);
+  }
+
+  if (isVideoLike) {
+    const resolvedMode: NormalizedVideoMode =
+      mode === "image" || mode === "transition"
+        ? mode
+        : modality === "i2v" || hasVideoReferenceImages(item)
+        ? "image"
+        : "text";
+
+    if (resolvedMode === "text") {
+      return buildTextToVideoReprompt(item);
+    }
+    return buildImageToVideoReprompt(item, resolvedMode);
+  }
+
+  throw new Error("暂不支持该类型任务的重新编辑");
 }
 
 function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
@@ -393,6 +484,112 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
   };
 }
 
+function buildTextToImageReprompt(item: CreationItem): RepromptDraft {
+  const model = resolveTextToImageModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新编辑");
+  }
+  const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
+  const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
+  const isPublicValue = item.metadata?.is_public;
+
+  return {
+    kind: "text-to-image",
+    route: "/text-to-image",
+    prompt,
+    translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
+    model: resolveTextToImageUiModel(model, item),
+    aspectRatio: aspectRatio ?? undefined,
+    isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
+  };
+}
+
+function buildImageToImageReprompt(item: CreationItem): RepromptDraft {
+  const model = resolveTextToImageModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新编辑");
+  }
+  const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
+  const referenceImageUrls = extractReferenceImageUrls(item);
+
+  return {
+    kind: "image-to-image",
+    route: "/image-to-image",
+    prompt,
+    translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
+    model: resolveTextToImageUiModel(model, item),
+    referenceImageUrls,
+  };
+}
+
+function buildTextToVideoReprompt(item: CreationItem): RepromptDraft {
+  const model = resolveVideoModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新编辑");
+  }
+
+  const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
+  const resolution = getString(item.inputParams?.resolution ?? item.metadata?.resolution);
+  const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
+  const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
+  const videoLengthRaw = item.inputParams?.video_length ?? (durationNumber != null ? String(Math.trunc(durationNumber)) : undefined);
+
+  return {
+    kind: "text-to-video",
+    route: "/text-to-video",
+    prompt,
+    translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
+    model: resolveVideoUiModel(model, item),
+    resolution: resolution ?? undefined,
+    videoLength: videoLengthRaw ?? undefined,
+    duration: durationNumber ?? undefined,
+    aspectRatio: aspectRatio ?? undefined,
+  };
+}
+
+function buildImageToVideoReprompt(item: CreationItem, mode: NormalizedVideoMode): RepromptDraft {
+  const model = resolveVideoModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新编辑");
+  }
+
+  const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
+  const resolution = getString(item.inputParams?.resolution ?? item.metadata?.resolution);
+  const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
+  const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
+  const videoLengthRaw = item.inputParams?.video_length ?? (durationNumber != null ? String(Math.trunc(durationNumber)) : undefined);
+
+  const assets = buildEffectAssets(item);
+  const primaryImageUrl =
+    assets.primary?.url ??
+    getString(item.inputParams?.image_url ?? item.inputParams?.primary_image_url ?? item.metadata?.primary_image_url) ??
+    getFirstReferenceImage(item);
+
+  const additionalAssets = pickAdditionalAssets(assets);
+
+  return {
+    kind: "image-to-video",
+    route: "/image-to-video",
+    prompt,
+    translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
+    model: resolveVideoUiModel(model, item),
+    mode,
+    resolution: resolution ?? undefined,
+    videoLength: videoLengthRaw ?? undefined,
+    duration: durationNumber ?? undefined,
+    aspectRatio: aspectRatio ?? undefined,
+    primaryImageUrl: primaryImageUrl ?? null,
+    introImageUrl: assets.intro?.url ?? null,
+    outroImageUrl: assets.outro?.url ?? null,
+    tailImageUrl: assets.tail?.url ?? null,
+    additionalAssets: Object.keys(additionalAssets).length > 0 ? additionalAssets : undefined,
+  };
+}
+
 type EffectAssets = Record<string, { url: string }>;
 
 function buildVideoEffectPlan(item: CreationItem, effectSlug: string): RegenerationPlan {
@@ -632,9 +829,9 @@ function extractAdditionalEffectAssets(item: CreationItem): Array<[string, strin
       }
       if (/_image_url$/.test(key) || /_asset_url$/.test(key)) {
         const slot = key.replace(/(_image_url|_asset_url)$/, "");
-      if (!["primary", "intro", "outro", "tail", "first_frame", "last_frame"].includes(slot)) {
-        entries.push([slot, url]);
-      }
+        if (!["primary", "intro", "outro", "tail", "first_frame", "last_frame"].includes(slot)) {
+          entries.push([slot, url]);
+        }
       }
     }
   }
@@ -665,6 +862,38 @@ function extractEffectVariables(item: CreationItem) {
     return variables;
   }
   return undefined;
+}
+
+function resolveTextToImageUiModel(model: string, item: CreationItem): string {
+  const displayName = getString(item.metadata?.model_display_name);
+  if (displayName) {
+    return displayName;
+  }
+  const config = safeGetTextToImageConfig(model);
+  return config?.displayName ?? model;
+}
+
+function resolveVideoUiModel(model: string, item: CreationItem): string {
+  const displayName = getString(item.metadata?.model_display_name);
+  if (displayName) {
+    return displayName;
+  }
+  const config = safeGetVideoConfig(model);
+  return config?.displayName ?? model;
+}
+
+function pickAdditionalAssets(assets: EffectAssets): Record<string, string> {
+  const additional: Record<string, string> = {};
+  for (const [slot, { url }] of Object.entries(assets)) {
+    if (!url) {
+      continue;
+    }
+    if (slot === "primary" || slot === "intro" || slot === "outro" || slot === "tail") {
+      continue;
+    }
+    additional[slot] = url;
+  }
+  return additional;
 }
 
 function resolveTextToImageModel(item: CreationItem): string {

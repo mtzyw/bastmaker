@@ -1,98 +1,89 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { EyeIcon, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-type ImageItem = {
+export type ImageGridItem = {
   id: string;
-  file: File;
   url: string;
+  source: "local" | "remote";
+  uploading?: boolean;
+  error?: string | null;
 };
 
-export default function ImageGridUploader({
-  onChange,
-  tileSize = 120,
-  className,
-  maxCount = 8,
-}: {
-  onChange?: (files: File[]) => void;
+type ImageGridUploaderProps = {
+  items: ImageGridItem[];
+  onAdd?: (files: File[]) => void;
+  onRemove?: (id: string) => void;
   tileSize?: number;
   className?: string;
   maxCount?: number;
-}) {
+};
+
+export default function ImageGridUploader({
+  items,
+  onAdd,
+  onRemove,
+  tileSize = 120,
+  className,
+  maxCount = 8,
+}: ImageGridUploaderProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [preview, setPreview] = useState<{ url: string; id: string } | null>(null);
+  const tileStyle = {
+    width: "100%",
+    maxWidth: `${tileSize}px`,
+  } satisfies CSSProperties;
+
+  const remainingCapacity = Math.max(0, maxCount - items.length);
 
   const handleFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const remaining = Math.max(0, maxCount - images.length);
-    const fileArray = Array.from(files).slice(0, remaining);
-    const newItems: ImageItem[] = fileArray.map((file) => ({
-      id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setImages((prev) => {
-      const next = [...prev, ...newItems].slice(0, maxCount);
-      onChange?.(next.map((i) => i.file));
-      return next;
-    });
-    // Clear value so selecting the same file again still triggers change
-    if (inputRef.current) inputRef.current.value = "";
+    if (!files || files.length === 0) {
+      return;
+    }
+    const limited = Array.from(files).slice(0, remainingCapacity);
+    if (limited.length > 0) {
+      onAdd?.(limited);
+    }
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
   };
 
-  const removeImage = (id: string) => {
-    setImages((prev) => {
-      const next = prev.filter((i) => i.id !== id);
-      onChange?.(next.map((i) => i.file));
-      return next;
-    });
+  const handleRemove = (id: string) => {
+    onRemove?.(id);
   };
-
-  // Trim images when maxCount decreases
-  useEffect(() => {
-    setImages((prev) => {
-      if (prev.length <= maxCount) return prev;
-      const next = prev.slice(0, maxCount);
-      onChange?.(next.map((i) => i.file));
-      return next;
-    });
-  }, [maxCount]);
 
   return (
     <div className={className}>
       <div className="mb-2 text-sm text-white/80">参考图上传</div>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-        {/* Image tiles first */}
-        {images.map((img) => (
+        {items.map((item) => (
           <div
-            key={img.id}
-            className="group relative aspect-square rounded-lg overflow-hidden border border-white/15 bg-black/20"
+            key={item.id}
+            className="group relative aspect-square w-full rounded-lg overflow-hidden border border-white/15 bg-black/20"
+            style={tileStyle}
           >
             <Image
-              src={img.url}
+              src={item.url}
               alt="uploaded"
               fill
               sizes="(max-width: 768px) 25vw, 120px"
               className="object-cover"
             />
-            {/* Hover controls */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="absolute top-1 left-1 flex gap-1">
                 <Button
                   variant="secondary"
                   size="icon"
                   className="h-7 w-7 bg-black/50 hover:bg-black/60 border-white/20 text-white"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setPreviewUrl(img.url);
-                    setOpen(true);
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setPreview({ url: item.url, id: item.id });
                   }}
                 >
                   <EyeIcon className="w-4 h-4" />
@@ -103,26 +94,36 @@ export default function ImageGridUploader({
                   variant="secondary"
                   size="icon"
                   className="h-7 w-7 bg-black/50 hover:bg-black/60 border-white/20 text-white"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    removeImage(img.id);
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRemove(item.id);
                   }}
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
             </div>
+            {item.uploading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-xs text-white/80">
+                上传中...
+              </div>
+            ) : null}
+            {item.error ? (
+              <div className="absolute inset-x-0 bottom-0 bg-red-600/80 text-[11px] text-white px-2 py-1">
+                {item.error}
+              </div>
+            ) : null}
           </div>
         ))}
 
-        {/* Upload tile goes after images, shown only if capacity left */}
-        {images.length < maxCount && (
+        {remainingCapacity > 0 ? (
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="group relative aspect-square rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+            className="group relative aspect-square w-full rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
             aria-label="Add images"
+            style={tileStyle}
           >
             <span className="text-white/70 group-hover:text-white text-sm">+Add</span>
             <input
@@ -131,31 +132,30 @@ export default function ImageGridUploader({
               multiple
               accept="image/*"
               className="hidden"
-              onChange={(e) => handleFiles(e.target.files)}
+              onChange={(event) => handleFiles(event.target.files)}
             />
           </button>
-        )}
+        ) : null}
       </div>
 
-      {/* Preview dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)}>
         <DialogContent hideClose className="w-auto max-w-none p-0 bg-transparent border-0 shadow-none">
-          {previewUrl && (
+          {preview ? (
             <div className="relative inline-block p-4 bg-black/90 rounded-xl">
               <img
-                src={previewUrl}
+                src={preview.url}
                 alt="preview"
                 className="block w-auto h-auto max-w-[85vw] max-h-[85vh] rounded-lg"
               />
               <button
                 aria-label="Close preview"
-                onClick={() => setOpen(false)}
+                onClick={() => setPreview(null)}
                 className="absolute top-2 right-2 rounded-full bg-white/90 text-black hover:bg-white p-1.5"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>

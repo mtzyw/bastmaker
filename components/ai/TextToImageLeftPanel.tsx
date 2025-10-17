@@ -18,6 +18,7 @@ import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSele
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -31,6 +32,8 @@ export default function TextToImageLeftPanel({
 } = {}) {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
+  const repromptDraft = useRepromptStore((state) => state.draft);
+  const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
   const [prompt, setPrompt] = useState("");
   const [translatePrompt, setTranslatePrompt] = useState(false);
   const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
@@ -77,6 +80,35 @@ export default function TextToImageLeftPanel({
       setAspectRatio(aspectOptions[0]);
     }
   }, [aspectOptions, aspectRatio]);
+
+  useEffect(() => {
+    if (!repromptDraft || repromptDraft.kind !== "text-to-image") {
+      return;
+    }
+
+    setPrompt(repromptDraft.prompt ?? "");
+    setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+
+    if (repromptDraft.model) {
+      const allowedValues = availableOptions.map((option) => option.value);
+      const matchByValue = allowedValues.includes(repromptDraft.model)
+        ? repromptDraft.model
+        : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
+          allowedValues[0] ??
+          TEXT_TO_IMAGE_DEFAULT_MODEL;
+      setModel(matchByValue);
+    }
+
+    if (repromptDraft.aspectRatio) {
+      setAspectRatio(repromptDraft.aspectRatio);
+    }
+
+    if (typeof repromptDraft.isPublic === "boolean") {
+      setIsPublic(repromptDraft.isPublic);
+    }
+
+    clearRepromptDraft();
+  }, [repromptDraft, availableOptions, clearRepromptDraft]);
 
   const apiAspectRatio = useMemo(() => toFreepikAspectRatio(aspectRatio), [aspectRatio]);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);

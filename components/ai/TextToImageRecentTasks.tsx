@@ -16,14 +16,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Download, Heart, MoreHorizontal, RefreshCcw, Share2 } from "lucide-react";
+import { AlertTriangle, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { buildRegenerationPlan, type RegenerationPlan } from "@/lib/ai/creation-retry";
+import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan } from "@/lib/ai/creation-retry";
+import { useRepromptStore } from "@/stores/repromptStore";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
@@ -357,6 +358,7 @@ export default function TextToImageRecentTasks({
   const appendOutput = useCreationHistoryStore((state) => state.appendOutput);
   const removeItem = useCreationHistoryStore((state) => state.removeItem);
   const clearStore = useCreationHistoryStore((state) => state.clear);
+  const setRepromptDraft = useRepromptStore((state) => state.setDraft);
   const itemMap = useMemo(() => new Map(items.map((entry) => [entry.jobId, entry])), [items]);
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
 
@@ -365,6 +367,30 @@ export default function TextToImageRecentTasks({
   const isRegenerating = useCallback(
     (jobId: string) => regeneratingIds.has(jobId),
     [regeneratingIds]
+  );
+
+  const handleReprompt = useCallback(
+    (jobId: string) => {
+      const original = itemMap.get(jobId);
+      if (!original) {
+        toast.error("未找到任务详情，无法重新编辑提示词");
+        return;
+      }
+      if (original.metadata?.effect_slug) {
+        toast.error("特效任务暂不支持重新编辑提示词");
+        return;
+      }
+      try {
+        const draft = buildRepromptDraft(original);
+        setRepromptDraft(draft);
+        const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+        router.push(`${localePrefix}${draft.route}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "无法重新编辑该任务";
+        toast.error(message);
+      }
+    },
+    [itemMap, locale, router, setRepromptDraft]
   );
 
   const handleRegenerate = useCallback(
@@ -1140,6 +1166,22 @@ export default function TextToImageRecentTasks({
                 : null}
 
               <footer className="flex items-center gap-2 text-xs text-white/50">
+                {!task.effectSlug ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                        aria-label="重新编辑提示词"
+                        onClick={() => void handleReprompt(task.id)}
+                      >
+                        <PenSquare className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">Reprompt</TooltipContent>
+                  </Tooltip>
+                ) : null}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

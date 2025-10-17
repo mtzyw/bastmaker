@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import {
   AspectRatio,
@@ -32,6 +33,8 @@ const EXCLUDED_MODELS = new Set(["PixVerse V5 Transition"]);
 export default function TextToVideoLeftPanel() {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
+  const repromptDraft = useRepromptStore((state) => state.draft);
+  const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
   const textToVideoOptions = useMemo(
     () => VIDEO_MODEL_SELECT_OPTIONS.filter((option) => !EXCLUDED_MODELS.has(option.value)),
     []
@@ -96,6 +99,54 @@ export default function TextToVideoLeftPanel() {
       setResolution(allowedResolutions[0]);
     }
   }, [activeModel, resolution]);
+
+  useEffect(() => {
+    if (!repromptDraft || repromptDraft.kind !== "text-to-video") {
+      return;
+    }
+
+    setPrompt(repromptDraft.prompt ?? "");
+    setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+
+    const optionValues = textToVideoOptions.map((option) => option.value);
+    const matchedModel =
+      repromptDraft.model && optionValues.includes(repromptDraft.model)
+        ? repromptDraft.model
+        : textToVideoOptions.find((option) => option.label === repromptDraft.model)?.value ??
+          optionValues[0] ??
+          DEFAULT_VIDEO_MODEL;
+    setModel(matchedModel);
+
+    const resolutionCandidates = VIDEO_RESOLUTION_PRESETS[matchedModel] ?? [FALLBACK_RESOLUTION];
+    const preferredResolution =
+      repromptDraft.resolution && resolutionCandidates.includes(repromptDraft.resolution as VideoResolutionValue)
+        ? (repromptDraft.resolution as VideoResolutionValue)
+        : resolutionCandidates[0] ?? FALLBACK_RESOLUTION;
+    setResolution(preferredResolution);
+
+    const allowedLengths = getAllowedVideoLengths(matchedModel, preferredResolution);
+    const normalizedDuration =
+      repromptDraft.duration != null ? String(Math.trunc(repromptDraft.duration)) : undefined;
+    let nextVideoLength = allowedLengths[0] ?? DEFAULT_VIDEO_LENGTH;
+    if (
+      repromptDraft.videoLength &&
+      allowedLengths.includes(repromptDraft.videoLength as VideoLengthValue)
+    ) {
+      nextVideoLength = repromptDraft.videoLength as VideoLengthValue;
+    } else if (
+      normalizedDuration &&
+      allowedLengths.includes(normalizedDuration as VideoLengthValue)
+    ) {
+      nextVideoLength = normalizedDuration as VideoLengthValue;
+    }
+    setVideoLength(nextVideoLength);
+
+    if (repromptDraft.aspectRatio) {
+      setAspectRatio(repromptDraft.aspectRatio as AspectRatio);
+    }
+
+    clearRepromptDraft();
+  }, [repromptDraft, textToVideoOptions, clearRepromptDraft]);
 
   const allowedVideoLengths = getAllowedVideoLengths(activeModel, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
