@@ -11,12 +11,29 @@ import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ArrowUp, Check, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, Copy, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
@@ -350,6 +367,8 @@ export default function TextToImageRecentTasks({
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollViewportEl, setScrollViewportEl] = useState<HTMLDivElement | null>(null);
   const [trackedGeneration, setTrackedGeneration] = useState<Record<string, TrackedGenerationStatus>>({});
+  const [taskToDelete, setTaskToDelete] = useState<DisplayTask | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const viewerFetchRef = useRef<AbortController | null>(null);
   const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
   const prefetchingSlugsRef = useRef<Set<string>>(new Set());
@@ -1006,6 +1025,72 @@ export default function TextToImageRecentTasks({
     [locale]
   );
 
+  const handleCopyLink = useCallback(
+    async (task: DisplayTask) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (!task.shareSlug) {
+        toast.error("暂未生成分享链接");
+        return;
+      }
+
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      const shareUrl = `${window.location.origin}${localePrefix}/v/${task.shareSlug}?source=share`;
+
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success("链接已复制");
+          return;
+        } catch (error) {
+          console.error("[history-copy] clipboard failed", error);
+        }
+      }
+
+      window.prompt("复制链接", shareUrl);
+    },
+    [locale]
+  );
+
+  const handleRequestDelete = useCallback((task: DisplayTask) => {
+    setTaskToDelete(task);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!taskToDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/ai/my-creations/${taskToDelete.id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result?.success) {
+        const message = result?.error ?? response.statusText ?? "删除失败";
+        throw new Error(message);
+      }
+
+      removeItem(taskToDelete.id);
+      if (taskToDelete.shareSlug) {
+        prefetchedJobsRef.current.delete(taskToDelete.shareSlug);
+        previousSucceededSlugsRef.current.delete(taskToDelete.shareSlug);
+      }
+
+      setTaskToDelete(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "删除失败，请稍后重试";
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [taskToDelete, removeItem]);
+
   useEffect(() => {
     if (!previewTask || typeof window === "undefined") {
       return;
@@ -1229,15 +1314,42 @@ export default function TextToImageRecentTasks({
                       fill={task.favorite ? "currentColor" : "none"}
                     />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
-                    aria-label="More actions"
-                    disabled
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                        aria-label="更多操作"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-40 border border-white/10 bg-[#1C1B1A] text-white shadow-lg"
+                    >
+                      <DropdownMenuItem
+                        disabled={task.status !== "succeeded" || !task.shareSlug}
+                        onSelect={() => {
+                          void handleCopyLink(task);
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                        <span>复制链接</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-white/10" />
+                      <DropdownMenuItem
+                        className="text-[#dc2e5a] focus:bg-[#dc2e5a]/20 focus:text-[#ff9ab2]"
+                        onSelect={() => {
+                          handleRequestDelete(task);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>删除</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </header>
 
@@ -1443,6 +1555,44 @@ export default function TextToImageRecentTasks({
           )}
         </DialogContent>
       </Dialog>
+      <AlertDialog
+        open={Boolean(taskToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (isDeleting) {
+              return;
+            }
+            setTaskToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="border border-white/10 bg-[#1c1c1a] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除生成记录？</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              删除后将无法恢复该条生成记录及其输出。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="border-white/20 text-black hover:bg-white/10 hover:text-white"
+            >
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleConfirmDelete();
+              }}
+              className="bg-[#dc2e5a] text-white hover:bg-[#f0446e]"
+            >
+              {isDeleting ? "删除中..." : "确认删除"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </TooltipProvider>
   );
