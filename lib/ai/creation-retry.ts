@@ -11,7 +11,7 @@ export type RegenerationResultPayload = {
 };
 
 export type RegenerationPlan = {
-  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video";
+  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video" | "/api/ai/effects/video";
   payload: Record<string, unknown>;
   optimisticItem: CreationItem;
   buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
@@ -20,9 +20,9 @@ export type RegenerationPlan = {
 type NormalizedVideoMode = "text" | "image" | "transition";
 
 export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
-  const effectSlug = getString(item.metadata?.effect_slug);
+  const effectSlug = getString(item.metadata?.effect_slug ?? item.inputParams?.effect_slug);
   if (effectSlug) {
-    throw new Error("当前版本暂不支持特效任务的重新生成");
+    return buildVideoEffectPlan(item, effectSlug);
   }
 
   const modality = getString(item.modalityCode ?? item.metadata?.modality_code);
@@ -393,6 +393,86 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
   };
 }
 
+type EffectAssets = Record<string, { url: string }>;
+
+function buildVideoEffectPlan(item: CreationItem, effectSlug: string): RegenerationPlan {
+  const assets = buildEffectAssets(item);
+
+  const primaryAsset = assets.primary;
+  if (!primaryAsset) {
+    throw new Error("原始特效任务缺少素材，无法重新生成");
+  }
+
+  const variables = extractEffectVariables(item);
+  const payload: Record<string, unknown> = {
+    effect_slug: effectSlug,
+    assets,
+    image_url: primaryAsset.url,
+  };
+  if (variables) {
+    payload.variables = variables;
+  }
+
+  const referenceImageUrls = Object.values(assets)
+    .map(({ url }) => url)
+    .filter((url) => typeof url === "string" && url.length > 0);
+
+  const referenceInputs = Object.fromEntries(
+    Object.keys(assets).map((slot) => [slot, true])
+  );
+
+  const referenceImageCount = referenceImageUrls.length;
+
+  const metadataOverrides: Record<string, unknown> = {
+    source: "video",
+    modality_code: item.modalityCode ?? item.metadata?.modality_code ?? "i2v",
+    reference_inputs: referenceInputs,
+    reference_image_count: referenceImageCount,
+    reference_image_urls: referenceImageUrls,
+    primary_image_url: primaryAsset.url,
+  };
+  const effectTitle = getString(item.metadata?.effect_title ?? item.inputParams?.effect_title);
+  if (effectTitle) {
+    metadataOverrides.effect_title = effectTitle;
+  }
+  metadataOverrides.effect_slug = effectSlug;
+
+  const inputOverrides: Record<string, unknown> = {
+    effect_slug: effectSlug,
+    reference_image_urls: referenceImageUrls,
+    image_url: primaryAsset.url,
+    primary_image_url: primaryAsset.url,
+    ...mapEffectAssetsToInputParams(assets),
+  };
+  if (variables) {
+    inputOverrides.variables = variables;
+  }
+
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: item.modelSlug,
+    providerCode: item.providerCode,
+    costCredits: item.costCredits,
+    metadata: metadataOverrides,
+    inputParams: inputOverrides,
+    modalityCode: item.modalityCode ?? "i2v",
+    isImageToImage: (item.modalityCode ?? item.metadata?.modality_code) === "i2v",
+    referenceImageCount,
+  });
+
+  return {
+    endpoint: "/api/ai/effects/video",
+    payload,
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
 function makeBaseOptimisticItem(
   original: CreationItem,
   overrides: {
@@ -478,6 +558,113 @@ function buildPersistedFromOptimistic(
     costCredits: creditsCost,
     metadata,
   };
+}
+
+function buildEffectAssets(item: CreationItem): EffectAssets {
+  const assets: EffectAssets = {};
+  const addAsset = (slot: string, value: unknown) => {
+    const url = getString(value);
+    if (url) {
+      assets[slot] = { url };
+    }
+  };
+
+  const referenceUrls = extractReferenceImageUrls(item);
+
+  addAsset(
+    "primary",
+    getString(item.metadata?.primary_image_url) ??
+      getString(item.inputParams?.primary_image_url) ??
+      getString(item.inputParams?.image_url) ??
+      referenceUrls[0]
+  );
+  addAsset(
+    "intro",
+    getString(item.inputParams?.intro_image_url) ?? getString(item.metadata?.intro_image_url)
+  );
+  addAsset(
+    "outro",
+    getString(item.inputParams?.outro_image_url) ?? getString(item.metadata?.outro_image_url)
+  );
+  addAsset(
+    "tail",
+    getString(item.inputParams?.tail_image_url) ??
+      getString(item.inputParams?.last_frame_image_url) ??
+      getString(item.metadata?.tail_image_url)
+  );
+
+  const additionalAssetEntries = extractAdditionalEffectAssets(item);
+  for (const [slot, url] of additionalAssetEntries) {
+    if (!assets[slot] && typeof url === "string" && url.length > 0) {
+      assets[slot] = { url };
+    }
+  }
+
+  return assets;
+}
+
+function extractAdditionalEffectAssets(item: CreationItem): Array<[string, string]> {
+  const entries: Array<[string, string]> = [];
+
+  const referenceInputs = item.metadata?.reference_inputs;
+  const referenceUrls = extractReferenceImageUrls(item);
+  if (referenceInputs && typeof referenceInputs === "object") {
+    const remaining = referenceUrls.slice();
+    for (const [slot, active] of Object.entries(referenceInputs)) {
+      if (!active || slot === "primary" || slot === "intro" || slot === "outro" || slot === "tail") {
+        continue;
+      }
+      const url = getString((item.inputParams as Record<string, unknown> | undefined)?.[`${slot}_image_url`]) ??
+        remaining.shift();
+      if (url) {
+        entries.push([slot, url]);
+      }
+    }
+    return entries;
+  }
+
+  // Fallback: inspect input params for keys ending with `_image_url` or `_asset_url`.
+  if (item.inputParams && typeof item.inputParams === "object") {
+    for (const [key, value] of Object.entries(item.inputParams)) {
+      const url = getString(value);
+      if (!url) {
+        continue;
+      }
+      if (/_image_url$/.test(key) || /_asset_url$/.test(key)) {
+        const slot = key.replace(/(_image_url|_asset_url)$/, "");
+      if (!["primary", "intro", "outro", "tail", "first_frame", "last_frame"].includes(slot)) {
+        entries.push([slot, url]);
+      }
+      }
+    }
+  }
+
+  return entries;
+}
+
+function mapEffectAssetsToInputParams(assets: EffectAssets) {
+  const params: Record<string, string> = {};
+  for (const [slot, { url }] of Object.entries(assets)) {
+    if (slot === "primary") {
+      params.primary_image_url = url;
+      params.image_url = url;
+      params.first_frame_image_url = params.first_frame_image_url ?? url;
+      continue;
+    }
+    params[`${slot}_image_url`] = url;
+    if (slot === "tail") {
+      params.last_frame_image_url = url;
+    }
+  }
+  return params;
+}
+
+function extractEffectVariables(item: CreationItem) {
+  const variables = item.inputParams?.variables ?? item.metadata?.variables;
+  if (isPlainObject(variables)) {
+    return variables;
+  }
+  return undefined;
 }
 
 function resolveTextToImageModel(item: CreationItem): string {
@@ -609,4 +796,12 @@ function cloneRecord<T>(value: T): T {
     return structuredClone(value);
   }
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
 }
