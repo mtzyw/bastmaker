@@ -16,7 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
@@ -345,6 +345,8 @@ export default function TextToImageRecentTasks({
   const [viewerJob, setViewerJob] = useState<ViewerJob | null>(null);
   const [isViewerLoading, setIsViewerLoading] = useState(false);
   const [viewerError, setViewerError] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollViewportEl, setScrollViewportEl] = useState<HTMLDivElement | null>(null);
   const viewerFetchRef = useRef<AbortController | null>(null);
   const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
   const prefetchingSlugsRef = useRef<Set<string>>(new Set());
@@ -364,6 +366,9 @@ export default function TextToImageRecentTasks({
 
   const fetchInFlightRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const handleViewportRef = useCallback((node: HTMLDivElement | null) => {
+    setScrollViewportEl(node);
+  }, []);
   const isRegenerating = useCallback(
     (jobId: string) => regeneratingIds.has(jobId),
     [regeneratingIds]
@@ -1022,6 +1027,32 @@ export default function TextToImageRecentTasks({
     };
   }, []);
 
+  useEffect(() => {
+    const viewport = scrollViewportEl;
+    if (!viewport) {
+      setShowScrollTop(false);
+      return;
+    }
+
+    const handleScroll = () => {
+      setShowScrollTop(viewport.scrollTop > 160);
+    };
+
+    viewport.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      viewport.removeEventListener("scroll", handleScroll);
+    };
+  }, [scrollViewportEl, displayTasks.length]);
+
+  const scrollToTop = useCallback(() => {
+    if (!scrollViewportEl) {
+      return;
+    }
+    scrollViewportEl.scrollTo({ top: 0, behavior: "smooth" });
+  }, [scrollViewportEl]);
+
   let content: ReactNode = null;
 
   if (isLoading) {
@@ -1061,13 +1092,14 @@ export default function TextToImageRecentTasks({
     );
   } else {
     content = (
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="pr-3 space-y-4">
-          {displayTasks.map((task) => (
-            <article
-              key={task.id}
-              className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
-            >
+      <div className="relative flex-1 min-h-0">
+        <ScrollArea className="h-full" viewportRef={handleViewportRef}>
+          <div className="pr-3 space-y-4">
+            {displayTasks.map((task) => (
+              <article
+                key={task.id}
+                className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
+              >
               <header className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 border border-white/10 bg-white/10 text-white">
                   <AvatarFallback className="text-xs font-semibold bg-transparent text-white">
@@ -1242,8 +1274,20 @@ export default function TextToImageRecentTasks({
                 : "继续下拉加载更多"
               : "没有更多内容啦"}
           </div>
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+        {showScrollTop ? (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute right-4 top-4 z-10 h-10 w-10 rounded-full bg-white/15 text-white hover:bg-white/25"
+            onClick={scrollToTop}
+            aria-label="回到顶部"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+        ) : null}
+      </div>
     );
   }
 
