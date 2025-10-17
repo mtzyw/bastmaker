@@ -7,6 +7,8 @@ import {
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { apiResponse } from "@/lib/api-response";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
+import { shareModalityDisplayName } from "@/lib/share/job-metadata";
 import { createClient } from "@/lib/supabase/server";
 import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -142,20 +144,75 @@ export async function POST(req: NextRequest) {
   // 1. Start with the base payload from the database
   let payload: Record<string, any> = { ...(metadata?.freepik_params ?? {}) };
 
-  // 2. Handle the primary user-provided image
-  const primaryInputFromRequest = assets?.primary?.url ?? image_url ?? null;
-  const resolvedReferenceUrls: string[] = [];
-  let primaryImageUrl: string | null | undefined = null;
-  if (primaryInputFromRequest) {
-    primaryImageUrl = await ensureR2Url(primaryInputFromRequest, "primary").catch(() => null);
-    const imageParamName = PRIMARY_IMAGE_PARAM_MAP[apiModel!];
-    if (imageParamName && primaryImageUrl) {
-      payload[imageParamName] = primaryImageUrl;
+  // 2. Collect all reference assets (primary + template-specific slots)
+  const resolvedReferenceMap = new Map<string, string>();
+  const missingRequiredSlots: string[] = [];
+
+  const assignAsset = async (
+    slot: string,
+    source: string | null | undefined,
+    { required = false, payloadKey }: { required?: boolean; payloadKey?: string } = {}
+  ) => {
+    if (!source) {
+      if (required) {
+        missingRequiredSlots.push(slot);
+      }
+      return;
     }
-    if (primaryImageUrl) {
-      resolvedReferenceUrls.push(primaryImageUrl);
+
+    const remoteUrl = await ensureR2Url(source, slot).catch(() => null);
+    if (!remoteUrl) {
+      if (required) {
+        missingRequiredSlots.push(slot);
+      }
+      return;
     }
+
+    resolvedReferenceMap.set(slot, remoteUrl);
+
+    if (payloadKey) {
+      payload[payloadKey] = remoteUrl;
+    } else if (slot !== "primary" && payload[slot] === undefined) {
+      payload[slot] = remoteUrl;
+    }
+  };
+
+  const primaryParamName = PRIMARY_IMAGE_PARAM_MAP[apiModel!];
+  await assignAsset("primary", assets?.primary?.url ?? image_url ?? null, {
+    required: Boolean(primaryParamName),
+    payloadKey: primaryParamName,
+  });
+
+  for (const input of effectTemplate.inputs) {
+    if (input.slot === "primary") {
+      continue;
+    }
+    const providedUrl = assets?.[input.slot]?.url ?? null;
+    const payloadKey = typeof input.metadata?.param === "string" && input.metadata.param.length > 0
+      ? input.metadata.param
+      : typeof input.metadata?.payload_param === "string" && input.metadata.payload_param.length > 0
+      ? input.metadata.payload_param
+      : undefined;
+
+    await assignAsset(input.slot, providedUrl, {
+      required: input.isRequired,
+      payloadKey,
+    });
   }
+
+  for (const [slot, value] of Object.entries(assets ?? {})) {
+    if (slot === "primary" || resolvedReferenceMap.has(slot)) {
+      continue;
+    }
+    await assignAsset(slot, value?.url ?? null);
+  }
+
+  if (missingRequiredSlots.length > 0) {
+    return apiResponse.badRequest(`缺少必要素材：${missingRequiredSlots.join(", ")}`);
+  }
+
+  const primaryImageUrl = resolvedReferenceMap.get("primary") ?? null;
+  const referenceImageUrls = Array.from(resolvedReferenceMap.values());
 
   // 3. Apply model-specific tweaks
   payload = applyModelSpecificTweaks(payload, apiModel!);
@@ -197,8 +254,9 @@ export async function POST(req: NextRequest) {
     credits_cost: effectiveCreditsCost,
     effect_slug: slug,
     effect_title: title,
-    reference_image_urls: resolvedReferenceUrls,
-    reference_image_count: resolvedReferenceUrls.length,
+    reference_inputs: Object.fromEntries(Array.from(resolvedReferenceMap.keys()).map((slot) => [slot, true])),
+    reference_image_urls: referenceImageUrls,
+    reference_image_count: referenceImageUrls.length,
     primary_image_url: primaryImageUrl ?? null,
   };
 
@@ -212,7 +270,8 @@ export async function POST(req: NextRequest) {
       status: "pending",
       input_params_json: {
         effect_slug: slug,
-        reference_image_urls: resolvedReferenceUrls,
+        reference_image_urls: referenceImageUrls,
+        reference_image_count: referenceImageUrls.length,
         image_url: primaryImageUrl ?? null,
         primary_image_url: primaryImageUrl ?? null,
         ...payload,
@@ -227,6 +286,52 @@ export async function POST(req: NextRequest) {
   if (insertError || !jobRecord) {
     console.error("[effects-video] failed to insert ai_jobs record", insertError);
     return apiResponse.serverError("Failed to create job record");
+  }
+
+  const shareTitleSource =
+    (typeof payload.prompt === "string" && payload.prompt.trim().length > 0 ? payload.prompt.trim() : null) ??
+    title ??
+    modelDisplayName;
+  const publicTitle =
+    shareTitleSource && shareTitleSource.length > 80
+      ? `${shareTitleSource.slice(0, 77)}...`
+      : shareTitleSource ?? modelDisplayName;
+  const summaryParts = [title ?? modelDisplayName, shareModalityDisplayName(modalityCode), effectTemplate.category].filter(
+    (value): value is string => Boolean(value && value.length > 0)
+  );
+  const publicSummary = summaryParts.join(" • ") || null;
+
+  await ensureJobShareMetadata({
+    adminClient: adminSupabase,
+    jobId: jobRecord.id,
+    currentShareSlug: jobRecord.share_slug,
+    publicTitle,
+    publicSummary,
+    publicAssets: [],
+    isPublic: true,
+  });
+
+  if (resolvedReferenceMap.size > 0) {
+    const inputRows: Database["public"]["Tables"]["ai_job_inputs"]["Insert"][] = [];
+    let index = 0;
+    for (const [slot, url] of resolvedReferenceMap.entries()) {
+      inputRows.push({
+        job_id: jobRecord.id,
+        index: index++,
+        type: "image",
+        source: slot,
+        url,
+        metadata_json: {
+          role: slot,
+          effect_slug: slug,
+        },
+      });
+    }
+
+    const { error: inputsError } = await adminSupabase.from("ai_job_inputs").insert(inputRows);
+    if (inputsError) {
+      console.error("[effects-video] failed to record reference inputs", inputsError);
+    }
   }
 
   const deduction = { wasCharged: false, amount: effectiveCreditsCost };

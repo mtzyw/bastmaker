@@ -15,7 +15,7 @@ import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { generateShareSlug } from "@/lib/share/slug";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
 import {
   generateR2Key,
@@ -702,22 +702,18 @@ export async function POST(req: NextRequest) {
     return apiResponse.serverError("Failed to create job record");
   }
 
-  if (jobRecord.share_slug === null || jobRecord.share_slug === undefined) {
-    const shareSlug = generateShareSlug();
-    const publicTitle = prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt;
-    const publicSummary = `${modelConfig.displayName} • ${mode === "text" ? "Text to Video" : "Image to Video"}`;
+  const publicTitle = prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt;
+  const publicSummary = `${modelConfig.displayName} • ${mode === "text" ? "Text to Video" : "Image to Video"}`;
 
-    await adminSupabase
-      .from("ai_jobs")
-      .update({
-        share_slug: shareSlug,
-        public_title: publicTitle || modelConfig.displayName,
-        public_summary: publicSummary,
-        public_assets: [],
-        is_public: true,
-      })
-      .eq("id", jobRecord.id);
-  }
+  await ensureJobShareMetadata({
+    adminClient: adminSupabase,
+    jobId: jobRecord.id,
+    currentShareSlug: jobRecord.share_slug,
+    publicTitle: publicTitle || modelConfig.displayName,
+    publicSummary,
+    publicAssets: [],
+    isPublic: true,
+  });
 
   const deduction = {
     wasCharged: false,

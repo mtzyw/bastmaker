@@ -257,7 +257,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               <Textarea
                 value={job.prompt ?? "—"}
                 readOnly
-                className="min-h-[48px] bg-[#14141e] border-white/10 text-white/80 text-xs resize-none"
+                className="min-h-[96px] bg-[#14141e] border-white/10 text-white/80 text-xs resize-none"
               />
             </div>
 

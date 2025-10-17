@@ -15,7 +15,7 @@ import { Database } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { generateShareSlug } from "@/lib/share/slug";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
 
 const requestSchema = z.object({
   model: z.string().min(1),
@@ -154,22 +154,18 @@ export async function POST(req: NextRequest) {
     return apiResponse.serverError("Failed to create job record");
   }
 
-  if (jobRecord.share_slug === null || jobRecord.share_slug === undefined) {
-    const shareSlug = generateShareSlug();
-    const publicTitle = trimmedPrompt.length > 80 ? `${trimmedPrompt.slice(0, 77)}...` : trimmedPrompt;
-    const publicSummary = `${modelConfig.displayName} • ${isImageToImage ? "Image to Image" : "Text to Image"}`;
+  const publicTitle = trimmedPrompt.length > 80 ? `${trimmedPrompt.slice(0, 77)}...` : trimmedPrompt;
+  const publicSummary = `${modelConfig.displayName} • ${isImageToImage ? "Image to Image" : "Text to Image"}`;
 
-    await adminSupabase
-      .from("ai_jobs")
-      .update({
-        share_slug: shareSlug,
-        public_title: publicTitle || modelConfig.displayName,
-        public_summary: publicSummary,
-        public_assets: [],
-        is_public: isPublic,
-      })
-      .eq("id", jobRecord.id);
-  }
+  await ensureJobShareMetadata({
+    adminClient: adminSupabase,
+    jobId: jobRecord.id,
+    currentShareSlug: jobRecord.share_slug,
+    publicTitle: publicTitle || modelConfig.displayName,
+    publicSummary,
+    publicAssets: [],
+    isPublic,
+  });
 
   if (referenceImageUrls.length > 0) {
     const inputRows = referenceImageUrls.map((url, index) => ({
