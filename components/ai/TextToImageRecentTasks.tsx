@@ -23,6 +23,7 @@ import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { buildRegenerationPlan, type RegenerationPlan } from "@/lib/ai/creation-retry";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
@@ -351,12 +352,94 @@ export default function TextToImageRecentTasks({
 
   const items = useCreationHistoryStore((state) => state.items);
   const mergeItems = useCreationHistoryStore((state) => state.mergeItems);
+  const upsertItem = useCreationHistoryStore((state) => state.upsertItem);
   const appendOutput = useCreationHistoryStore((state) => state.appendOutput);
   const removeItem = useCreationHistoryStore((state) => state.removeItem);
   const clearStore = useCreationHistoryStore((state) => state.clear);
+  const itemMap = useMemo(() => new Map(items.map((entry) => [entry.jobId, entry])), [items]);
+  const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
 
   const fetchInFlightRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isRegenerating = useCallback(
+    (jobId: string) => regeneratingIds.has(jobId),
+    [regeneratingIds]
+  );
+
+  const handleRegenerate = useCallback(
+    async (jobId: string) => {
+      if (isRegenerating(jobId)) {
+        return;
+      }
+
+      const original = itemMap.get(jobId);
+      if (!original) {
+        toast.error("未找到任务详情，无法重新生成");
+        return;
+      }
+
+      let plan: RegenerationPlan;
+      try {
+        plan = buildRegenerationPlan(original);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "无法重新生成该任务";
+        toast.error(message);
+        return;
+      }
+
+      const optimistic = plan.optimisticItem;
+      upsertItem(optimistic);
+
+      setRegeneratingIds((prev) => {
+        const next = new Set(prev);
+        next.add(jobId);
+        return next;
+      });
+
+      try {
+        const response = await fetch(plan.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(plan.payload),
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || !result?.success) {
+          const message = result?.error ?? response.statusText ?? "重新生成失败";
+          throw new Error(message);
+        }
+
+        const payload = (result?.data ?? {}) as {
+          jobId?: string;
+          providerJobId?: string;
+          status?: string;
+          freepikStatus?: string;
+          creditsCost?: number;
+        };
+
+        if (payload?.jobId) {
+          const persistedItem = plan.buildPersistedItem(payload);
+          upsertItem(persistedItem);
+          removeItem(optimistic.jobId);
+        } else {
+          toast.info("已提交重新生成任务，请稍候在历史记录查看进度");
+        }
+
+        toast.success("已创建新的生成任务");
+      } catch (error) {
+        removeItem(optimistic.jobId);
+        const message = error instanceof Error ? error.message : "重新生成失败，请稍后重试";
+        toast.error(message);
+      } finally {
+        setRegeneratingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(jobId);
+          return next;
+        });
+      }
+    },
+    [itemMap, isRegenerating, upsertItem, removeItem]
+  );
 
   const loadHistory = useCallback(
     async ({
@@ -1060,10 +1143,13 @@ export default function TextToImageRecentTasks({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
-                  aria-label="Retry generation"
-                  disabled={task.status !== "failed"}
+                  aria-label="重新生成新任务"
+                  disabled={isRegenerating(task.id)}
+                  onClick={() => void handleRegenerate(task.id)}
                 >
-                  <RefreshCcw className="h-4 w-4" />
+                  <RefreshCcw
+                    className={cn("h-4 w-4", isRegenerating(task.id) && "animate-spin")}
+                  />
                 </Button>
                 <Button
                   variant="ghost"
@@ -1084,13 +1170,15 @@ export default function TextToImageRecentTasks({
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>
-                {task.status !== "succeeded" && (
+                {isRegenerating(task.id) ? (
+                  <span className="ml-2 text-white/60">重新生成中...</span>
+                ) : task.status !== "succeeded" ? (
                   <span className="ml-2">
                     {task.status === "failed"
                       ? "Retry available soon"
                       : "生成中..."}
                   </span>
-                )}
+                ) : null}
               </footer>
             </article>
           ))}

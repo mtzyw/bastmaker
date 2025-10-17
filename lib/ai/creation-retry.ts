@@ -1,0 +1,612 @@
+import { CreationItem, CreationOutput } from "@/lib/ai/creations";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { getVideoModelConfig } from "@/lib/ai/video-config";
+
+export type RegenerationResultPayload = {
+  jobId?: string | null;
+  providerJobId?: string | null;
+  status?: string | null;
+  freepikStatus?: string | null;
+  creditsCost?: number | null;
+};
+
+export type RegenerationPlan = {
+  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video";
+  payload: Record<string, unknown>;
+  optimisticItem: CreationItem;
+  buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
+};
+
+type NormalizedVideoMode = "text" | "image" | "transition";
+
+export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
+  const effectSlug = getString(item.metadata?.effect_slug);
+  if (effectSlug) {
+    throw new Error("当前版本暂不支持特效任务的重新生成");
+  }
+
+  const modality = getString(item.modalityCode ?? item.metadata?.modality_code);
+  const source = getString(item.metadata?.source);
+  const mode = getString(item.metadata?.mode ?? item.inputParams?.mode) as NormalizedVideoMode | undefined;
+  const isVideoLike =
+    source === "video" ||
+    modality === "t2v" ||
+    modality === "i2v" ||
+    mode === "text" ||
+    mode === "image" ||
+    mode === "transition";
+  const isImageGenerationLike = source === "text-to-image" || source === "image-to-image" || modality === "t2i" || modality === "i2i";
+
+  if (!isVideoLike && (source === "image-to-image" || modality === "i2i" || (item.isImageToImage && isImageGenerationLike))) {
+    return buildImageToImagePlan(item);
+  }
+
+  if (!isVideoLike && (source === "text-to-image" || modality === "t2i" || isImageGenerationLike)) {
+    return buildTextToImagePlan(item);
+  }
+
+  if (isVideoLike) {
+    const resolvedMode: NormalizedVideoMode =
+      mode === "image" || mode === "transition"
+        ? mode
+        : modality === "i2v" || hasVideoReferenceImages(item)
+        ? "image"
+        : "text";
+
+    if (resolvedMode === "text") {
+      return buildTextToVideoPlan(item);
+    }
+    return buildImageToVideoPlan(item, resolvedMode);
+  }
+
+  throw new Error("暂不支持该类型任务的重新生成");
+}
+
+function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
+  const model = resolveTextToImageModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const aspectRatio = getString(item.inputParams?.aspect_ratio);
+  const translatePrompt = getBoolean(item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt);
+  const isPublic = getBoolean(item.metadata?.is_public, true);
+  const referenceImageUrls = extractReferenceImageUrls(item);
+
+  const payload: Record<string, unknown> = {
+    model,
+    prompt,
+    aspect_ratio: aspectRatio ?? undefined,
+    translate_prompt: translatePrompt,
+    is_public: isPublic,
+    reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : undefined,
+  };
+
+  const modelConfig = safeGetTextToImageConfig(model);
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: model,
+    providerCode: modelConfig?.providerCode ?? item.providerCode,
+    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    metadata: {
+      source: referenceImageUrls.length > 0 ? "image-to-image" : "text-to-image",
+      translate_prompt: translatePrompt,
+      is_image_to_image: referenceImageUrls.length > 0,
+      reference_image_count: referenceImageUrls.length,
+      reference_image_urls: referenceImageUrls,
+      primary_image_url: referenceImageUrls[0] ?? null,
+      is_public: isPublic,
+      prompt,
+      original_prompt: prompt,
+      model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+    },
+    inputParams: {
+      model,
+      prompt,
+      aspect_ratio: aspectRatio ?? null,
+      reference_image_count: referenceImageUrls.length,
+      reference_image_urls: referenceImageUrls,
+      primary_image_url: referenceImageUrls[0] ?? null,
+    },
+    modalityCode: referenceImageUrls.length > 0 ? "i2i" : "t2i",
+    isImageToImage: referenceImageUrls.length > 0,
+    referenceImageCount: referenceImageUrls.length,
+  });
+
+  return {
+    endpoint: "/api/ai/freepik/tasks",
+    payload: removeUndefined(payload),
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function buildImageToImagePlan(item: CreationItem): RegenerationPlan {
+  const model = resolveTextToImageModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const referenceImageUrls = extractReferenceImageUrls(item);
+  if (referenceImageUrls.length === 0) {
+    throw new Error("原始任务缺少参考图，无法重新生成");
+  }
+
+  const translatePrompt = getBoolean(item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt);
+  const isPublic = getBoolean(item.metadata?.is_public, true);
+
+  const payload: Record<string, unknown> = {
+    model,
+    prompt,
+    reference_images: referenceImageUrls,
+    translate_prompt: translatePrompt,
+    is_public: isPublic,
+  };
+
+  const modelConfig = safeGetTextToImageConfig(model);
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: model,
+    providerCode: modelConfig?.providerCode ?? item.providerCode,
+    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    metadata: {
+      source: "image-to-image",
+      translate_prompt: translatePrompt,
+      is_image_to_image: true,
+      reference_image_count: referenceImageUrls.length,
+      reference_image_urls: referenceImageUrls,
+      primary_image_url: referenceImageUrls[0] ?? null,
+      is_public: isPublic,
+      prompt,
+      original_prompt: prompt,
+      model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+    },
+    inputParams: {
+      model,
+      prompt,
+      reference_image_count: referenceImageUrls.length,
+      reference_image_urls: referenceImageUrls,
+      primary_image_url: referenceImageUrls[0] ?? null,
+    },
+    modalityCode: "i2i",
+    isImageToImage: true,
+    referenceImageCount: referenceImageUrls.length,
+  });
+
+  return {
+    endpoint: "/api/ai/freepik/tasks",
+    payload: removeUndefined(payload),
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
+  const model = resolveVideoModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const translatePrompt = getBoolean(item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt);
+  const resolution = getString(item.inputParams?.resolution ?? item.metadata?.resolution);
+  const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
+  const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
+  if (durationNumber == null) {
+    throw new Error("原始任务缺少视频时长，无法重新生成");
+  }
+  const videoLength = item.inputParams?.video_length ?? String(durationNumber);
+
+  const payload: Record<string, unknown> = {
+    mode: "text",
+    model,
+    prompt,
+    translate_prompt: translatePrompt,
+    resolution: resolution ?? undefined,
+    video_length: videoLength,
+    duration: durationNumber,
+    aspect_ratio: aspectRatio ?? undefined,
+  };
+
+  const modelConfig = safeGetVideoConfig(model);
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: model,
+    providerCode: modelConfig?.providerCode ?? item.providerCode,
+    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    metadata: {
+      source: "video",
+      mode: "text",
+      translate_prompt: translatePrompt,
+      resolution,
+      aspect_ratio: aspectRatio ?? null,
+      duration: durationNumber,
+      reference_inputs: { primary: false, intro: false, outro: false, tail: false },
+      reference_image_count: 0,
+      reference_image_urls: [],
+      is_image_to_image: false,
+      prompt,
+      original_prompt: prompt,
+      model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+    },
+    inputParams: {
+      model,
+      prompt,
+      translate_prompt: translatePrompt,
+      resolution,
+      video_length: videoLength,
+      duration: durationNumber,
+      aspect_ratio: aspectRatio ?? null,
+      mode: "text",
+      reference_image_urls: [],
+      primary_image_url: null,
+    },
+    modalityCode: "t2v",
+    isImageToImage: false,
+    referenceImageCount: 0,
+  });
+
+  return {
+    endpoint: "/api/ai/freepik/video",
+    payload: removeUndefined(payload),
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): RegenerationPlan {
+  const model = resolveVideoModel(item);
+  const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const translatePrompt = getBoolean(item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt);
+  const resolution = getString(item.inputParams?.resolution ?? item.metadata?.resolution);
+  const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
+  const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
+  if (durationNumber == null) {
+    throw new Error("原始任务缺少视频时长，无法重新生成");
+  }
+  const videoLength = item.inputParams?.video_length ?? String(durationNumber);
+
+  const primaryImageUrl =
+    getString(item.inputParams?.image_url ?? item.inputParams?.primary_image_url ?? item.metadata?.primary_image_url) ??
+    getFirstReferenceImage(item);
+  const introImageUrl = getString(item.inputParams?.intro_image_url);
+  const outroImageUrl = getString(item.inputParams?.outro_image_url);
+  const tailImageUrl =
+    getString(item.inputParams?.tail_image_url ?? item.inputParams?.last_frame_image_url) ?? undefined;
+
+  if (mode === "image" && !primaryImageUrl) {
+    throw new Error("原始任务缺少参考图片，无法重新生成");
+  }
+  if (mode === "transition" && (!introImageUrl || !outroImageUrl)) {
+    throw new Error("原始任务缺少首尾图片，无法重新生成");
+  }
+
+  const payload: Record<string, unknown> = {
+    mode,
+    model,
+    prompt,
+    translate_prompt: translatePrompt,
+    resolution: resolution ?? undefined,
+    video_length: videoLength,
+    duration: durationNumber,
+    aspect_ratio: aspectRatio ?? undefined,
+    image_url: primaryImageUrl ?? undefined,
+    first_frame_image_url: primaryImageUrl ?? undefined,
+    intro_image_url: introImageUrl ?? undefined,
+    outro_image_url: outroImageUrl ?? undefined,
+    tail_image_url: tailImageUrl ?? undefined,
+  };
+
+  const referenceInputs = {
+    primary: Boolean(primaryImageUrl),
+    intro: Boolean(introImageUrl),
+    outro: Boolean(outroImageUrl),
+    tail: Boolean(tailImageUrl),
+  };
+  const referenceImageUrls = extractReferenceImageUrls(item);
+  const referenceCount = Object.values(referenceInputs).filter(Boolean).length || referenceImageUrls.length;
+
+  const modelConfig = safeGetVideoConfig(model);
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: model,
+    providerCode: modelConfig?.providerCode ?? item.providerCode,
+    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    metadata: {
+      source: "video",
+      mode,
+      translate_prompt: translatePrompt,
+      resolution,
+      aspect_ratio: aspectRatio ?? null,
+      duration: durationNumber,
+      reference_inputs: referenceInputs,
+      reference_image_count: referenceCount,
+      reference_image_urls: referenceImageUrls.length > 0 ? referenceImageUrls : buildReferenceList(referenceInputs, {
+        primary: primaryImageUrl,
+        intro: introImageUrl,
+        outro: outroImageUrl,
+        tail: tailImageUrl,
+      }),
+      primary_image_url: primaryImageUrl ?? null,
+      prompt,
+      original_prompt: prompt,
+      model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+    },
+    inputParams: {
+      model,
+      prompt,
+      translate_prompt: translatePrompt,
+      resolution,
+      video_length: videoLength,
+      duration: durationNumber,
+      aspect_ratio: aspectRatio ?? null,
+      mode,
+      image_url: primaryImageUrl ?? null,
+      first_frame_image_url: primaryImageUrl ?? null,
+      intro_image_url: introImageUrl ?? null,
+      outro_image_url: outroImageUrl ?? null,
+      tail_image_url: tailImageUrl ?? null,
+      reference_image_urls: buildReferenceList(referenceInputs, {
+        primary: primaryImageUrl,
+        intro: introImageUrl,
+        outro: outroImageUrl,
+        tail: tailImageUrl,
+      }),
+      primary_image_url: primaryImageUrl ?? null,
+    },
+    modalityCode: "i2v",
+    isImageToImage: true,
+    referenceImageCount: referenceCount,
+  });
+
+  return {
+    endpoint: "/api/ai/freepik/video",
+    payload: removeUndefined(payload),
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function makeBaseOptimisticItem(
+  original: CreationItem,
+  overrides: {
+    jobId: string;
+    modelSlug: string | null;
+    providerCode?: string | null;
+    costCredits?: number;
+    metadata: Record<string, unknown>;
+    inputParams: Record<string, unknown>;
+    modalityCode: string | null;
+    isImageToImage: boolean;
+    referenceImageCount: number;
+  }
+): CreationItem {
+  const metadata = {
+    ...cloneRecord(original.metadata ?? {}),
+    ...overrides.metadata,
+    credits_cost: overrides.costCredits ?? original.costCredits ?? overrides.metadata?.["credits_cost"] ?? 0,
+    freepik_initial_status: "processing",
+    freepik_latest_status: "processing",
+    freepik_task_id: null,
+    error_message: null,
+    retry_source: original.jobId,
+  };
+
+  const inputParams = {
+    ...cloneRecord(original.inputParams ?? {}),
+    ...overrides.inputParams,
+  };
+
+  return {
+    jobId: overrides.jobId,
+    providerCode: overrides.providerCode ?? original.providerCode ?? null,
+    providerJobId: null,
+    status: "processing",
+    latestStatus: "processing",
+    createdAt: new Date().toISOString(),
+    costCredits: overrides.costCredits ?? original.costCredits ?? 0,
+    outputs: [] as CreationOutput[],
+    metadata,
+    inputParams,
+    modalityCode: overrides.modalityCode,
+    modelSlug: overrides.modelSlug,
+    errorMessage: null,
+    seed: original.seed ?? null,
+    isImageToImage: overrides.isImageToImage,
+    referenceImageCount: overrides.referenceImageCount,
+    shareSlug: null,
+    shareVisitCount: 0,
+    shareConversionCount: 0,
+    publicTitle: null,
+    publicSummary: null,
+  };
+}
+
+function buildPersistedFromOptimistic(
+  optimistic: CreationItem,
+  result: RegenerationResultPayload,
+  extras?: { metadata?: Record<string, unknown> }
+): CreationItem {
+  const normalizedStatus = getString(result.status) ?? "processing";
+  const normalizedLatest = getString(result.freepikStatus ?? result.status) ?? normalizedStatus;
+  const creditsCost = typeof result.creditsCost === "number" ? result.creditsCost : optimistic.costCredits;
+
+  const metadata = {
+    ...cloneRecord(optimistic.metadata),
+    ...cloneRecord(extras?.metadata ?? {}),
+    freepik_latest_status: normalizedLatest,
+    freepik_task_id: result.providerJobId ?? null,
+    credits_cost: creditsCost,
+  };
+
+  if (normalizedStatus !== "failed") {
+    delete metadata.error_message;
+  }
+
+  return {
+    ...optimistic,
+    jobId: result.jobId ?? optimistic.jobId,
+    providerJobId: result.providerJobId ?? null,
+    status: normalizedStatus,
+    latestStatus: normalizedLatest,
+    costCredits: creditsCost,
+    metadata,
+  };
+}
+
+function resolveTextToImageModel(item: CreationItem): string {
+  const model =
+    getString(item.inputParams?.model) ??
+    getString(item.modelSlug) ??
+    getString(item.metadata?.model_slug) ??
+    null;
+  if (!model) {
+    throw new Error("原始任务缺少模型配置，无法重新生成");
+  }
+  return model;
+}
+
+function resolveVideoModel(item: CreationItem): string {
+  const model =
+    getString(item.inputParams?.model) ??
+    getString(item.modelSlug) ??
+    getString(item.metadata?.model_slug) ??
+    null;
+  if (!model) {
+    throw new Error("原始任务缺少模型配置，无法重新生成");
+  }
+  return model;
+}
+
+function extractReferenceImageUrls(item: CreationItem): string[] {
+  const urls = Array.isArray(item.metadata?.reference_image_urls)
+    ? item.metadata.reference_image_urls
+    : Array.isArray(item.inputParams?.reference_image_urls)
+    ? item.inputParams.reference_image_urls
+    : [];
+  return urls
+    .map((url) => getString(url))
+    .filter((url): url is string => Boolean(url));
+}
+
+function getFirstReferenceImage(item: CreationItem): string | null {
+  const urls = extractReferenceImageUrls(item);
+  if (urls.length > 0) {
+    return urls[0];
+  }
+  return null;
+}
+
+function hasVideoReferenceImages(item: CreationItem): boolean {
+  const inputs = item.metadata?.reference_inputs;
+  if (inputs && typeof inputs === "object") {
+    return Object.values(inputs).some(Boolean);
+  }
+  const urls = extractReferenceImageUrls(item);
+  return urls.length > 0;
+}
+
+function buildReferenceList(
+  flags: Record<string, boolean>,
+  urls: Record<string, string | null | undefined>
+): string[] {
+  const orderedKeys: Array<keyof typeof flags> = ["primary", "intro", "outro", "tail"];
+  const list: string[] = [];
+  for (const key of orderedKeys) {
+    if (flags[key]) {
+      const url = urls[key];
+      if (typeof url === "string" && url.length > 0) {
+        list.push(url);
+      }
+    }
+  }
+  return list;
+}
+
+function removeUndefined<T extends Record<string, unknown>>(payload: T): T {
+  const entries = Object.entries(payload).filter(([, value]) => value !== undefined && value !== null);
+  return Object.fromEntries(entries) as T;
+}
+
+function safeGetTextToImageConfig(model: string) {
+  try {
+    return getTextToImageModelConfig(model);
+  } catch (error) {
+    console.warn("[creation-retry] failed to resolve text-to-image config", model, error);
+    return null;
+  }
+}
+
+function safeGetVideoConfig(model: string) {
+  try {
+    return getVideoModelConfig(model);
+  } catch (error) {
+    console.warn("[creation-retry] failed to resolve video config", model, error);
+    return null;
+  }
+}
+
+function generateTempJobId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `temp-${crypto.randomUUID()}`;
+  }
+  return `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function normalizeNumber(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function getString(value: unknown): string | null {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+  return null;
+}
+
+function getBoolean(value: unknown, fallback = false): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  return fallback;
+}
+
+function cloneRecord<T>(value: T): T {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+}
