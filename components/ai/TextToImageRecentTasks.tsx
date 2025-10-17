@@ -28,6 +28,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -1139,18 +1140,26 @@ export default function TextToImageRecentTasks({
                 : null}
 
               <footer className="flex items-center gap-2 text-xs text-white/50">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
-                  aria-label="重新生成新任务"
-                  disabled={isRegenerating(task.id)}
-                  onClick={() => void handleRegenerate(task.id)}
-                >
-                  <RefreshCcw
-                    className={cn("h-4 w-4", isRegenerating(task.id) && "animate-spin")}
-                  />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
+                        isRegenerating(task.id) && "cursor-wait"
+                      )}
+                      aria-label="重新生成新任务"
+                      disabled={isRegenerating(task.id)}
+                      onClick={() => void handleRegenerate(task.id)}
+                    >
+                      <RefreshCcw
+                        className={cn("h-4 w-4", isRegenerating(task.id) && "animate-spin")}
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Regenerator</TooltipContent>
+                </Tooltip>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1198,7 +1207,8 @@ export default function TextToImageRecentTasks({
   }
 
   return (
-    <div className="h-full flex flex-col text-white">
+    <TooltipProvider>
+      <div className="h-full flex flex-col text-white">
       <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <Select
           value={activeCategory}
@@ -1253,6 +1263,7 @@ export default function TextToImageRecentTasks({
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
