@@ -435,7 +435,7 @@ export default function ImageToVideoLeftPanel() {
         );
       }
 
-      const parts: string[] = ["视频任务已提交，请稍后在生成记录页查看进度。"];
+      const parts: string[] = [];
 
       if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
         parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
@@ -446,9 +446,8 @@ export default function ImageToVideoLeftPanel() {
         parts.push(`当前余额 ${remainingCredits} Credits`);
       }
 
-      setStatusMessage(parts.join("，"));
+      setStatusMessage(parts.length > 0 ? parts.join("，") : null);
 
-      console.debug("[image-to-video] submit payload", payload, result);
     } catch (error) {
       if (tempJobId) {
         removeHistoryItem(tempJobId);

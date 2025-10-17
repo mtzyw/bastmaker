@@ -452,7 +452,6 @@ export default function TextToImageRecentTasks({
           toast.info("已提交重新生成任务，请稍候在历史记录查看进度");
         }
 
-        toast.success("已创建新的生成任务");
       } catch (error) {
         removeItem(optimistic.jobId);
         const message = error instanceof Error ? error.message : "重新生成失败，请稍后重试";

@@ -249,8 +249,6 @@ export default function TextToImageLeftPanel({
 
         upsertHistoryItem(optimisticItem);
       }
-
-      console.debug("[text-to-image] submit payload", payload, result);
     } catch (error) {
       removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
