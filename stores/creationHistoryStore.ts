@@ -78,6 +78,23 @@ export const useCreationHistoryStore = create<CreationHistoryState>((set) => ({
         const fingerprint = buildFingerprint(item);
         for (const [tempId, tempFingerprint] of tempFingerprints.entries()) {
           if (tempFingerprint === fingerprint) {
+            const tempItem = map.get(tempId);
+            const retrySource =
+              typeof tempItem?.metadata?.retry_source === "string"
+                ? tempItem.metadata.retry_source
+                : null;
+            if (retrySource && retrySource === item.jobId) {
+              continue;
+            }
+            const incomingTs = new Date(item.createdAt ?? "").getTime();
+            const tempTs = new Date(tempItem?.createdAt ?? "").getTime();
+            const isIncomingNewer =
+              Number.isFinite(incomingTs) &&
+              Number.isFinite(tempTs) &&
+              incomingTs >= tempTs;
+            if (!isIncomingNewer) {
+              continue;
+            }
             map.delete(tempId);
             tempFingerprints.delete(tempId);
             break;
