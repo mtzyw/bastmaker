@@ -1330,6 +1330,7 @@ export default function TextToImageRecentTasks({
                       className="w-40 border border-white/10 bg-[#1C1B1A] text-white shadow-lg"
                     >
                       <DropdownMenuItem
+                        className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
                         disabled={task.status !== "succeeded" || !task.shareSlug}
                         onSelect={() => {
                           void handleCopyLink(task);
@@ -1340,7 +1341,7 @@ export default function TextToImageRecentTasks({
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-white/10" />
                       <DropdownMenuItem
-                        className="text-[#dc2e5a] focus:bg-[#dc2e5a]/20 focus:text-[#ff9ab2]"
+                        className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
                         onSelect={() => {
                           handleRequestDelete(task);
                         }}
