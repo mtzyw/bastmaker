@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,6 +115,7 @@ export function MyCreationsContent({
   pageSize,
   isAuthenticated,
 }: MyCreationsContentProps) {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [filterStates, setFilterStates] = useState<FilterStateMap>({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
@@ -201,13 +202,25 @@ export function MyCreationsContent({
     }
   };
 
-  const loadMore = async () => {
-    if (loading || !hasMore) {
+  const loadMore = useCallback(async () => {
+    if (loading) {
       return;
     }
 
     const filterForRequest = activeFilter;
-    const nextPage = (filterStates[filterForRequest]?.page ?? 0) + 1;
+    const state: FilterState = filterStates[filterForRequest] ?? {
+      items: [],
+      totalCount: 0,
+      page: 0,
+      initialized: false,
+    };
+
+    const hasMoreItems = state.items.length < state.totalCount;
+    if (!hasMoreItems) {
+      return;
+    }
+
+    const nextPage = (state.page ?? 0) + 1;
 
     setLoading(true);
     setError(null);
@@ -228,22 +241,27 @@ export function MyCreationsContent({
       }
 
       const nextItems = result.data?.items ?? [];
-      const nextTotalCount = result.data?.totalCount ?? currentTotal;
+      const apiHasMore = result.data?.hasMore;
+      const reportedTotalCount = typeof result.data?.totalCount === "number" ? result.data.totalCount : state.totalCount;
 
       setFilterStates((prev) => {
-        const state: FilterState = prev[filterForRequest] ?? {
+        const prevState: FilterState = prev[filterForRequest] ?? {
           items: [],
           totalCount: 0,
           page: 0,
           initialized: true,
         };
 
+        const shouldAppend = nextItems.length > 0;
+        const combinedItems = shouldAppend ? [...prevState.items, ...nextItems] : prevState.items;
+        const finalTotalCount = apiHasMore === false ? combinedItems.length : reportedTotalCount;
+
         return {
           ...prev,
           [filterForRequest]: {
-            items: [...state.items, ...nextItems],
-            totalCount: nextTotalCount,
-            page: nextPage,
+            items: combinedItems,
+            totalCount: finalTotalCount,
+            page: shouldAppend ? nextPage : prevState.page,
             initialized: true,
           },
         };
@@ -254,7 +272,7 @@ export function MyCreationsContent({
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter, filterStates, loading, pageSize]);
 
   const refreshActiveFilter = useCallback(
     async (signal?: AbortSignal) => {
@@ -360,6 +378,30 @@ export function MyCreationsContent({
     };
   }, [hasProcessingItems, refreshActiveFilter]);
 
+  useEffect(() => {
+    if (!hasMore) {
+      return;
+    }
+
+    const node = loadMoreRef.current;
+    if (!node) {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry?.isIntersecting) {
+        void loadMore();
+      }
+    }, { rootMargin: "240px" });
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, loadMore, items.length]);
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -395,7 +437,7 @@ export function MyCreationsContent({
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+        <div className="columns-1 sm:columns-3 lg:columns-4 2xl:columns-5 gap-4">
           {items.map((item) => {
           const [primaryOutput] = item.outputs;
           const assetUrl = primaryOutput?.url ?? primaryOutput?.thumbUrl ?? undefined;
@@ -406,8 +448,8 @@ export function MyCreationsContent({
           const isInProgress = status === "queued" || status === "pending" || status === "processing";
           const isError = status === "failed" || status === "cancelled" || status === "cancelled_insufficient_credits";
 
-          const fallbackContent = (
-            <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5">
+            const fallbackContent = (
+            <div className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5 py-16">
               {isInProgress ? (
                 <>
                   <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/40 border-t-white/80" />
@@ -435,42 +477,49 @@ export function MyCreationsContent({
               const videoSrc = primaryOutput.url;
               const poster = primaryOutput.thumbUrl ?? undefined;
 
-              if (!videoSrc && !poster) {
-                return fallbackContent;
-              }
-
-              const element = videoSrc ? (
+              if (videoSrc) {
+                const element = (
                 <video
                   src={videoSrc}
                   poster={poster}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  className="w-full rounded-xl object-cover"
                   playsInline
                   muted
                   loop
                   preload="metadata"
+                  controls
                 />
-              ) : poster ? (
-                <Image
-                  src={poster}
-                  alt="生成结果"
-                  fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 18vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  priority={false}
-                />
-              ) : null;
+                );
 
-              if (!element) {
-                return fallbackContent;
+                return assetUrl ? (
+                  <a href={assetUrl} target="_blank" rel="noopener noreferrer">
+                    {element}
+                  </a>
+                ) : (
+                  element
+                );
               }
 
-              return assetUrl ? (
-                <a href={assetUrl} target="_blank" rel="noopener noreferrer">
-                  {element}
-                </a>
-              ) : (
-                element
-              );
+              if (poster) {
+                const posterElement = (
+                  <img
+                    src={poster}
+                    alt="生成结果"
+                    className="w-full rounded-xl object-cover"
+                    loading="lazy"
+                  />
+                );
+
+                return assetUrl ? (
+                  <a href={assetUrl} target="_blank" rel="noopener noreferrer">
+                    {posterElement}
+                  </a>
+                ) : (
+                  posterElement
+                );
+              }
+
+              return fallbackContent;
             }
 
             if (!imageSrc) {
@@ -478,13 +527,11 @@ export function MyCreationsContent({
             }
 
             const imageElement = (
-              <Image
+              <img
                 src={imageSrc}
                 alt="生成结果"
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 18vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                priority={false}
+                className="w-full rounded-xl object-cover"
+                loading="lazy"
               />
             );
 
@@ -500,9 +547,9 @@ export function MyCreationsContent({
             return (
               <div
                 key={item.jobId}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+                className="group relative mb-4 flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm break-inside-avoid"
               >
-                <div className="relative aspect-square overflow-hidden">
+                <div className="relative w-full overflow-hidden">
                   {mediaContent}
                 </div>
 
@@ -516,9 +563,7 @@ export function MyCreationsContent({
         <div className="mt-8 flex flex-col items-center gap-3">
           {error && !loading ? <p className="text-sm text-red-300">{error}</p> : null}
           {hasMore ? (
-            <Button onClick={loadMore} disabled={loading} variant="outline" className="w-40 border-white/20 text-white">
-              {loading ? "加载中..." : "加载更多"}
-            </Button>
+            <div ref={loadMoreRef} className="h-6 w-full" />
           ) : (
             <p className="text-sm text-white/50">没有更多内容啦</p>
           )}
@@ -526,10 +571,9 @@ export function MyCreationsContent({
       )}
 
       {loading && hasMore && items.length > 0 && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-[320px] rounded-2xl bg-white/10" />
-          ))}
+        <div className="mt-6 flex items-center justify-center gap-3 text-sm text-white/70">
+          <span className="block h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span>加载中...</span>
         </div>
       )}
     </div>
