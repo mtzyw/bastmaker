@@ -18,17 +18,17 @@ const GRID_GAP = 16; // gap-4 => 1rem
 type MyCreationsCardProps = {
   item: CreationItem;
   onOpen: (item: CreationItem) => void;
+  onMeasured?: () => void;
 };
 
-export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
+export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const measurementNotifiedRef = useRef(false);
   const [rowSpan, setRowSpan] = useState(1);
-  const [isMeasured, setIsMeasured] = useState(false);
 
   useEffect(() => {
-    setIsMeasured(false);
-    setRowSpan(1);
+    measurementNotifiedRef.current = false;
   }, [item.jobId]);
 
   const recalcRowSpan = useCallback(() => {
@@ -72,11 +72,14 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
       1,
       Math.ceil((measuredHeight + GRID_GAP) / (GRID_ROW_HEIGHT + GRID_GAP))
     );
-
     node.style.gridRowEnd = `span ${span}`;
     setRowSpan(span);
-    setIsMeasured((prev) => (prev ? prev : true));
-  }, []);
+
+    if (!measurementNotifiedRef.current) {
+      measurementNotifiedRef.current = true;
+      onMeasured?.();
+    }
+  }, [onMeasured]);
 
   useEffect(() => {
     const observedNode = contentRef.current ?? cardRef.current;
@@ -191,7 +194,7 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
   const contentNode = mediaContent ?? fallbackContent;
 
   const renderContentWrapper = (children: ReactNode) => (
-    <div ref={contentRef} className={cn("relative w-full overflow-hidden rounded-2xl", isMeasured ? undefined : "pointer-events-none opacity-0")}>
+    <div ref={contentRef} className="relative w-full overflow-hidden rounded-2xl">
       {children}
     </div>
   );
@@ -200,10 +203,7 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
     <div
       ref={cardRef}
       style={{ gridRowEnd: `span ${rowSpan}` }}
-      className={cn(
-        "relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm",
-        isMeasured ? "opacity-100" : "opacity-0"
-      )}
+      className="relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
     >
       {canOpenViewer ? (
         <button

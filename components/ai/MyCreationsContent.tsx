@@ -83,6 +83,9 @@ export function MyCreationsContent({
   const [isViewerLoading, setIsViewerLoading] = useState(false);
   const [viewerError, setViewerError] = useState<string | null>(null);
   const viewerFetchRef = useRef<AbortController | null>(null);
+  const [showInitialOverlay, setShowInitialOverlay] = useState(initialItems.length > 0);
+  const initialMeasurementsRemainingRef = useRef(initialItems.length);
+  const initialOverlayActiveRef = useRef(initialItems.length > 0);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [filterStates, setFilterStates] = useState<FilterStateMap>({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
@@ -113,6 +116,20 @@ export function MyCreationsContent({
     () => items.some((item) => isProcessingStatus(getEffectiveStatus(item))),
     [items]
   );
+
+  const handleCardMeasured = useCallback(() => {
+    if (!initialOverlayActiveRef.current) {
+      return;
+    }
+
+    const next = initialMeasurementsRemainingRef.current <= 1 ? 0 : initialMeasurementsRemainingRef.current - 1;
+    initialMeasurementsRemainingRef.current = next;
+
+    if (next === 0) {
+      initialOverlayActiveRef.current = false;
+      setShowInitialOverlay(false);
+    }
+  }, []);
 
   const resetViewerState = useCallback(() => {
     if (viewerFetchRef.current) {
@@ -500,6 +517,7 @@ export function MyCreationsContent({
 
   const showSkeletonGrid = loading && items.length === 0;
   const showEmptyState = !loading && items.length === 0;
+  const shouldShowInitialOverlay = showInitialOverlay && !showSkeletonGrid && !showEmptyState;
 
   return (
     <div className="w-full">
@@ -519,10 +537,28 @@ export function MyCreationsContent({
           </div>
         </div>
       ) : (
-        <div className="grid auto-rows-[12px] grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-          {items.map((item) => (
-            <MyCreationsCard key={item.jobId} item={item} onOpen={handleOpenViewer} />
-          ))}
+        <div className="relative min-h-[320px]">
+          <div
+            className={`grid auto-rows-[12px] grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 ${shouldShowInitialOverlay ? "invisible" : ""}`}
+          >
+            {items.map((item) => (
+              <MyCreationsCard
+                key={item.jobId}
+                item={item}
+                onOpen={handleOpenViewer}
+                onMeasured={handleCardMeasured}
+              />
+            ))}
+          </div>
+
+          {shouldShowInitialOverlay ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3 text-sm text-white/70">
+                <span className="block h-10 w-10 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                <span>加载中...</span>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
 
