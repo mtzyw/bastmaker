@@ -2,15 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 
+import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MyCreationsCard } from "@/components/ai/MyCreationsCard";
 import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
 import type { MyCreationsFilterOption } from "@/components/ai/MyCreationsFilterTabs";
 import { getEffectiveStatus, isProcessingStatus } from "@/components/ai/my-creations-helpers";
 import type { CreationItem } from "@/lib/ai/creations";
+import { ViewerBoard } from "@/components/viewer/ViewerBoard";
+import { siteConfig } from "@/config/site";
+import { DEFAULT_LOCALE } from "@/i18n/routing";
 
 type FilterKey = "all" | "video" | "image";
 
@@ -72,8 +76,13 @@ export function MyCreationsContent({
   isAuthenticated,
 }: MyCreationsContentProps) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const router = useRouter();
   const locale = useLocale();
+  const localePrefix = useMemo(() => (locale === DEFAULT_LOCALE ? "" : `/${locale}`), [locale]);
+  const [previewItem, setPreviewItem] = useState<CreationItem | null>(null);
+  const [viewerJob, setViewerJob] = useState<ViewerJob | null>(null);
+  const [isViewerLoading, setIsViewerLoading] = useState(false);
+  const [viewerError, setViewerError] = useState<string | null>(null);
+  const viewerFetchRef = useRef<AbortController | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [filterStates, setFilterStates] = useState<FilterStateMap>({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
@@ -105,17 +114,99 @@ export function MyCreationsContent({
     [items]
   );
 
+  const resetViewerState = useCallback(() => {
+    if (viewerFetchRef.current) {
+      viewerFetchRef.current.abort();
+      viewerFetchRef.current = null;
+    }
+    setPreviewItem(null);
+    setViewerJob(null);
+    setViewerError(null);
+    setIsViewerLoading(false);
+  }, []);
+
   const handleOpenViewer = useCallback(
     (item: CreationItem) => {
       if (!item.shareSlug) {
         return;
       }
 
-      const localePrefix = locale ? `/${locale}` : "";
-      router.push(`${localePrefix}/v/${item.shareSlug}`);
+      const slug = item.shareSlug;
+
+      if (viewerFetchRef.current) {
+        viewerFetchRef.current.abort();
+        viewerFetchRef.current = null;
+      }
+
+      setPreviewItem(item);
+      setViewerJob(null);
+      setViewerError(null);
+      setIsViewerLoading(true);
+
+      if (typeof window !== "undefined") {
+        const nextUrl = `${localePrefix}/v/${slug}`;
+        window.history.pushState({ modal: slug }, "", nextUrl);
+      }
+
+      const controller = new AbortController();
+      viewerFetchRef.current = controller;
+
+      fetch(`/api/viewer/${slug}`, { signal: controller.signal })
+        .then(async (response) => {
+          const json = await response.json().catch(() => ({}));
+          if (!response.ok || !json?.success || !json?.data) {
+            const message = json?.error ?? response.statusText ?? "加载失败";
+            throw new Error(message);
+          }
+          return json.data as ViewerJob;
+        })
+        .then((job) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          setViewerJob(job);
+          setViewerError(null);
+        })
+        .catch((error: any) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          const message = error instanceof Error ? error.message : "加载失败";
+          setViewerError(message);
+        })
+        .finally(() => {
+          if (viewerFetchRef.current === controller) {
+            viewerFetchRef.current = null;
+          }
+          if (!controller.signal.aborted) {
+            setIsViewerLoading(false);
+          }
+        });
     },
-    [locale, router]
+    [localePrefix]
   );
+
+  const handleDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open && previewItem) {
+        if (typeof window !== "undefined") {
+          window.history.back();
+        } else {
+          resetViewerState();
+        }
+      }
+    },
+    [previewItem, resetViewerState]
+  );
+
+  const viewerShareSlug = viewerJob?.shareSlug ?? previewItem?.shareSlug ?? null;
+  const viewerShareUrl = useMemo(() => {
+    if (!viewerShareSlug) {
+      return null;
+    }
+    const origin = typeof window !== "undefined" ? window.location.origin : siteConfig.url;
+    return `${origin}${localePrefix}/v/${viewerShareSlug}?source=share`;
+  }, [localePrefix, viewerShareSlug]);
 
   const handleFilterChange = async (value: string) => {
     if (loading) {
@@ -313,6 +404,27 @@ export function MyCreationsContent({
   );
 
   useEffect(() => {
+    if (!previewItem || typeof window === "undefined") {
+      return;
+    }
+
+    const handlePopState = () => {
+      resetViewerState();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [previewItem, resetViewerState]);
+
+  useEffect(() => {
+    return () => {
+      viewerFetchRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!hasProcessingItems) {
       return;
     }
@@ -431,6 +543,29 @@ export function MyCreationsContent({
           <span>加载中...</span>
         </div>
       )}
+
+      <Dialog open={Boolean(previewItem)} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#14141e] text-white sm:max-w-[68rem]">
+          {isViewerLoading ? (
+            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+              加载中...
+            </div>
+          ) : viewerError ? (
+            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+              {viewerError}
+            </div>
+          ) : viewerJob ? (
+            <ViewerBoard
+              job={viewerJob}
+              shareUrl={viewerShareUrl ?? `${siteConfig.url}${localePrefix}/v/${viewerJob.shareSlug ?? viewerJob.id}`}
+            />
+          ) : (
+            <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
+              暂无预览内容
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
