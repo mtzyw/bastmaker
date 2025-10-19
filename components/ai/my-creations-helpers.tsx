@@ -16,6 +16,8 @@ export const STATUS_TEXT_MAP: StatusMap = {
   cancelled_insufficient_credits: "积分不足",
 };
 
+const COMPLETED_STATUS_ALIASES = new Set<string>(["completed", "complete", "success", "succeeded", "done"]);
+
 export function isVideoOutput(output?: CreationOutput | null) {
   if (!output) return false;
 
@@ -30,7 +32,14 @@ export function isVideoOutput(output?: CreationOutput | null) {
 
 export function getEffectiveStatus(item: CreationItem) {
   const candidate = item.latestStatus ?? item.status;
-  return typeof candidate === "string" ? candidate.toLowerCase() : null;
+  if (typeof candidate !== "string") {
+    return null;
+  }
+  const normalized = candidate.toLowerCase();
+  if (COMPLETED_STATUS_ALIASES.has(normalized)) {
+    return "completed";
+  }
+  return normalized;
 }
 
 const PROCESSING_STATUSES = new Set<string>(["pending", "queued", "processing", "running", "in_progress"]);
