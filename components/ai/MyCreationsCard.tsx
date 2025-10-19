@@ -24,6 +24,12 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [rowSpan, setRowSpan] = useState(1);
+  const [isMeasured, setIsMeasured] = useState(false);
+
+  useEffect(() => {
+    setIsMeasured(false);
+    setRowSpan(1);
+  }, [item.jobId]);
 
   const recalcRowSpan = useCallback(() => {
     const node = cardRef.current;
@@ -66,8 +72,10 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
       1,
       Math.ceil((measuredHeight + GRID_GAP) / (GRID_ROW_HEIGHT + GRID_GAP))
     );
+
     node.style.gridRowEnd = `span ${span}`;
     setRowSpan(span);
+    setIsMeasured((prev) => (prev ? prev : true));
   }, []);
 
   useEffect(() => {
@@ -183,7 +191,7 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
   const contentNode = mediaContent ?? fallbackContent;
 
   const renderContentWrapper = (children: ReactNode) => (
-    <div ref={contentRef} className="relative w-full overflow-hidden rounded-2xl">
+    <div ref={contentRef} className={cn("relative w-full overflow-hidden rounded-2xl", isMeasured ? undefined : "pointer-events-none opacity-0")}>
       {children}
     </div>
   );
@@ -192,7 +200,10 @@ export function MyCreationsCard({ item, onOpen }: MyCreationsCardProps) {
     <div
       ref={cardRef}
       style={{ gridRowEnd: `span ${rowSpan}` }}
-      className="relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+      className={cn(
+        "relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm",
+        isMeasured ? "opacity-100" : "opacity-0"
+      )}
     >
       {canOpenViewer ? (
         <button

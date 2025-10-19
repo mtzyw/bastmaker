@@ -432,6 +432,12 @@ export default function TextToImageRecentTasks({
         return;
       }
 
+      const normalizedStatus = mapStatus(original.latestStatus ?? original.status);
+      if (normalizedStatus !== "succeeded") {
+        toast.info("任务仍在生成中，请稍后重试");
+        return;
+      }
+
       let plan: RegenerationPlan;
       try {
         plan = buildRegenerationPlan(original);
@@ -1415,14 +1421,18 @@ export default function TextToImageRecentTasks({
                       size="icon"
                       className={cn(
                         "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
-                        isRegenerating(task.id) && "cursor-wait"
+                        isRegenerating(task.id) && "cursor-wait",
+                        task.status !== "succeeded" && "cursor-not-allowed opacity-40 hover:text-white/60 hover:bg-transparent"
                       )}
                       aria-label="重新生成新任务"
-                      disabled={isRegenerating(task.id)}
+                      disabled={isRegenerating(task.id) || task.status !== "succeeded"}
                       onClick={() => void handleRegenerate(task.id)}
                     >
                       <RefreshCcw
-                        className={cn("h-4 w-4", isRegenerating(task.id) && "animate-spin")}
+                        className={cn(
+                          "h-4 w-4",
+                          isRegenerating(task.id) && "animate-spin"
+                        )}
                       />
                     </Button>
                   </TooltipTrigger>
