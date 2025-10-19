@@ -1,41 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { MyCreationsCard } from "@/components/ai/MyCreationsCard";
 import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
 import type { MyCreationsFilterOption } from "@/components/ai/MyCreationsFilterTabs";
-import { CreationItem, CreationOutput } from "@/lib/ai/creations";
-
-const STATUS_TEXT_MAP: Record<string, string> = {
-  pending: "生成中",
-  queued: "生成中",
-  processing: "生成中",
-  completed: "已完成",
-  failed: "生成失败",
-  cancelled: "已取消",
-  cancelled_insufficient_credits: "积分不足",
-};
-
-function getStatusLabel(status?: string | null) {
-  if (!status) return "未知状态";
-  return STATUS_TEXT_MAP[status] ?? status;
-}
-
-function isVideoOutput(output?: CreationOutput | null) {
-  if (!output) return false;
-
-  const mimeType = output.type?.toLowerCase() ?? "";
-  if (mimeType.startsWith("video")) {
-    return true;
-  }
-
-  const url = output.url?.toLowerCase() ?? "";
-  return /\.(mp4|webm|mov)(\?.*)?$/i.test(url);
-}
+import { getEffectiveStatus, isProcessingStatus } from "@/components/ai/my-creations-helpers";
+import type { CreationItem } from "@/lib/ai/creations";
 
 type FilterKey = "all" | "video" | "image";
 
@@ -52,29 +27,10 @@ const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => st
 };
 
 const POLL_INTERVAL_MS = 5000;
-const PROCESSING_STATUSES = new Set([
-  "pending",
-  "queued",
-  "processing",
-  "running",
-  "in_progress",
-]);
 
 function buildEndpoint(filter: FilterKey, page: number, pageSize: number): string {
   const builder = FILTER_ENDPOINTS[filter] ?? FILTER_ENDPOINTS.all;
   return builder(page, pageSize);
-}
-
-function getEffectiveStatus(item: CreationItem) {
-  const candidate = item.latestStatus ?? item.status;
-  return typeof candidate === "string" ? candidate.toLowerCase() : null;
-}
-
-function isProcessingStatus(value?: string | null) {
-  if (!value) {
-    return false;
-  }
-  return PROCESSING_STATUSES.has(value.toLowerCase());
 }
 
 function isFilterKey(value: string): value is FilterKey {
@@ -116,6 +72,8 @@ export function MyCreationsContent({
   isAuthenticated,
 }: MyCreationsContentProps) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const locale = useLocale();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [filterStates, setFilterStates] = useState<FilterStateMap>({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
@@ -145,6 +103,18 @@ export function MyCreationsContent({
   const hasProcessingItems = useMemo(
     () => items.some((item) => isProcessingStatus(getEffectiveStatus(item))),
     [items]
+  );
+
+  const handleOpenViewer = useCallback(
+    (item: CreationItem) => {
+      if (!item.shareSlug) {
+        return;
+      }
+
+      const localePrefix = locale ? `/${locale}` : "";
+      router.push(`${localePrefix}/v/${item.shareSlug}`);
+    },
+    [locale, router]
   );
 
   const handleFilterChange = async (value: string) => {
@@ -437,125 +407,10 @@ export function MyCreationsContent({
           </div>
         </div>
       ) : (
-        <div className="columns-1 sm:columns-3 lg:columns-4 2xl:columns-5 gap-4">
-          {items.map((item) => {
-          const [primaryOutput] = item.outputs;
-          const assetUrl = primaryOutput?.url ?? primaryOutput?.thumbUrl ?? undefined;
-          const video = isVideoOutput(primaryOutput);
-          const imageSrc = !video ? assetUrl : primaryOutput?.thumbUrl ?? null;
-          const status = item.status ?? undefined;
-          const statusLabel = getStatusLabel(status);
-          const isInProgress = status === "queued" || status === "pending" || status === "processing";
-          const isError = status === "failed" || status === "cancelled" || status === "cancelled_insufficient_credits";
-
-            const fallbackContent = (
-            <div className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5 py-16">
-              {isInProgress ? (
-                <>
-                  <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/40 border-t-white/80" />
-                  <span className="mt-3 text-[13px] text-white/70">{statusLabel}</span>
-                </>
-              ) : (
-                <span
-                  className={cn(
-                    "rounded-md px-3 py-1 text-sm",
-                    isError ? "bg-rose-500/15 text-rose-100" : "bg-white/15 text-white/80"
-                  )}
-                >
-                  {statusLabel}
-                </span>
-              )}
-            </div>
-          );
-
-          const mediaContent = (() => {
-            if (!primaryOutput) {
-              return fallbackContent;
-            }
-
-            if (video) {
-              const videoSrc = primaryOutput.url;
-              const poster = primaryOutput.thumbUrl ?? undefined;
-
-              if (videoSrc) {
-                const element = (
-                <video
-                  src={videoSrc}
-                  poster={poster}
-                  className="w-full rounded-xl object-cover"
-                  playsInline
-                  muted
-                  loop
-                  preload="metadata"
-                  controls
-                />
-                );
-
-                return assetUrl ? (
-                  <a href={assetUrl} target="_blank" rel="noopener noreferrer">
-                    {element}
-                  </a>
-                ) : (
-                  element
-                );
-              }
-
-              if (poster) {
-                const posterElement = (
-                  <img
-                    src={poster}
-                    alt="生成结果"
-                    className="w-full rounded-xl object-cover"
-                    loading="lazy"
-                  />
-                );
-
-                return assetUrl ? (
-                  <a href={assetUrl} target="_blank" rel="noopener noreferrer">
-                    {posterElement}
-                  </a>
-                ) : (
-                  posterElement
-                );
-              }
-
-              return fallbackContent;
-            }
-
-            if (!imageSrc) {
-              return fallbackContent;
-            }
-
-            const imageElement = (
-              <img
-                src={imageSrc}
-                alt="生成结果"
-                className="w-full rounded-xl object-cover"
-                loading="lazy"
-              />
-            );
-
-            return assetUrl ? (
-              <a href={assetUrl} target="_blank" rel="noopener noreferrer">
-                {imageElement}
-              </a>
-            ) : (
-              imageElement
-            );
-          })();
-
-            return (
-              <div
-                key={item.jobId}
-                className="group relative mb-4 flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm break-inside-avoid"
-              >
-                <div className="relative w-full overflow-hidden">
-                  {mediaContent}
-                </div>
-
-              </div>
-            );
-          })}
+        <div className="grid auto-rows-[12px] grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          {items.map((item) => (
+            <MyCreationsCard key={item.jobId} item={item} onOpen={handleOpenViewer} />
+          ))}
         </div>
       )}
 
