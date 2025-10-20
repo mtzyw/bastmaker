@@ -128,7 +128,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
           <video
             src={videoSrc}
             poster={poster ?? undefined}
-            className="w-full rounded-2xl object-cover"
+            className="h-full w-full rounded-2xl object-cover"
             playsInline
             muted
             loop
@@ -145,7 +145,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
           <img
             src={poster}
             alt="生成结果"
-            className="w-full rounded-2xl object-cover"
+            className="h-full w-full rounded-2xl object-cover"
             loading="lazy"
             onLoad={recalcRowSpan}
           />
@@ -164,7 +164,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
       <img
         src={imageSrc}
         alt="生成结果"
-        className="w-full rounded-2xl object-cover"
+        className="h-full w-full rounded-2xl object-cover"
         loading="lazy"
         onLoad={recalcRowSpan}
       />
@@ -193,8 +193,8 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
 
   const contentNode = mediaContent ?? fallbackContent;
 
-  const renderContentWrapper = (children: ReactNode) => (
-    <div ref={contentRef} className="relative w-full overflow-hidden rounded-2xl">
+  const renderContentWrapper = (children: ReactNode, className?: string) => (
+    <div ref={contentRef} className={cn("relative w-full overflow-hidden rounded-2xl h-full", className)}>
       {children}
     </div>
   );
@@ -209,7 +209,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
         <button
           type="button"
           onClick={() => onOpen(item)}
-          className="group relative w-full text-left focus:outline-none"
+          className="group relative w-full flex-grow text-left focus:outline-none"
           aria-label="查看详情"
         >
           {renderContentWrapper(
@@ -223,7 +223,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
           )}
         </button>
       ) : (
-        renderContentWrapper(contentNode)
+        renderContentWrapper(contentNode, "flex-grow")
       )}
     </div>
   );
