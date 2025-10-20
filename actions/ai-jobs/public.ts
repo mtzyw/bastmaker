@@ -33,6 +33,7 @@ export type ViewerJob = {
     id: string;
     displayName: string | null;
     avatarUrl: string | null;
+    invite_code: string | null;
   } | null;
   shareStats: {
     visits: number;
@@ -110,6 +111,7 @@ function buildOwnerSummary(user: Database["public"]["Tables"]["users"]["Row"] | 
     id: user.id,
     displayName,
     avatarUrl: user.avatar_url,
+    invite_code: user.invite_code,
   };
 }
 

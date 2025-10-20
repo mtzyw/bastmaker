@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { Link as I18nLink } from "@/i18n/routing";
 import {
   Heart,
   Link as LinkIcon,
@@ -195,7 +196,18 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
         <div className="flex h-full min-h-0 flex-col gap-5 p-6">
           <header className="flex items-center justify-between border-b border-white/10 pb-5">
             <div className="flex flex-col text-sm">
-              <span className="font-medium text-white">{job.owner?.displayName ?? t("unknownUser")}</span>
+              {job.owner?.invite_code ? (
+                <I18nLink
+                  href={`/profile/${job.owner.invite_code}`}
+                  className="font-medium text-white transition-colors hover:text-gray-300"
+                >
+                  {job.owner.displayName ?? t("unknownUser")}
+                </I18nLink>
+              ) : (
+                <span className="font-medium text-white">
+                  {job.owner?.displayName ?? t("unknownUser")}
+                </span>
+              )}
               <span className="text-white/60">{createdAtLabel}</span>
             </div>
             <Badge variant="secondary" className="bg-white/10 text-white">
