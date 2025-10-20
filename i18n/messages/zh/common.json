@@ -8,21 +8,25 @@
   "Header": {
     "links": [
       {
-        "name": "功能特性",
-        "href": "/#features"
+        "name": "文字转图片",
+        "href": "/text-to-image"
+      },
+      {
+        "name": "图片转图片",
+        "href": "/image-to-image"
+      },
+      {
+        "name": "文字转视频",
+        "href": "/text-to-video"
+      },
+      {
+        "name": "图片转视频",
+        "href": "/image-to-video"
       },
       {
         "id": "pricing",
         "name": "定价",
         "href": "/#pricing"
-      },
-      {
-        "name": "Flux Image",
-        "href": "/flux-kontext-pro"
-      },
-      {
-        "name": "Multi-Image",
-        "href": "/multi-image-kontext-pro"
       }
     ]
   },

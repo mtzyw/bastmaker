@@ -8,21 +8,25 @@
   "Header": {
     "links": [
       {
-        "name": "Features",
-        "href": "/#features"
+        "name": "Text to Image",
+        "href": "/text-to-image"
+      },
+      {
+        "name": "Image to Image",
+        "href": "/image-to-image"
+      },
+      {
+        "name": "Text to Video",
+        "href": "/text-to-video"
+      },
+      {
+        "name": "Image to Video",
+        "href": "/image-to-video"
       },
       {
         "id": "pricing",
         "name": "Pricing",
         "href": "/#pricing"
-      },
-      {
-        "name": "Flux Image",
-        "href": "/flux-kontext-pro"
-      },
-      {
-        "name": "Multi-Image",
-        "href": "/multi-image-kontext-pro"
       }
     ]
   },
