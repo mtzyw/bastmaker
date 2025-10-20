@@ -258,11 +258,7 @@ const RecentImagesGallery = forwardRef<
           <div className="text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {t("showingImages", { count: jobs.length })}{" "}
-              <I18nLink
-                href="/dashboard/image-history"
-                className="text-blue-500"
-                prefetch={false}
-              >
+              <I18nLink href="/my-creations" className="text-blue-500" prefetch={false}>
                 {t("viewAllLink")}
               </I18nLink>
             </p>

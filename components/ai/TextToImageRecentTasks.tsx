@@ -1333,7 +1333,7 @@ export default function TextToImageRecentTasks({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="w-40 border border-white/10 bg-[#1C1B1A] text-white shadow-lg"
+                      className="w-40 border border-white/10 bg-[#1c1c1a] text-white shadow-lg"
                     >
                       <DropdownMenuItem
                         className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
@@ -1520,7 +1520,7 @@ export default function TextToImageRecentTasks({
           <SelectTrigger className="w-[160px] bg-white/5 border border-white/10 text-white/80 focus:ring-0 focus:ring-offset-0">
             <SelectValue placeholder={normalizedCategories[0] ?? "全部"} />
           </SelectTrigger>
-          <SelectContent className="bg-[#1C1B1A] text-white border border-white/10">
+          <SelectContent className="bg-[#1c1c1a] text-white border border-white/10">
             {CATEGORY_OPTIONS.filter((option) => normalizedCategories.includes(option.key)).map((option) => (
               <SelectItem key={option.key} value={option.key}>
                 {option.label}
@@ -1543,7 +1543,7 @@ export default function TextToImageRecentTasks({
           }
         }}
       >
-        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#14141e] text-white sm:max-w-[68rem]">
+        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
           {isViewerLoading ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
               加载中...

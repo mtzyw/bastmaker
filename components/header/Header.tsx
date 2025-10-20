@@ -2,9 +2,9 @@
 import { pacifico } from "@/app/fonts";
 import HeaderLinks from "@/components/header/HeaderLinks";
 import MobileMenu from "@/components/header/MobileMenu";
+import { CreditsBadge } from "@/components/header/CreditsBadge";
 import { UserAvatar } from "@/components/header/UserAvatar";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link as I18nLink } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -70,9 +70,9 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
 
         <div className="flex items-center gap-x-2 flex-1 justify-end">
           {/* PC */}
-          <div className="hidden lg:flex items-center gap-x-2">
+          <div className="hidden lg:flex items-center gap-x-3">
             <LocaleSwitcher />
-            <ThemeToggle />
+            <CreditsBadge />
             <UserAvatar openAuthDialog={openAuthDialog} />
           </div>
 

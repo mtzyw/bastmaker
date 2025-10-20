@@ -136,11 +136,6 @@
         "name": "积分明细",
         "href": "/dashboard/credit-history",
         "icon": "Coins"
-      },
-      {
-        "name": "图片历史",
-        "href": "/dashboard/image-history",
-        "icon": "Image"
       }
     ],
     "AdminMenus": [

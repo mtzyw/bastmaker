@@ -178,12 +178,12 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     .slice(0, 5);
 
   return (
-    <Card className="mx-auto w-full min-h-[28rem] max-w-[56rem] border border-white/10 bg-[#14141e] text-white md:h-[calc(100vh-6rem)] md:max-h-[900px] md:overflow-hidden">
+    <Card className="mx-auto w-full min-h-[28rem] max-w-[56rem] border border-white/10 bg-[#1c1c1a] text-white md:h-[calc(100vh-6rem)] md:max-h-[900px] md:overflow-hidden">
       <div className="grid h-full min-h-0 grid-cols-1 md:h-full md:grid-cols-[minmax(0,1.25fr)_minmax(360px,1fr)]">
         <div className="border-b border-white/10 md:flex md:min-h-0 md:flex-col md:border-b-0 md:border-r">
           <div
             className={cn(
-              "relative w-full bg-[#14141e] md:flex-1 md:min-h-0",
+              "relative w-full bg-[#1c1c1a] md:flex-1 md:min-h-0",
               aspectRatioStyle ? undefined : "aspect-[3/4]"
             )}
             style={aspectRatioStyle}
@@ -257,7 +257,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
               <Textarea
                 value={job.prompt ?? "—"}
                 readOnly
-                className="min-h-[96px] bg-[#14141e] border-white/10 text-white/80 text-xs resize-none"
+                className="min-h-[96px] bg-[#1c1c1a] border-white/10 text-white/80 text-xs resize-none"
               />
             </div>
 
@@ -319,7 +319,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
-              <Button className="bg-pink-600 text-white hover:bg-pink-700 sm:min-w-[160px]">
+              <Button className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 sm:min-w-[160px]">
                 {t("generateCTA", { default: "Create Similar Image" })}
               </Button>
             </div>

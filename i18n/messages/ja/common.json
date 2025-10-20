@@ -136,11 +136,6 @@
         "name": "クレジット履歴",
         "href": "/dashboard/credit-history",
         "icon": "Coins"
-      },
-      {
-        "name": "画像履歴",
-        "href": "/dashboard/image-history",
-        "icon": "Image"
       }
     ],
     "AdminMenus": [

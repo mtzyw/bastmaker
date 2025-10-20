@@ -354,7 +354,6 @@ export default function TextToImageLeftPanel({
           </div>
           {/* 固定区域：Output + credits */}
           <div className="mb-3">
-            <div className="mb-2 text-sm">Output Image Number</div>
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />

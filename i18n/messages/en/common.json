@@ -136,11 +136,6 @@
         "name": "Credit History",
         "href": "/dashboard/credit-history",
         "icon": "Coins"
-      },
-      {
-        "name": "Image History",
-        "href": "/dashboard/image-history",
-        "icon": "Image"
       }
     ],
     "AdminMenus": [
