@@ -123,10 +123,10 @@ export function ProfileJobCard({ job, locale }: ProfileJobCardProps) {
       <I18nLink
         href={buildViewerPath(locale, job.shareSlug)}
         prefetch
-        className="group relative w-full text-left focus:outline-none"
+        className="group relative flex-grow w-full text-left focus:outline-none"
         aria-label="查看详情"
       >
-        <div ref={contentRef} className="relative w-full overflow-hidden rounded-2xl">
+        <div ref={contentRef} className="relative w-full h-full overflow-hidden rounded-2xl">
             <MediaPreview asset={job.coverAsset} />
             <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/20 bg-black/40 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
             <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
