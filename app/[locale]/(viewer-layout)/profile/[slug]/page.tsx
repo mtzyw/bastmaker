@@ -18,53 +18,11 @@ function buildProfilePath(locale: string, slug: string) {
   return `${prefix}/profile/${slug}`;
 }
 
+import { ProfileJobCard } from "@/components/ai/ProfileJobCard";
+
 function buildViewerPath(locale: string, shareSlug: string) {
   const prefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
   return `${prefix}/v/${shareSlug}`;
-}
-
-function MediaPreview({ asset }: { asset: ViewerJobAsset }) {
-  if (asset.type === "video") {
-    return (
-      <video
-        src={asset.url}
-        poster={asset.posterUrl ?? asset.thumbUrl ?? undefined}
-        muted
-        loop
-        playsInline
-        className="h-full w-full rounded-xl object-cover"
-      />
-    );
-  }
-
-  return (
-    <Image
-      src={asset.url}
-      alt={asset.alt ?? "Artwork"}
-      fill
-      className="rounded-xl object-cover"
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      priority={false}
-    />
-  );
-}
-
-function JobCard({ job, locale }: { job: PublicProfileJob; locale: string }) {
-  return (
-    <I18nLink
-      href={buildViewerPath(locale, job.shareSlug)}
-      prefetch
-      className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#10162b]/70 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-white/20"
-    >
-      <div className="relative aspect-[3/4] w-full overflow-hidden">
-        <MediaPreview asset={job.coverAsset} />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40 transition-opacity duration-300 group-hover:opacity-60"
-        />
-      </div>
-    </I18nLink>
-  );
 }
 
 function EmptyState() {
@@ -262,9 +220,9 @@ export default async function ProfilePage({
             {filteredJobs.length === 0 ? (
               <EmptyState />
             ) : (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid auto-rows-[12px] grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
                 {filteredJobs.map((job) => (
-                  <JobCard key={job.id} job={job} locale={locale} />
+                  <ProfileJobCard key={job.id} job={job} locale={locale} />
                 ))}
               </div>
             )}

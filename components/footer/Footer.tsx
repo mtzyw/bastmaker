@@ -24,7 +24,7 @@ export default async function Footer() {
   });
 
   return (
-    <div className="bg-gray-900 text-gray-300">
+    <div style={{ backgroundColor: '#1c1c1a' }} className="text-gray-300">
       <footer className="py-2 border-t border-gray-700">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 py-12 lg:grid-cols-6">
