@@ -25,10 +25,12 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
   const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const measurementNotifiedRef = useRef(false);
+  const [isMeasured, setIsMeasured] = useState(false);
   const [rowSpan, setRowSpan] = useState(1);
 
   useEffect(() => {
     measurementNotifiedRef.current = false;
+    setIsMeasured(false);
   }, [item.jobId]);
 
   const recalcRowSpan = useCallback(() => {
@@ -74,6 +76,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
     );
     node.style.gridRowEnd = `span ${span}`;
     setRowSpan(span);
+    setIsMeasured(true);
 
     if (!measurementNotifiedRef.current) {
       measurementNotifiedRef.current = true;
@@ -119,6 +122,8 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
       return null;
     }
 
+    const mediaClassName = cn("w-full rounded-2xl object-cover", isMeasured && "h-full");
+
     if (video) {
       const videoSrc = primaryOutput.url;
       const poster = primaryOutput.thumbUrl ?? undefined;
@@ -128,7 +133,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
           <video
             src={videoSrc}
             poster={poster ?? undefined}
-            className="h-full w-full rounded-2xl object-cover"
+            className={mediaClassName}
             playsInline
             muted
             loop
@@ -145,7 +150,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
           <img
             src={poster}
             alt="生成结果"
-            className="h-full w-full rounded-2xl object-cover"
+            className={mediaClassName}
             loading="lazy"
             onLoad={recalcRowSpan}
           />
@@ -164,12 +169,12 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
       <img
         src={imageSrc}
         alt="生成结果"
-        className="h-full w-full rounded-2xl object-cover"
+        className={mediaClassName}
         loading="lazy"
         onLoad={recalcRowSpan}
       />
     );
-  }, [primaryOutput, video, recalcRowSpan]);
+  }, [primaryOutput, video, recalcRowSpan, isMeasured]);
 
   const fallbackContent = (
     <div className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5 py-16">
