@@ -28,7 +28,13 @@ import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSele
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
-const EXCLUDED_MODELS = new Set(["PixVerse V5 Transition"]);
+const ALLOWED_MODELS = new Set([
+  "Kling v2.5 Pro",
+  "Minimax Hailuo 2.0",
+  "Kling v2.1 Master",
+  "Seedance 1.0 Pro",
+  "Seedance 1.0 Lite",
+]);
 
 export default function TextToVideoLeftPanel() {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
@@ -36,7 +42,7 @@ export default function TextToVideoLeftPanel() {
   const repromptDraft = useRepromptStore((state) => state.draft);
   const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
   const textToVideoOptions = useMemo(
-    () => VIDEO_MODEL_SELECT_OPTIONS.filter((option) => !EXCLUDED_MODELS.has(option.value)),
+    () => VIDEO_MODEL_SELECT_OPTIONS.filter((option) => ALLOWED_MODELS.has(option.value)),
     []
   );
   const [prompt, setPrompt] = useState("");

@@ -105,6 +105,14 @@ const ENDPOINT_ALLOWED_DURATIONS: Record<string, (number | string)[]> = {
   "wan-v2-2-480p": ["5", "10"],
 };
 
+const TEXT_ONLY_MODELS = new Set([
+  "Kling v2.5 Pro",
+  "Minimax Hailuo 2.0",
+  "Kling v2.1 Master",
+  "Seedance 1.0 Pro",
+  "Seedance 1.0 Lite",
+]);
+
 const TRANSPARENT_IMAGE_BY_RATIO: Record<string, string> = {
   "16:9": "https://static.bestmaker.ai/transparent_images/transparent_16_9_1920x1080.png",
   "9:16": "https://static.bestmaker.ai/transparent_images/transparent_9_16_1080x1920.png",
@@ -326,15 +334,14 @@ function buildFreepikVideoPayload({
     case "seedance-lite-1080p":
     case "seedance-lite-720p":
     case "seedance-lite-480p": {
-      if (!imageUrl) {
-        throw new Error("Seedance 需要上传参考图");
-      }
       if (!prompt) {
         throw new Error("Seedance 需要提示词");
       }
-      payload.image = imageUrl;
       payload.prompt = prompt;
       payload.duration = durationString;
+      if (imageUrl) {
+        payload.image = imageUrl;
+      }
       if (aspectRatio) {
         payload.aspect_ratio = toFreepikAspectRatio(aspectRatio);
       }
@@ -590,9 +597,11 @@ export async function POST(req: NextRequest) {
     return apiResponse.badRequest(error?.message ?? "Unsupported duration");
   }
 
+  const shouldAttachFallbackImage =
+    mode === "text" && !TEXT_ONLY_MODELS.has(resolvedModelName ?? "");
   const primaryImageUrl =
     primaryInputSource ??
-    (mode === "text" ? getDefaultTransparentImage(resolvedAspectRatio) : undefined);
+    (shouldAttachFallbackImage ? getDefaultTransparentImage(resolvedAspectRatio) : undefined);
   const tailImageUrl = tailInputSource ?? undefined;
   const introImageUrl = introInputSource ?? undefined;
   const outroImageUrl = outroInputSource ?? undefined;
