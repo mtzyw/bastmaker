@@ -8,6 +8,7 @@ import { getUserCreationsHistory } from "@/actions/creations";
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,17 +53,19 @@ const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
   { key: "视频" as const, label: "视频" },
   { key: "图片" as const, label: "图片" },
+  { key: "音效" as const, label: "音效" },
 ];
 
 type CategoryFilter = (typeof CATEGORY_OPTIONS)[number]["key"];
 
-const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片"];
+const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片", "音效"];
 
 type TaskStatus = "failed" | "succeeded" | "processing";
 
 type TaskMedia =
   | { kind: "image"; url?: string | null; thumbUrl?: string | null }
   | { kind: "video"; url?: string | null; thumbUrl?: string | null }
+  | { kind: "audio"; url?: string | null }
   | { kind: "unknown"; url?: string | null; thumbUrl?: string | null };
 
 type DisplayTask = {
@@ -91,6 +94,7 @@ const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefine
   全部: undefined,
   视频: ["t2v", "i2v"],
   图片: ["t2i", "i2i"],
+  音效: ["t2a"],
 };
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
@@ -102,6 +106,7 @@ const MODALITY_LABELS: Record<string, string> = {
   i2i: "Image to Image",
   t2v: "Text to Video",
   i2v: "Image to Video",
+  t2a: "Text to Sound",
 };
 
 const PAGE_SIZE = 10;
@@ -194,6 +199,9 @@ function getModelLabel(job: CreationItem) {
   if (modality === "t2v" || modality === "i2v") {
     return getVideoModelConfig(slug).displayName;
   }
+  if (modality === "t2a") {
+    return getSoundEffectModelConfig(slug).displayName;
+  }
   return getTextToImageModelConfig(slug).displayName;
 }
 
@@ -215,6 +223,13 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
   );
   if (videoOutput && (videoOutput.url || videoOutput.thumbUrl)) {
     return { kind: "video", url: videoOutput.url, thumbUrl: videoOutput.thumbUrl };
+  }
+
+  const audioOutput = outputs.find((output) =>
+    (output.type ?? "").toLowerCase().startsWith("audio")
+  );
+  if (audioOutput && audioOutput.url) {
+    return { kind: "audio", url: audioOutput.url };
   }
 
   const fallback = outputs[0];
@@ -315,7 +330,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     typeLabel: getTypeLabel(job),
     modelLabel: getModelLabel(job),
     createdAtLabel: dayjs(job.createdAt).format("MM-DD HH:mm"),
-    prompt: parsePrompt(job.inputParams?.prompt),
+    prompt: parsePrompt(job.inputParams?.prompt ?? job.inputParams?.text ?? job.metadata?.prompt),
     negativePrompt: parsePrompt(job.inputParams?.negative_prompt) || undefined,
     status: mapStatus(effectiveStatus),
     errorMessage:
@@ -974,6 +989,22 @@ export default function TextToImageRecentTasks({
         return wrapWithInteraction(thumbNode);
       }
       return null;
+    }
+
+    if (task.media.kind === "audio") {
+      if (!task.media.url) {
+        return null;
+      }
+      const audioNode = (
+        <audio
+          src={task.media.url}
+          controls
+          className="w-full max-w-[260px] rounded-lg border border-white/10 bg-black/40"
+        >
+          您的浏览器不支持 audio 标签。
+        </audio>
+      );
+      return wrapWithInteraction(audioNode);
     }
 
     const imageSrc = task.media.url ?? task.media.thumbUrl;

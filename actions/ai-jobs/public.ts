@@ -6,7 +6,7 @@ import type { Database } from "@/lib/supabase/types";
 import { shareModalityDisplayName, shareModelDisplayName } from "@/lib/share/job-metadata";
 
 export type ViewerJobAsset = {
-  type: "image" | "video" | "unknown";
+  type: "image" | "video" | "audio" | "unknown";
   url: string;
   thumbUrl?: string | null;
   posterUrl?: string | null;
@@ -48,6 +48,7 @@ function detectAssetType(typeInput?: string | null, mimeType?: string | null, ur
 
   const videoHints = ["video", "mp4", "webm", "mov", "avi", "mkv", "m4v"];
   const imageHints = ["image", "png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "bmp"];
+  const audioHints = ["audio", "mp3", "wav", "aac", "flac", "ogg", "m4a"];
 
   const includesHint = (value: string, hints: string[]) => hints.some((hint) => value.includes(hint));
 
@@ -57,6 +58,10 @@ function detectAssetType(typeInput?: string | null, mimeType?: string | null, ur
 
   if (includesHint(lowerType, imageHints) || includesHint(lowerMime, imageHints) || imageHints.some((ext) => lowerUrl.endsWith(`.${ext}`))) {
     return "image";
+  }
+
+  if (includesHint(lowerType, audioHints) || includesHint(lowerMime, audioHints) || audioHints.some((ext) => lowerUrl.endsWith(`.${ext}`))) {
+    return "audio";
   }
 
   return "unknown";

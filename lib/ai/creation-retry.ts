@@ -1,6 +1,7 @@
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { DEFAULT_SOUND_EFFECT_MODEL, getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 
 export type RegenerationResultPayload = {
   jobId?: string | null;
@@ -11,7 +12,7 @@ export type RegenerationResultPayload = {
 };
 
 export type RegenerationPlan = {
-  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video" | "/api/ai/effects/video";
+  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video" | "/api/ai/freepik/sound" | "/api/ai/effects/video";
   payload: Record<string, unknown>;
   optimisticItem: CreationItem;
   buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
@@ -62,6 +63,15 @@ export type RepromptDraft =
       outroImageUrl?: string | null;
       tailImageUrl?: string | null;
       additionalAssets?: Record<string, string>;
+    }
+  | {
+      kind: "sound-effects";
+      route: "/sound-generation";
+      prompt: string;
+      translatePrompt: boolean;
+      durationSeconds?: number;
+      loop?: boolean;
+      promptInfluence?: number;
     };
 
 type NormalizedVideoMode = "text" | "image" | "transition";
@@ -83,6 +93,11 @@ export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
     mode === "image" ||
     mode === "transition";
   const isImageGenerationLike = source === "text-to-image" || source === "image-to-image" || modality === "t2i" || modality === "i2i";
+  const isSoundLike = source === "sound" || modality === "t2a";
+
+  if (isSoundLike) {
+    return buildSoundEffectPlan(item);
+  }
 
   if (!isVideoLike && (source === "image-to-image" || modality === "i2i" || (item.isImageToImage && isImageGenerationLike))) {
     return buildImageToImagePlan(item);
@@ -127,6 +142,11 @@ export function buildRepromptDraft(item: CreationItem): RepromptDraft {
     mode === "transition";
   const isImageGenerationLike =
     source === "text-to-image" || source === "image-to-image" || modality === "t2i" || modality === "i2i";
+  const isSoundLike = source === "sound" || modality === "t2a";
+
+  if (isSoundLike) {
+    return buildSoundEffectReprompt(item);
+  }
 
   if (!isVideoLike && (source === "image-to-image" || modality === "i2i" || (item.isImageToImage && isImageGenerationLike))) {
     return buildImageToImageReprompt(item);
@@ -273,6 +293,88 @@ function buildImageToImagePlan(item: CreationItem): RegenerationPlan {
 
   return {
     endpoint: "/api/ai/freepik/tasks",
+    payload: removeUndefined(payload),
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function buildSoundEffectPlan(item: CreationItem): RegenerationPlan {
+  const model =
+    getString(item.inputParams?.model ?? item.modelSlug ?? DEFAULT_SOUND_EFFECT_MODEL) ??
+    DEFAULT_SOUND_EFFECT_MODEL;
+  const prompt =
+    getString(item.inputParams?.text ?? item.inputParams?.prompt ?? item.metadata?.prompt) ??
+    getString(item.metadata?.original_prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const translatePrompt = getBoolean(
+    item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt
+  );
+  const durationValue = normalizeNumber(
+    item.inputParams?.duration_seconds ?? item.metadata?.duration_seconds ?? item.metadata?.duration
+  );
+  const loop = getBoolean(item.inputParams?.loop ?? item.metadata?.loop);
+  const influenceValue = normalizeNumber(
+    item.inputParams?.prompt_influence ?? item.metadata?.prompt_influence
+  );
+  const config = safeGetSoundConfig(model);
+  const durationSeconds = clampNumber(
+    durationValue ?? config.defaultDurationSeconds,
+    0.5,
+    22
+  );
+  const promptInfluence =
+    influenceValue != null ? clampNumber(influenceValue, 0, 1) : config.defaultPromptInfluence;
+
+  const payload: Record<string, unknown> = {
+    model,
+    text: prompt,
+    duration_seconds: durationSeconds,
+    loop,
+    prompt_influence: promptInfluence,
+    translate_prompt: translatePrompt,
+  };
+
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: model,
+    providerCode: config.providerCode,
+    costCredits: config.creditsCost,
+    metadata: {
+      source: "sound",
+      mode: "text",
+      translate_prompt: translatePrompt,
+      credits_cost: config.creditsCost,
+      prompt,
+      original_prompt: prompt,
+      duration_seconds: durationSeconds,
+      loop,
+      prompt_influence: promptInfluence,
+      modality_code: config.defaultModality,
+      model_display_name: config.displayName,
+    },
+    inputParams: {
+      model,
+      text: prompt,
+      duration_seconds: durationSeconds,
+      loop,
+      prompt_influence: promptInfluence,
+    },
+    modalityCode: config.defaultModality,
+    isImageToImage: false,
+    referenceImageCount: 0,
+  });
+
+  return {
+    endpoint: "/api/ai/freepik/sound",
     payload: removeUndefined(payload),
     optimisticItem: optimistic,
     buildPersistedItem: (result) =>
@@ -587,6 +689,34 @@ function buildImageToVideoReprompt(item: CreationItem, mode: NormalizedVideoMode
     outroImageUrl: assets.outro?.url ?? null,
     tailImageUrl: assets.tail?.url ?? null,
     additionalAssets: Object.keys(additionalAssets).length > 0 ? additionalAssets : undefined,
+  };
+}
+
+function buildSoundEffectReprompt(item: CreationItem): RepromptDraft {
+  const prompt =
+    getString(item.inputParams?.text ?? item.inputParams?.prompt ?? item.metadata?.prompt) ??
+    getString(item.metadata?.original_prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新编辑");
+  }
+
+  const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
+  const durationValue = normalizeNumber(
+    item.inputParams?.duration_seconds ?? item.metadata?.duration_seconds ?? item.metadata?.duration
+  );
+  const loopValue = item.inputParams?.loop ?? item.metadata?.loop;
+  const influenceValue = normalizeNumber(
+    item.inputParams?.prompt_influence ?? item.metadata?.prompt_influence
+  );
+
+  return {
+    kind: "sound-effects",
+    route: "/sound-generation",
+    prompt,
+    translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
+    durationSeconds: durationValue ?? undefined,
+    loop: typeof loopValue === "boolean" ? loopValue : undefined,
+    promptInfluence: influenceValue != null ? clampNumber(influenceValue, 0, 1) : undefined,
   };
 }
 
@@ -988,6 +1118,15 @@ function safeGetVideoConfig(model: string) {
   }
 }
 
+function safeGetSoundConfig(model: string) {
+  try {
+    return getSoundEffectModelConfig(model);
+  } catch (error) {
+    console.warn("[creation-retry] failed to resolve sound config", model, error);
+    return getSoundEffectModelConfig(DEFAULT_SOUND_EFFECT_MODEL);
+  }
+}
+
 function generateTempJobId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return `temp-${crypto.randomUUID()}`;
@@ -1004,6 +1143,13 @@ function normalizeNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
+  return Math.min(Math.max(value, min), max);
 }
 
 function getString(value: unknown): string | null {

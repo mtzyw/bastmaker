@@ -30,6 +30,18 @@ export function isVideoOutput(output?: CreationOutput | null) {
   return /(\.mp4|\.webm|\.mov)(\?.*)?$/.test(url);
 }
 
+export function isAudioOutput(output?: CreationOutput | null) {
+  if (!output) return false;
+
+  const mimeType = output.type?.toLowerCase() ?? "";
+  if (mimeType.startsWith("audio")) {
+    return true;
+  }
+
+  const url = output.url?.toLowerCase() ?? "";
+  return /(\.mp3|\.wav|\.aac|\.flac|\.ogg|\.m4a)(\?.*)?$/.test(url);
+}
+
 export function getEffectiveStatus(item: CreationItem) {
   const candidate = item.latestStatus ?? item.status;
   if (typeof candidate !== "string") {

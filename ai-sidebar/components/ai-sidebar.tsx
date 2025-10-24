@@ -118,6 +118,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
   const activeIdFromPath = useMemo(() => {
     const path = normalizePathname(pathname)
     if (path.startsWith("/video-effects")) return "ai-video-effects"
+    if (path.startsWith("/sound-generation")) return "sound-generation"
     if (path.startsWith("/text-to-video")) return "text-to-video"
     if (path.startsWith("/image-to-video")) return "image-to-video"
     if (path.startsWith("/text-to-image")) return "text-to-image"
@@ -139,6 +140,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
   const handleItemClick = (itemId: string) => {
     setActiveId(itemId)
     // Route mapping for relevant items
+    if (itemId === "sound-generation") { router.push("/sound-generation"); onNavigate && onNavigate(); }
     if (itemId === "text-to-image") { router.push("/text-to-image"); onNavigate && onNavigate(); }
     if (itemId === "image-to-image") { router.push("/image-to-image"); onNavigate && onNavigate(); }
     if (itemId === "text-to-video") { router.push("/text-to-video"); onNavigate && onNavigate(); }

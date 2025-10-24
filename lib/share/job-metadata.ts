@@ -1,11 +1,13 @@
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 
 const MODALITY_DISPLAY: Record<string, string> = {
   t2i: "Text to Image",
   i2i: "Image to Image",
   t2v: "Text to Video",
   i2v: "Image to Video",
+  t2a: "Text to Sound",
 };
 
 export function shareModalityDisplayName(modality: string | null | undefined) {
@@ -18,6 +20,9 @@ export function shareModelDisplayName(modality: string | null | undefined, model
   try {
     if (modality === "t2v" || modality === "i2v") {
       return getVideoModelConfig(modelSlug).displayName;
+    }
+    if (modality === "t2a") {
+      return getSoundEffectModelConfig(modelSlug).displayName;
     }
     return getTextToImageModelConfig(modelSlug).displayName;
   } catch {

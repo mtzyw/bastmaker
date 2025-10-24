@@ -50,6 +50,10 @@ function isVideoAsset(asset: ViewerJobAsset | null | undefined) {
   return asset?.type === "video";
 }
 
+function isAudioAsset(asset: ViewerJobAsset | null | undefined) {
+  return asset?.type === "audio";
+}
+
 export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const headerT = useTranslations("Viewer.header");
   const t = useTranslations("Viewer.details");
@@ -72,6 +76,21 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           poster={primaryAsset.posterUrl ?? primaryAsset.thumbUrl ?? undefined}
           className="h-full w-full object-contain p-2"
         />
+      );
+    }
+
+    if (isAudioAsset(primaryAsset)) {
+      if (!primaryAsset.url) {
+        return null;
+      }
+      return (
+        <audio
+          src={primaryAsset.url}
+          controls
+          className="w-full h-auto p-4"
+        >
+          您的浏览器不支持 audio 标签。
+        </audio>
       );
     }
 
@@ -98,6 +117,22 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           poster={asset.posterUrl ?? asset.thumbUrl ?? undefined}
           className="h-full w-full object-cover"
         />
+      );
+    }
+
+    if (isAudioAsset(asset)) {
+      if (!asset.url) {
+        return null;
+      }
+      return (
+        <audio
+          key={asset.url}
+          src={asset.url}
+          controls
+          className="h-full w-full"
+        >
+          您的浏览器不支持 audio 标签。
+        </audio>
       );
     }
 

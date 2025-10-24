@@ -10,6 +10,7 @@ import {
   getStatusLabel,
   isProcessingStatus,
   isVideoOutput,
+  isAudioOutput,
 } from "@/components/ai/my-creations-helpers";
 
 const GRID_ROW_HEIGHT = 12; // matches auto-rows-[12px]
@@ -108,6 +109,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
 
   const [primaryOutput] = item.outputs;
   const video = isVideoOutput(primaryOutput);
+  const audio = isAudioOutput(primaryOutput);
   const effectiveStatus = getEffectiveStatus(item);
   const statusLabel = getStatusLabel(effectiveStatus);
   const isInProgress = isProcessingStatus(effectiveStatus);
@@ -160,6 +162,28 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
       return null;
     }
 
+    if (audio) {
+      if (!primaryOutput.url) {
+        return null;
+      }
+
+      return (
+        <audio
+          src={primaryOutput.url}
+          controls
+          preload="metadata"
+          className={cn(
+            "w-full rounded-2xl border border-white/10 bg-black/30 p-4",
+            isMeasured && "h-full"
+          )}
+          onLoadedMetadata={recalcRowSpan}
+          onLoadedData={recalcRowSpan}
+        >
+          您的浏览器不支持 audio 标签。
+        </audio>
+      );
+    }
+
     const imageSrc = primaryOutput.url ?? primaryOutput.thumbUrl ?? null;
     if (!imageSrc) {
       return null;
@@ -174,7 +198,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
         onLoad={recalcRowSpan}
       />
     );
-  }, [primaryOutput, video, recalcRowSpan, isMeasured]);
+  }, [primaryOutput, video, audio, recalcRowSpan, isMeasured]);
 
   const fallbackContent = (
     <div className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5 py-16">

@@ -16,18 +16,20 @@ import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 
-type FilterKey = "all" | "video" | "image";
+type FilterKey = "all" | "video" | "image" | "sound";
 
 const FILTER_OPTIONS: ReadonlyArray<MyCreationsFilterOption> = [
   { value: "all", label: "全部" },
   { value: "video", label: "视频" },
   { value: "image", label: "图片" },
+  { value: "sound", label: "音效" },
 ];
 
 const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => string> = {
   all: (page, pageSize) => `/api/ai/my-creations?page=${page}&pageSize=${pageSize}`,
   video: (page, pageSize) => `/api/ai/my-creations/videos?page=${page}&pageSize=${pageSize}`,
   image: (page, pageSize) => `/api/ai/my-creations/images?page=${page}&pageSize=${pageSize}`,
+  sound: (page, pageSize) => `/api/ai/my-creations/sounds?page=${page}&pageSize=${pageSize}`,
 };
 
 const POLL_INTERVAL_MS = 5000;
@@ -91,6 +93,7 @@ export function MyCreationsContent({
     all: { items: initialItems, totalCount, page: 0, initialized: true },
     video: { items: [], totalCount: 0, page: 0, initialized: false },
     image: { items: [], totalCount: 0, page: 0, initialized: false },
+    sound: { items: [], totalCount: 0, page: 0, initialized: false },
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

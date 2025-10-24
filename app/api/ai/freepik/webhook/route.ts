@@ -88,7 +88,12 @@ export async function POST(req: NextRequest) {
   }
 
   const metadata = (job.metadata_json ?? {}) as Record<string, any>;
-  const outputType = metadata.source === "video" ? "video" : "image";
+  const outputType =
+    metadata.source === "video"
+      ? "video"
+      : metadata.source === "sound" || metadata.modality_code === "t2a"
+        ? "audio"
+        : "image";
   const updatedMetadata = {
     ...metadata,
     freepik_latest_status: freepikStatus,

@@ -116,10 +116,24 @@ export async function createFreepikImageTask(
 
 export type FreepikVideoPayload = Record<string, unknown>;
 
+export type FreepikSoundPayload = {
+  text: string;
+  duration_seconds: number;
+  loop?: boolean;
+  prompt_influence?: number;
+  webhook_url?: string;
+};
+
 export async function createFreepikVideoTask(
   model: string,
   payload: FreepikVideoPayload
 ): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
   const endpoint = buildVideoEndpoint(model).replace(/^\//, "");
   return postToFreepik(endpoint, payload);
+}
+
+export async function createFreepikSoundTask(
+  payload: FreepikSoundPayload
+): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
+  return postToFreepik("v1/ai/sound-effects", payload);
 }
