@@ -46,13 +46,6 @@ function getPrimaryAsset(assets: ViewerJobAsset[], fallbackUrl: string | null) {
   return null;
 }
 
-function getPreviewAsset(assets: ViewerJobAsset[]) {
-  if (assets.length > 1) {
-    return assets[1];
-  }
-  return assets[0];
-}
-
 function isVideoAsset(asset: ViewerJobAsset | null | undefined) {
   return asset?.type === "video";
 }
@@ -66,7 +59,6 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
 
   const primaryAsset = getPrimaryAsset(job.assets, job.fallbackUrl);
   const referenceAssets = job.referenceAssets;
-  const previewAsset = referenceAssets.length > 0 ? referenceAssets[0] : getPreviewAsset(job.assets);
 
   const renderPrimaryAsset = useMemo(() => {
     if (!primaryAsset) return null;
@@ -239,15 +231,6 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
                       {renderReferenceThumb(asset)}
                     </div>
                   ))}
-                </div>
-              </div>
-            ) : previewAsset ? (
-              <div>
-                <h4 className="text-xs font-medium uppercase tracking-wide text-white/50 mb-2">
-                  {t("preview", { default: "Reference" })}
-                </h4>
-                <div className="w-16 h-20 overflow-hidden rounded border border-white/10">
-                  {renderReferenceThumb(previewAsset)}
                 </div>
               </div>
             ) : null}

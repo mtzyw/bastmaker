@@ -581,7 +581,7 @@ export function MyCreationsContent({
       )}
 
       <Dialog open={Boolean(previewItem)} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#14141e] text-white sm:max-w-[68rem]">
+        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
           {isViewerLoading ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
               加载中...

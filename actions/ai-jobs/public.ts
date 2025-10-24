@@ -198,7 +198,7 @@ export async function getViewerJobBySlug(slug: string, options?: ViewerJobOption
     outro: "Outro image",
   };
 
-  const referenceAssets = (inputs ?? [])
+  let referenceAssets = (inputs ?? [])
     .filter((input) => typeof input?.url === "string" && input.url.length > 0)
     .map((input) => {
       const normalizedSource = typeof input.source === "string" ? input.source.toLowerCase() : "reference";
@@ -219,6 +219,12 @@ export async function getViewerJobBySlug(slug: string, options?: ViewerJobOption
   const fallbackUrl = assets.length > 0 ? assets[0].url : null;
   const metadata = (job.metadata_json ?? {}) as Record<string, any>;
   const prompt = typeof metadata.prompt === "string" ? metadata.prompt : metadata.original_prompt;
+
+  const metadataMode = typeof metadata.mode === "string" ? metadata.mode.toLowerCase() : null;
+  const jobModality = job.modality_code ?? (typeof metadata.modality_code === "string" ? metadata.modality_code : null);
+  if (jobModality === "t2v" && metadataMode === "text") {
+    referenceAssets = [];
+  }
 
   const modalityLabel = shareModalityDisplayName(job.modality_code);
   const modelLabel = shareModelDisplayName(job.modality_code, job.model_slug_at_submit);

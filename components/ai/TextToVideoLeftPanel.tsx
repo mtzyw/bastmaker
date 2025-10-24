@@ -59,7 +59,6 @@ export default function TextToVideoLeftPanel() {
   const [resolution, setResolution] = useState<VideoResolutionValue>(DEFAULT_VIDEO_RESOLUTION);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const hasValidModel = useMemo(
     () => textToVideoOptions.some((option) => option.value === model),
@@ -171,7 +170,6 @@ export default function TextToVideoLeftPanel() {
 
     setIsSubmitting(true);
     setErrorMessage(null);
-    setStatusMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
     let tempJobId: string | null = null;
@@ -322,18 +320,6 @@ export default function TextToVideoLeftPanel() {
         upsertHistoryItem(persistedItem);
       }
 
-      const parts: string[] = [];
-
-      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
-        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
-      }
-
-      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
-      if (typeof remainingCredits === "number") {
-        parts.push(`当前余额 ${remainingCredits} Credits`);
-      }
-
-      setStatusMessage(parts.length > 0 ? parts.join("，") : null);
     } catch (error) {
       if (tempJobId) {
         removeHistoryItem(tempJobId);
@@ -506,9 +492,6 @@ export default function TextToVideoLeftPanel() {
           </Button>
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
-          {statusMessage ? (
-            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
           ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
