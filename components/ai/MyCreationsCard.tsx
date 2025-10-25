@@ -12,6 +12,7 @@ import {
   isVideoOutput,
   isAudioOutput,
 } from "@/components/ai/my-creations-helpers";
+import AudioPlayer from "@components/audio-player";
 
 const GRID_ROW_HEIGHT = 12; // matches auto-rows-[12px]
 const GRID_GAP = 16; // gap-4 => 1rem
@@ -167,20 +168,20 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
         return null;
       }
 
+      const durationFromOutput = Number.isFinite(primaryOutput.duration ?? NaN)
+        ? Number(primaryOutput.duration)
+        : undefined;
+      const fallbackDuration = Number.isFinite(item.metadata?.duration_seconds ?? NaN)
+        ? Number(item.metadata?.duration_seconds)
+        : undefined;
+
       return (
-        <audio
+        <AudioPlayer
           src={primaryOutput.url}
-          controls
-          preload="metadata"
-          className={cn(
-            "w-full rounded-2xl border border-white/10 bg-black/30 p-4",
-            isMeasured && "h-full"
-          )}
-          onLoadedMetadata={recalcRowSpan}
-          onLoadedData={recalcRowSpan}
-        >
-          您的浏览器不支持 audio 标签。
-        </audio>
+          durationSeconds={durationFromOutput ?? fallbackDuration}
+          className="w-full"
+          onReady={recalcRowSpan}
+        />
       );
     }
 
@@ -198,7 +199,14 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
         onLoad={recalcRowSpan}
       />
     );
-  }, [primaryOutput, video, audio, recalcRowSpan, isMeasured]);
+  }, [
+    primaryOutput,
+    video,
+    audio,
+    recalcRowSpan,
+    isMeasured,
+    item.metadata?.duration_seconds,
+  ]);
 
   const fallbackContent = (
     <div className="flex w-full flex-col items-center justify-center bg-gradient-to-br from-white/10 to-white/5 py-16">

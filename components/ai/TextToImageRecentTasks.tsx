@@ -9,6 +9,7 @@ import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
+import AudioPlayer from "@components/audio-player";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,10 +64,10 @@ const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "
 type TaskStatus = "failed" | "succeeded" | "processing";
 
 type TaskMedia =
-  | { kind: "image"; url?: string | null; thumbUrl?: string | null }
-  | { kind: "video"; url?: string | null; thumbUrl?: string | null }
-  | { kind: "audio"; url?: string | null }
-  | { kind: "unknown"; url?: string | null; thumbUrl?: string | null };
+  | { kind: "image"; url?: string | null; thumbUrl?: string | null; durationSeconds?: number | null }
+  | { kind: "video"; url?: string | null; thumbUrl?: string | null; durationSeconds?: number | null }
+  | { kind: "audio"; url?: string | null; durationSeconds?: number | null }
+  | { kind: "unknown"; url?: string | null; thumbUrl?: string | null; durationSeconds?: number | null };
 
 type DisplayTask = {
   id: string;
@@ -215,26 +216,52 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
     (output.type ?? "").toLowerCase().startsWith("image")
   );
   if (imageOutput && (imageOutput.url || imageOutput.thumbUrl)) {
-    return { kind: "image", url: imageOutput.url, thumbUrl: imageOutput.thumbUrl };
+    return {
+      kind: "image",
+      url: imageOutput.url,
+      thumbUrl: imageOutput.thumbUrl,
+      durationSeconds: imageOutput.duration ?? null,
+    };
   }
 
   const videoOutput = outputs.find((output) =>
     (output.type ?? "").toLowerCase().startsWith("video")
   );
   if (videoOutput && (videoOutput.url || videoOutput.thumbUrl)) {
-    return { kind: "video", url: videoOutput.url, thumbUrl: videoOutput.thumbUrl };
+    return {
+      kind: "video",
+      url: videoOutput.url,
+      thumbUrl: videoOutput.thumbUrl,
+      durationSeconds: videoOutput.duration ?? null,
+    };
   }
 
   const audioOutput = outputs.find((output) =>
     (output.type ?? "").toLowerCase().startsWith("audio")
   );
   if (audioOutput && audioOutput.url) {
-    return { kind: "audio", url: audioOutput.url };
+    const durationValue = Number.isFinite(audioOutput.duration ?? NaN)
+      ? Number(audioOutput.duration)
+      : Number.isFinite(job.metadata?.duration_seconds ?? NaN)
+        ? Number(job.metadata?.duration_seconds)
+        : Number.isFinite(job.inputParams?.duration_seconds ?? NaN)
+          ? Number(job.inputParams?.duration_seconds)
+          : null;
+    return {
+      kind: "audio",
+      url: audioOutput.url,
+      durationSeconds: durationValue,
+    };
   }
 
   const fallback = outputs[0];
   if (fallback.url || fallback.thumbUrl) {
-    return { kind: "unknown", url: fallback.url, thumbUrl: fallback.thumbUrl };
+    return {
+      kind: "unknown",
+      url: fallback.url,
+      thumbUrl: fallback.thumbUrl,
+      durationSeconds: fallback.duration ?? null,
+    };
   }
 
   return undefined;
@@ -944,12 +971,21 @@ export default function TextToImageRecentTasks({
         return <div className="w-full max-w-[260px]">{node}</div>;
       }
 
+      const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpenViewer(task);
+        }
+      };
+
       return (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => handleOpenViewer(task)}
+          onKeyDown={handleKeyDown}
           className={cn(
-            "group relative block w-full max-w-[260px] focus:outline-none",
+            "group relative block w-full max-w-[260px] cursor-pointer focus:outline-none",
             "transition"
           )}
         >
@@ -958,7 +994,7 @@ export default function TextToImageRecentTasks({
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
             查看详情
           </span>
-        </button>
+        </div>
       );
     };
 
@@ -996,13 +1032,11 @@ export default function TextToImageRecentTasks({
         return null;
       }
       const audioNode = (
-        <audio
+        <AudioPlayer
           src={task.media.url}
-          controls
-          className="w-full max-w-[260px] rounded-lg border border-white/10 bg-black/40"
-        >
-          您的浏览器不支持 audio 标签。
-        </audio>
+          durationSeconds={task.media.durationSeconds ?? undefined}
+          className="w-full"
+        />
       );
       return wrapWithInteraction(audioNode);
     }
