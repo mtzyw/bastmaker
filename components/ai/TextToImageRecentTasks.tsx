@@ -966,9 +966,10 @@ export default function TextToImageRecentTasks({
     const viewerSlug = task.shareSlug;
     const canPreview = Boolean(viewerSlug) && task.status === "succeeded";
 
-    const wrapWithInteraction = (node: ReactNode) => {
+    const wrapWithInteraction = (node: ReactNode, opts?: { wide?: boolean }) => {
+      const widthClass = opts?.wide ? "w-full max-w-[480px]" : "w-full max-w-[260px]";
       if (!canPreview) {
-        return <div className="w-full max-w-[260px]">{node}</div>;
+        return <div className={widthClass}>{node}</div>;
       }
 
       const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -985,7 +986,8 @@ export default function TextToImageRecentTasks({
           onClick={() => handleOpenViewer(task)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "group relative block w-full max-w-[260px] cursor-pointer focus:outline-none",
+            "group relative block cursor-pointer focus:outline-none",
+            widthClass,
             "transition"
           )}
         >
@@ -1038,7 +1040,7 @@ export default function TextToImageRecentTasks({
           className="w-full"
         />
       );
-      return wrapWithInteraction(audioNode);
+      return wrapWithInteraction(audioNode, { wide: true });
     }
 
     const imageSrc = task.media.url ?? task.media.thumbUrl;
