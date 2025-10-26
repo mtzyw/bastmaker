@@ -35,20 +35,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ArrowUp, Check, Copy, Download, Heart, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, Clapperboard, Copy, Download, Heart, ImageUp, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan } from "@/lib/ai/creation-retry";
+import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan, type RepromptDraft } from "@/lib/ai/creation-retry";
 import { useRepromptStore } from "@/stores/repromptStore";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
+import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -438,6 +440,51 @@ export default function TextToImageRecentTasks({
     [regeneratingIds]
   );
 
+  const resolvePrimaryImageUrl = useCallback(
+    (task: DisplayTask): string | null => {
+      if (task.media?.kind === "image" && (task.media.url || task.media.thumbUrl)) {
+        return task.media.url ?? task.media.thumbUrl ?? null;
+      }
+
+      const original = itemMap.get(task.id);
+      if (!original) {
+        return null;
+      }
+
+      const outputs = Array.isArray(original.outputs) ? original.outputs : [];
+      const imageOutput = outputs.find(
+        (output) =>
+          typeof output?.type === "string" &&
+          output.type.toLowerCase().startsWith("image") &&
+          typeof output.url === "string" &&
+          output.url.length > 0
+      );
+      if (imageOutput?.url) {
+        return imageOutput.url;
+      }
+
+      const referenceUrls = Array.isArray(original.metadata?.reference_image_urls)
+        ? (original.metadata.reference_image_urls as unknown[])
+            .map((value) => (typeof value === "string" ? value : ""))
+            .filter((value): value is string => value.length > 0)
+        : [];
+      if (referenceUrls.length > 0) {
+        return referenceUrls[0];
+      }
+
+      if (typeof original.metadata?.primary_image_url === "string" && original.metadata.primary_image_url.length > 0) {
+        return original.metadata.primary_image_url;
+      }
+
+      if (typeof original.inputParams?.image_url === "string" && original.inputParams.image_url.length > 0) {
+        return original.inputParams.image_url;
+      }
+
+      return null;
+    },
+    [itemMap]
+  );
+
   const handleReprompt = useCallback(
     (jobId: string) => {
       const original = itemMap.get(jobId);
@@ -460,6 +507,72 @@ export default function TextToImageRecentTasks({
       }
     },
     [itemMap, locale, router, setRepromptDraft]
+  );
+
+  const handleStartImageToImage = useCallback(
+    (task: DisplayTask) => {
+      const original = itemMap.get(task.id);
+      if (!original) {
+        toast.error("未找到任务详情，无法使用该图片");
+        return;
+      }
+
+      const imageUrl = resolvePrimaryImageUrl(task);
+      if (!imageUrl) {
+        toast.error("未找到可用的图片输出");
+        return;
+      }
+
+      const modelSlug =
+        (typeof original.modelSlug === "string" && original.modelSlug.length > 0 && original.modelSlug) ||
+        (typeof original.inputParams?.model === "string" ? original.inputParams.model : TEXT_TO_IMAGE_DEFAULT_MODEL);
+
+      const draft: RepromptDraft = {
+        kind: "image-to-image",
+        route: "/image-to-image",
+        prompt: "",
+        translatePrompt: false,
+        model: modelSlug,
+        referenceImageUrls: [imageUrl],
+      };
+
+      setRepromptDraft(draft);
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      router.push(`${localePrefix}${draft.route}`);
+    },
+    [itemMap, locale, resolvePrimaryImageUrl, router, setRepromptDraft]
+  );
+
+  const handleStartImageToVideo = useCallback(
+    (task: DisplayTask) => {
+      const original = itemMap.get(task.id);
+      if (!original) {
+        toast.error("未找到任务详情，无法使用该图片");
+        return;
+      }
+
+      const imageUrl = resolvePrimaryImageUrl(task);
+      if (!imageUrl) {
+        toast.error("未找到可用的图片输出");
+        return;
+      }
+
+      const draft: RepromptDraft = {
+        kind: "image-to-video",
+        route: "/image-to-video",
+        prompt: "",
+        translatePrompt: false,
+        model: DEFAULT_VIDEO_MODEL,
+        mode: "image",
+        primaryImageUrl: imageUrl,
+        aspectRatio: task.aspectRatio ?? undefined,
+      };
+
+      setRepromptDraft(draft);
+      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+      router.push(`${localePrefix}${draft.route}`);
+    },
+    [itemMap, locale, resolvePrimaryImageUrl, router, setRepromptDraft]
   );
 
   const handleRegenerate = useCallback(
@@ -1501,6 +1614,38 @@ export default function TextToImageRecentTasks({
                   </TooltipTrigger>
                   <TooltipContent side="top">Regenerator</TooltipContent>
                 </Tooltip>
+                {task.status === "succeeded" && !task.effectSlug && task.media?.kind === "image" ? (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                          aria-label="图片转图片"
+                          onClick={() => void handleStartImageToImage(task)}
+                        >
+                          <ImageUp className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">图转图</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                          aria-label="图片转视频"
+                          onClick={() => void handleStartImageToVideo(task)}
+                        >
+                          <Clapperboard className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">图转视频</TooltipContent>
+                    </Tooltip>
+                  </>
+                ) : null}
                 <Button
                   variant="ghost"
                   size="icon"

@@ -207,15 +207,6 @@ export default function ImageToVideoLeftPanel() {
       );
     }
 
-    if (
-      repromptDraft.primaryImageUrl ||
-      repromptDraft.introImageUrl ||
-      repromptDraft.outroImageUrl ||
-      repromptDraft.tailImageUrl
-    ) {
-      toast.info("参考素材信息已加载，请确认后生成。");
-    }
-
     clearRepromptDraft();
   }, [repromptDraft, clearRepromptDraft, resetImageSelection]);
 
