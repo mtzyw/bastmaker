@@ -992,10 +992,6 @@ export default function TextToImageRecentTasks({
           )}
         >
           {node}
-          <span className="pointer-events-none absolute inset-0 rounded-lg border border-white/20 bg-black/40 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
-          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
-            查看详情
-          </span>
         </div>
       );
     };

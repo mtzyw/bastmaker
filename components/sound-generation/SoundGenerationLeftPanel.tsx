@@ -35,9 +35,7 @@ export default function SoundGenerationLeftPanel() {
     modelConfig.defaultDurationSeconds
   );
   const [loop, setLoop] = useState(false);
-  const [promptInfluence, setPromptInfluence] = useState(
-    modelConfig.defaultPromptInfluence
-  );
+  const [promptInfluence, setPromptInfluence] = useState(modelConfig.defaultPromptInfluence);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -280,22 +278,6 @@ export default function SoundGenerationLeftPanel() {
                 step={0.5}
                 value={durationSeconds}
                 onChange={(event) => handleDurationChange(Number(event.target.value))}
-                className="w-full accent-[#dc2e5a]"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-sm text-white/80 mb-2">
-                <span>提示词影响权重</span>
-                <span>{promptInfluence.toFixed(2)}</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={promptInfluence}
-                onChange={(event) => setPromptInfluence(Number(event.target.value))}
                 className="w-full accent-[#dc2e5a]"
               />
             </div>
