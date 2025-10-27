@@ -50,7 +50,7 @@ export default async function ImageToVideoPage() {
       section2Right={
         <TextToImageRecentTasks
           initialCategory="视频"
-          categories={["视频", "全部", "图片"]}
+          categories={["视频", "全部", "图片", "音效"]}
           hideEffectBadge
         />
       }
