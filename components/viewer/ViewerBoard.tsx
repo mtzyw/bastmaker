@@ -13,6 +13,7 @@ import {
   Copy,
   Video,
   ImageIcon,
+  Waves,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import AudioPlayer from "@/components/audio-player";
 
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
 
@@ -65,7 +67,19 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const referenceAssets = job.referenceAssets;
 
   const renderPrimaryAsset = useMemo(() => {
-    if (!primaryAsset) return null;
+    if (!primaryAsset) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[ViewerBoard] primary asset missing", {
+          assetsCount: job.assets.length,
+          fallbackUrl: job.fallbackUrl,
+        });
+      }
+      return (
+        <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-white/60">
+          暂无可展示的媒体资源
+        </div>
+      );
+    }
 
     if (isVideoAsset(primaryAsset)) {
       return (
@@ -80,17 +94,34 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     }
 
     if (isAudioAsset(primaryAsset)) {
-      if (!primaryAsset.url) {
-        return null;
+      const source = primaryAsset.url ?? job.fallbackUrl;
+      if (!source) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[ViewerBoard] audio asset missing url", {
+            assetsCount: job.assets.length,
+            fallbackUrl: job.fallbackUrl,
+          });
+        }
+        return (
+          <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-white/60">
+            暂无可播放的音频资源
+          </div>
+        );
       }
       return (
-        <audio
-          src={primaryAsset.url}
-          controls
-          className="w-full h-auto p-4"
-        >
-          您的浏览器不支持 audio 标签。
-        </audio>
+        <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-[#111]/80 p-6">
+          <div className="flex items-center gap-2 text-sm font-medium text-white/80">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+              <Waves className="h-4 w-4 text-white" />
+            </span>
+            音频预览
+          </div>
+          <AudioPlayer
+            src={source}
+            durationSeconds={primaryAsset.duration ?? undefined}
+            className="w-full max-w-[520px]"
+          />
+        </div>
       );
     }
 
@@ -104,7 +135,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
         className="object-contain p-6"
       />
     );
-  }, [primaryAsset]);
+  }, [primaryAsset, job]);
 
   const renderReferenceThumb = useCallback((asset: ViewerJobAsset) => {
     if (isVideoAsset(asset)) {

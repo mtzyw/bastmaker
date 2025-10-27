@@ -25,8 +25,74 @@ const webhookSchema = z.union([
   taskPayloadSchema,
 ]);
 
+const AUDIO_EXTENSIONS = [".mp3", ".wav", ".aac", ".flac", ".ogg", ".m4a"];
+const AUDIO_KEY_HINTS = ["audio", "sound", "result", "data", "output", "generated", "media", "file", "url", "items", "assets"];
+
 function withDefault<T>(value: T | null | undefined, fallback: T): T {
   return value ?? fallback;
+}
+
+function hasAudioExtension(url: string) {
+  const normalized = url.split(/[?#]/)[0].toLowerCase();
+  return AUDIO_EXTENSIONS.some((ext) => normalized.endsWith(ext));
+}
+
+function shouldTraverseAudioKey(key: string) {
+  const lower = key.toLowerCase();
+  return AUDIO_KEY_HINTS.some((hint) => lower.includes(hint));
+}
+
+function addAudioCandidate(url: string, bucket: Set<string>, contextHint?: string) {
+  if (typeof url !== "string") {
+    return;
+  }
+  const trimmed = url.trim();
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return;
+  }
+  const hasExt = hasAudioExtension(trimmed);
+  const lowerHint = (contextHint ?? "").toLowerCase();
+  if (!hasExt && !(lowerHint.includes("audio") || lowerHint.includes("sound"))) {
+    return;
+  }
+  bucket.add(trimmed);
+}
+
+function collectAudioUrls(value: unknown, bucket: Set<string>, contextHint?: string, depth = 0) {
+  if (depth > 5 || value === null || value === undefined) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    addAudioCandidate(value, bucket, contextHint);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectAudioUrls(entry, bucket, contextHint, depth + 1));
+    return;
+  }
+
+  if (typeof value === "object") {
+    Object.entries(value as Record<string, unknown>).forEach(([key, nested]) => {
+      if (typeof nested === "string") {
+        addAudioCandidate(nested, bucket, key);
+        return;
+      }
+
+      if (Array.isArray(nested) || (nested && typeof nested === "object")) {
+        if (shouldTraverseAudioKey(key)) {
+          collectAudioUrls(nested, bucket, key, depth + 1);
+        }
+      }
+    });
+  }
+}
+
+function extractAudioOutputs(task: unknown): string[] {
+  const bucket = new Set<string>();
+  collectAudioUrls(task, bucket);
+  return Array.from(bucket);
 }
 
 export async function POST(req: NextRequest) {
@@ -123,15 +189,30 @@ export async function POST(req: NextRequest) {
     updatedMetadata.error_message = errorMessage;
   }
 
-  const generatedOutputs = (
-    task.generated?.length
-      ? task.generated
-      : task.urls?.length
-        ? task.urls
-        : task.public_url
-          ? [task.public_url]
-          : []
-  ).filter(Boolean);
+  const rawOutputs = task.generated?.length
+    ? task.generated
+    : task.urls?.length
+      ? task.urls
+      : task.public_url
+        ? [task.public_url]
+        : [];
+
+  let generatedOutputs = rawOutputs
+    .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+    .map((entry) => entry.trim());
+
+  if (generatedOutputs.length === 0 && outputType === "audio") {
+    generatedOutputs = extractAudioOutputs(task);
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[freepik-webhook] resolved outputs", {
+      jobId: job.id,
+      providerTaskId,
+      outputType,
+      outputs: generatedOutputs,
+    });
+  }
 
   if (internalStatus === "completed" && generatedOutputs.length > 0) {
     const { data: existingOutputs } = await adminSupabase
