@@ -140,7 +140,7 @@ export default function AudioPlayer({
         className
       )}
     >
-      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7AFCD6] to-[#66C4FF] shadow-[0_6px_18px_rgba(0,0,0,0.4)]">
+      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-[#dc2e5a] shadow-[0_6px_18px_rgba(0,0,0,0.4)]">
         <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#111014]">
           <div className="absolute inset-2 rounded-full border border-white/15" />
           <svg

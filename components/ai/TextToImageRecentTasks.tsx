@@ -1485,7 +1485,7 @@ export default function TextToImageRecentTasks({
                     variant="ghost"
                     size="icon"
                     className={cn(
-                      "h-8 w-8 text-white/60 hover:text-white hover:bg-white/10",
+                      "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
                       task.favorite && "text-pink-400 hover:text-pink-300"
                     )}
                     aria-label={task.favorite ? "Remove from favorites" : "Mark as favorite"}
@@ -1499,9 +1499,9 @@ export default function TextToImageRecentTasks({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                         aria-label="更多操作"
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -1580,7 +1580,7 @@ export default function TextToImageRecentTasks({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                         aria-label="重新编辑提示词"
                         onClick={() => void handleReprompt(task.id)}
                       >
@@ -1595,7 +1595,7 @@ export default function TextToImageRecentTasks({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={cn(
+                    className={cn(
                         "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
                         isRegenerating(task.id) && "cursor-wait",
                         task.status !== "succeeded" && "cursor-not-allowed opacity-40 hover:text-white/60 hover:bg-transparent"
@@ -1621,7 +1621,7 @@ export default function TextToImageRecentTasks({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                           aria-label="图片转图片"
                           onClick={() => void handleStartImageToImage(task)}
                         >
@@ -1635,7 +1635,7 @@ export default function TextToImageRecentTasks({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                           aria-label="图片转视频"
                           onClick={() => void handleStartImageToVideo(task)}
                         >
@@ -1649,7 +1649,7 @@ export default function TextToImageRecentTasks({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                   aria-label="Download output"
                   disabled={task.status !== "succeeded" || !task.media || !task.media.url}
                 >
@@ -1658,7 +1658,7 @@ export default function TextToImageRecentTasks({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                   aria-label="Share result"
                   disabled={task.status !== "succeeded" || !task.shareSlug}
                   onClick={() => handleShare(task)}
