@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ArrowUp, Check, Clapperboard, Copy, Download, Heart, ImageUp, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, Clapperboard, Copy, Crown, Download, Heart, ImageUp, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
@@ -51,6 +51,7 @@ import { siteConfig } from "@/config/site";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
+import { downloadFile } from "@/lib/downloadFile";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -93,6 +94,32 @@ type DisplayTask = {
   effectTitle?: string | null;
 };
 
+function getMediaUrl(media?: TaskMedia) {
+  if (!media) {
+    return null;
+  }
+  const candidate = (media as { url?: string | null }).url;
+  return typeof candidate === "string" && candidate.length > 0 ? candidate : null;
+}
+
+function getMediaThumbUrl(media?: TaskMedia) {
+  if (!media) {
+    return null;
+  }
+  if ("thumbUrl" in media) {
+    const candidate = (media as { thumbUrl?: string | null }).thumbUrl;
+    if (typeof candidate === "string" && candidate.length > 0) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+type DownloadTargets = {
+  watermarkUrl: string | null;
+  originalUrl: string | null;
+};
+
 const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefined> = {
   全部: undefined,
   视频: ["t2v", "i2v"],
@@ -117,6 +144,45 @@ const POLL_INTERVAL_MS = 5000;
 
 type AiJobRow = Database["public"]["Tables"]["ai_jobs"]["Row"];
 type AiJobOutputRow = Database["public"]["Tables"]["ai_job_outputs"]["Row"];
+
+function inferFileExtension(url?: string | null, fallback: string = "png") {
+  if (!url) {
+    return fallback;
+  }
+  const clean = url.split(/[?#]/)[0] ?? "";
+  const match = clean.match(/\.([a-zA-Z0-9]+)$/);
+  if (!match) {
+    return fallback;
+  }
+  const ext = match[1].toLowerCase();
+  if (!ext || ext.length > 6) {
+    return fallback;
+  }
+  return ext;
+}
+
+function sanitizeFileStem(raw?: string | null) {
+  if (!raw) {
+    return null;
+  }
+  const stem = raw
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-_]/g, "")
+    .toLowerCase()
+    .slice(0, 48)
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return stem.length > 0 ? stem : null;
+}
+
+function buildDownloadFileName(task: DisplayTask, variant: "watermark" | "clean", extension: string) {
+  const stem =
+    sanitizeFileStem(task.prompt) ??
+    sanitizeFileStem(task.modelLabel) ??
+    `nexty-${task.id.slice(0, 6)}`;
+  const suffix = variant === "watermark" ? "-wm" : "-clean";
+  return `${stem}${suffix}.${extension}`;
+}
 
 type TextToImageRecentTasksProps = {
   initialCategory?: CategoryFilter;
@@ -429,6 +495,7 @@ export default function TextToImageRecentTasks({
   const setRepromptDraft = useRepromptStore((state) => state.setDraft);
   const itemMap = useMemo(() => new Map(items.map((entry) => [entry.jobId, entry])), [items]);
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
+  const [downloadMenuTaskId, setDownloadMenuTaskId] = useState<string | null>(null);
 
   const fetchInFlightRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -481,6 +548,87 @@ export default function TextToImageRecentTasks({
       }
 
       return null;
+    },
+    [itemMap]
+  );
+
+  const resolveDownloadTargets = useCallback(
+    (task: DisplayTask): DownloadTargets => {
+      const primaryMediaUrl = getMediaUrl(task.media);
+      const fallback: DownloadTargets = {
+        watermarkUrl: getMediaThumbUrl(task.media) ?? primaryMediaUrl,
+        originalUrl: primaryMediaUrl,
+      };
+
+      const original = itemMap.get(task.id);
+      if (!original) {
+        return fallback;
+      }
+
+      const outputs = Array.isArray(original.outputs) ? original.outputs : [];
+      const selectPrimary = (predicate: (output: CreationOutput) => boolean) =>
+        outputs.find((output) => {
+          if (typeof output !== "object" || !output) {
+            return false;
+          }
+          return predicate(output);
+        });
+
+      const primaryImage = selectPrimary(
+        (output) => typeof output.type === "string" && output.type.toLowerCase().startsWith("image")
+      );
+      const primaryVideo = selectPrimary(
+        (output) => typeof output.type === "string" && output.type.toLowerCase().startsWith("video")
+      );
+      const primaryAudio = selectPrimary(
+        (output) => typeof output.type === "string" && output.type.toLowerCase().startsWith("audio")
+      );
+
+      const primary =
+        primaryImage ??
+        primaryVideo ??
+        primaryAudio ??
+        (outputs.length > 0 ? outputs[0] : undefined);
+
+      const metadata = (original.metadata ?? {}) as Record<string, unknown>;
+
+      const originalCandidates: Array<string | null> = [
+        typeof primary?.url === "string" ? primary.url : null,
+        typeof metadata.output_url === "string" ? metadata.output_url : null,
+        typeof metadata.outputUrl === "string" ? metadata.outputUrl : null,
+        typeof metadata.download_url === "string" ? metadata.download_url : null,
+        typeof metadata.downloadUrl === "string" ? metadata.downloadUrl : null,
+        typeof metadata.asset_url === "string" ? metadata.asset_url : null,
+        typeof metadata.assetUrl === "string" ? metadata.assetUrl : null,
+        typeof metadata.original_url === "string" ? metadata.original_url : null,
+        typeof metadata.originalUrl === "string" ? metadata.originalUrl : null,
+        typeof metadata.result_url === "string" ? metadata.result_url : null,
+        typeof metadata.resultUrl === "string" ? metadata.resultUrl : null,
+      ];
+
+      const watermarkCandidates: Array<string | null> = [
+        typeof primary?.thumbUrl === "string" ? primary.thumbUrl : null,
+        typeof metadata.watermarked_url === "string" ? metadata.watermarked_url : null,
+        typeof metadata.watermarkedUrl === "string" ? metadata.watermarkedUrl : null,
+        typeof metadata.watermark_url === "string" ? metadata.watermark_url : null,
+        typeof metadata.watermarkUrl === "string" ? metadata.watermarkUrl : null,
+        typeof metadata.preview_url === "string" ? metadata.preview_url : null,
+        typeof metadata.previewUrl === "string" ? metadata.previewUrl : null,
+        typeof metadata.thumb_url === "string" ? metadata.thumb_url : null,
+        typeof metadata.thumbUrl === "string" ? metadata.thumbUrl : null,
+      ];
+
+      const originalUrl =
+        originalCandidates.find((value): value is string => Boolean(value && value.length > 0)) ??
+        fallback.originalUrl;
+      const watermarkUrl =
+        watermarkCandidates.find((value): value is string => Boolean(value && value.length > 0)) ??
+        fallback.watermarkUrl;
+
+      return {
+        originalUrl: originalUrl ?? null,
+        watermarkUrl: watermarkUrl ?? null,
+      };
     },
     [itemMap]
   );
@@ -573,6 +721,51 @@ export default function TextToImageRecentTasks({
       router.push(`${localePrefix}${draft.route}`);
     },
     [itemMap, locale, resolvePrimaryImageUrl, router, setRepromptDraft]
+  );
+
+  const openDownloadMenu = useCallback((taskId: string, disabled: boolean) => {
+    if (disabled) {
+      return;
+    }
+    setDownloadMenuTaskId(taskId);
+  }, []);
+
+  const closeDownloadMenu = useCallback((taskId?: string) => {
+    setDownloadMenuTaskId((current) => {
+      if (!taskId) {
+        return null;
+      }
+      return current === taskId ? null : current;
+    });
+  }, []);
+
+  const handleDownloadOptionClick = useCallback(
+    async (task: DisplayTask, variant: "watermark" | "clean") => {
+      const targets = resolveDownloadTargets(task);
+      const targetUrl = variant === "watermark" ? targets.watermarkUrl : targets.originalUrl;
+      if (!targetUrl) {
+        toast.error(variant === "watermark" ? "暂时没有带水印的资源" : "暂时没有无水印的资源");
+        return;
+      }
+
+      const fallbackExt =
+        task.media?.kind === "video"
+          ? "mp4"
+          : task.media?.kind === "audio"
+            ? "mp3"
+            : "png";
+      const extension = inferFileExtension(targetUrl, fallbackExt);
+      const fileName = buildDownloadFileName(task, variant, extension);
+
+      closeDownloadMenu(task.id);
+
+      try {
+        await downloadFile(targetUrl, fileName);
+      } catch (error) {
+        console.error("[TextToImageRecentTasks] download failed", error);
+      }
+    },
+    [closeDownloadMenu, resolveDownloadTargets]
   );
 
   const handleRegenerate = useCallback(
@@ -858,6 +1051,24 @@ export default function TextToImageRecentTasks({
     () => filteredItems.map(toDisplayTask),
     [filteredItems]
   );
+
+  useEffect(() => {
+    if (!downloadMenuTaskId) {
+      return;
+    }
+    const activeTask = displayTasks.find((task) => task.id === downloadMenuTaskId) ?? null;
+    if (!activeTask) {
+      setDownloadMenuTaskId(null);
+      return;
+    }
+    const targets = resolveDownloadTargets(activeTask);
+    const disabled =
+      activeTask.status !== "succeeded" ||
+      (!targets.originalUrl && !targets.watermarkUrl);
+    if (disabled) {
+      setDownloadMenuTaskId(null);
+    }
+  }, [displayTasks, downloadMenuTaskId, resolveDownloadTargets]);
 
   const hasProcessingTasks = useMemo(
     () => items.some((item) => mapStatus(item.latestStatus ?? item.status) === "processing"),
@@ -1444,7 +1655,15 @@ export default function TextToImageRecentTasks({
       <div className="relative flex-1 min-h-0">
         <ScrollArea className="h-full" viewportRef={handleViewportRef}>
           <div className="pr-3 space-y-4">
-            {displayTasks.map((task) => (
+            {displayTasks.map((task) => {
+              const downloadTargets = resolveDownloadTargets(task);
+              const hasWatermarkTarget = Boolean(downloadTargets.watermarkUrl);
+              const hasCleanTarget = Boolean(downloadTargets.originalUrl);
+              const downloadDisabled =
+                task.status !== "succeeded" || (!hasWatermarkTarget && !hasCleanTarget);
+              const downloadMenuOpen = downloadMenuTaskId === task.id;
+
+              return (
               <article
                 key={task.id}
                 className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
@@ -1646,15 +1865,75 @@ export default function TextToImageRecentTasks({
                     </Tooltip>
                   </>
                 ) : null}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                  aria-label="Download output"
-                  disabled={task.status !== "succeeded" || !task.media || !task.media.url}
+                <DropdownMenu
+                  modal={false}
+                  open={!downloadDisabled && downloadMenuOpen}
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) {
+                      openDownloadMenu(task.id, downloadDisabled);
+                    } else {
+                      closeDownloadMenu(task.id);
+                    }
+                  }}
                 >
-                  <Download className="h-4 w-4" />
-                </Button>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                      aria-label="下载作品"
+                      aria-haspopup="menu"
+                      aria-expanded={downloadMenuOpen}
+                      disabled={downloadDisabled}
+                      onMouseEnter={() => openDownloadMenu(task.id, downloadDisabled)}
+                      onFocus={() => openDownloadMenu(task.id, downloadDisabled)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="top"
+                    align="center"
+                    sideOffset={12}
+                    className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.4)]"
+                    onMouseLeave={() => closeDownloadMenu(task.id)}
+                    onCloseAutoFocus={(event) => {
+                      event.preventDefault();
+                    }}
+                  >
+                    <DropdownMenuItem
+                      disabled={!hasWatermarkTarget}
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        void handleDownloadOptionClick(task, "watermark");
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-white",
+                        hasWatermarkTarget ? "cursor-pointer text-white/80" : "text-white/40"
+                      )}
+                    >
+                      <Download className="h-4 w-4 text-inherit" />
+                      <span className="flex-1">下载带水印</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!hasCleanTarget}
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        void handleDownloadOptionClick(task, "clean");
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-white",
+                        hasCleanTarget ? "cursor-pointer text-white/80" : "text-white/40"
+                      )}
+                    >
+                      <Download className="h-4 w-4 text-inherit" />
+                      <span className="flex-1">下载无水印</span>
+                      <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                        <Crown className="h-3 w-3 text-[#ffba49]" />
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1676,7 +1955,8 @@ export default function TextToImageRecentTasks({
                 ) : null}
               </footer>
             </article>
-          ))}
+          );
+        })}
           <div
             ref={loadMoreRef}
             className="py-4 text-center text-xs text-white/50"
