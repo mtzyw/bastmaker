@@ -631,7 +631,7 @@ export default function MultiImageKontextProClient() {
 
   const handleDownload = () => {
     if (resultImage) {
-      downloadFile(
+      void downloadFile(
         resultImage,
         `${siteConfig.name}-${selectedModel}.${outputFormat}`
       );

@@ -472,7 +472,7 @@ export default function FluxKontextProClient() {
 
   const handleDownload = () => {
     if (resultImage) {
-      downloadFile(
+      void downloadFile(
         resultImage,
         `${siteConfig.name}-${selectedModel}.${outputFormat}`
       );

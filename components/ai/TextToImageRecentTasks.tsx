@@ -51,7 +51,7 @@ import { siteConfig } from "@/config/site";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
-import { downloadFile } from "@/lib/downloadFile";
+import { downloadBase64File, downloadFile, downloadViaProxy } from "@/lib/downloadFile";
 
 const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
@@ -759,13 +759,32 @@ export default function TextToImageRecentTasks({
 
       closeDownloadMenu(task.id);
 
-      try {
-        await downloadFile(targetUrl, fileName);
-      } catch (error) {
-        console.error("[TextToImageRecentTasks] download failed", error);
+      const trimmedUrl = targetUrl.trim();
+
+      if (trimmedUrl.startsWith("data:")) {
+        downloadBase64File(trimmedUrl, fileName);
+        return;
+      }
+
+      if (variant === "watermark") {
+        const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id });
+        if (!proxied) {
+          toast.error("下载失败，请稍后重试");
+        }
+        return;
+      }
+
+      const downloaded = await downloadFile(trimmedUrl, fileName);
+      if (downloaded) {
+        return;
+      }
+
+      const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id });
+      if (!proxied) {
+        window.open(trimmedUrl, "_blank", "noopener");
       }
     },
-    [closeDownloadMenu, resolveDownloadTargets]
+    [closeDownloadMenu, resolveDownloadTargets, downloadFile, downloadViaProxy]
   );
 
   const handleRegenerate = useCallback(
