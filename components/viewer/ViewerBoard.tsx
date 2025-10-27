@@ -68,12 +68,6 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
 
   const renderPrimaryAsset = useMemo(() => {
     if (!primaryAsset) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[ViewerBoard] primary asset missing", {
-          assetsCount: job.assets.length,
-          fallbackUrl: job.fallbackUrl,
-        });
-      }
       return (
         <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-white/60">
           暂无可展示的媒体资源
@@ -96,12 +90,6 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     if (isAudioAsset(primaryAsset)) {
       const source = primaryAsset.url ?? job.fallbackUrl;
       if (!source) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[ViewerBoard] audio asset missing url", {
-            assetsCount: job.assets.length,
-            fallbackUrl: job.fallbackUrl,
-          });
-        }
         return (
           <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-white/60">
             暂无可播放的音频资源

@@ -205,15 +205,6 @@ export async function POST(req: NextRequest) {
     generatedOutputs = extractAudioOutputs(task);
   }
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[freepik-webhook] resolved outputs", {
-      jobId: job.id,
-      providerTaskId,
-      outputType,
-      outputs: generatedOutputs,
-    });
-  }
-
   if (internalStatus === "completed" && generatedOutputs.length > 0) {
     const { data: existingOutputs } = await adminSupabase
       .from("ai_job_outputs")
