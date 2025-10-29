@@ -419,6 +419,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_prompt_improvements: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          freepik_status: string | null
+          freepik_task_id: string | null
+          generated_prompts: Json | null
+          id: string
+          language: string | null
+          original_prompt: string
+          status: string
+          target_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          freepik_status?: string | null
+          freepik_task_id?: string | null
+          generated_prompts?: Json | null
+          id?: string
+          language?: string | null
+          original_prompt: string
+          status?: string
+          target_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          freepik_status?: string | null
+          freepik_task_id?: string | null
+          generated_prompts?: Json | null
+          id?: string
+          language?: string | null
+          original_prompt?: string
+          status?: string
+          target_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_providers: {
         Row: {
           created_at: string
@@ -1352,23 +1397,26 @@ export type Database = {
         Args: { p_job_id: string }
         Returns: undefined
       }
-      initialize_or_reset_yearly_allocation: {
-        Args:
-          | {
+      initialize_or_reset_yearly_allocation:
+        | {
+            Args: {
+              p_monthly_credits: number
+              p_subscription_start_date: string
+              p_total_months: number
+              p_user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
               p_monthly_credits: number
               p_related_order_id?: string
               p_subscription_start_date: string
               p_total_months: number
               p_user_id: string
             }
-          | {
-              p_monthly_credits: number
-              p_subscription_start_date: string
-              p_total_months: number
-              p_user_id: string
-            }
-        Returns: undefined
-      }
+            Returns: undefined
+          }
       revoke_credits: {
         Args: {
           p_clear_monthly_details?: boolean

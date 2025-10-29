@@ -137,3 +137,16 @@ export async function createFreepikSoundTask(
 ): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
   return postToFreepik("v1/ai/sound-effects", payload);
 }
+
+export type FreepikImprovePromptPayload = {
+  prompt: string;
+  type: "image" | "video";
+  language?: string;
+  webhook_url?: string;
+};
+
+export async function improveFreepikPrompt(
+  payload: FreepikImprovePromptPayload
+): Promise<Record<string, unknown> | FreepikTaskResponse | null> {
+  return postToFreepik("v1/ai/improve-prompt", payload);
+}

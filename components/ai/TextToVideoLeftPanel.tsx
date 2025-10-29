@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Wand2, Trash2, Coins } from "lucide-react";
+import { Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
@@ -25,6 +25,7 @@ import {
   getAllowedVideoLengths,
 } from "@/components/ai/video-models";
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import { TextToVideoPromptEnhancer } from "@/components/ai/TextToVideoPromptEnhancer";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -377,10 +378,10 @@ export default function TextToVideoLeftPanel() {
             </div>
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-between px-3 py-3">
-              <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
-                <Wand2 className="w-3.5 h-3.5 mr-2" />
-                AI提示词
-              </Button>
+              <TextToVideoPromptEnhancer
+                prompt={prompt}
+                onApply={(value) => setPrompt(value)}
+              />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
                 <span>{prompt.length} / 1000</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>

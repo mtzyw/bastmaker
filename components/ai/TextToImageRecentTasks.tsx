@@ -496,6 +496,7 @@ export default function TextToImageRecentTasks({
   const itemMap = useMemo(() => new Map(items.map((entry) => [entry.jobId, entry])), [items]);
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
   const [downloadMenuTaskId, setDownloadMenuTaskId] = useState<string | null>(null);
+  const downloadMenuCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchInFlightRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -723,21 +724,52 @@ export default function TextToImageRecentTasks({
     [itemMap, locale, resolvePrimaryImageUrl, router, setRepromptDraft]
   );
 
-  const openDownloadMenu = useCallback((taskId: string, disabled: boolean) => {
-    if (disabled) {
-      return;
+  const clearDownloadMenuCloseTimeout = useCallback(() => {
+    if (downloadMenuCloseTimeoutRef.current) {
+      clearTimeout(downloadMenuCloseTimeoutRef.current);
+      downloadMenuCloseTimeoutRef.current = null;
     }
-    setDownloadMenuTaskId(taskId);
   }, []);
 
-  const closeDownloadMenu = useCallback((taskId?: string) => {
-    setDownloadMenuTaskId((current) => {
-      if (!taskId) {
-        return null;
+  const closeDownloadMenu = useCallback(
+    (taskId?: string) => {
+      clearDownloadMenuCloseTimeout();
+      setDownloadMenuTaskId((current) => {
+        if (!taskId) {
+          return null;
+        }
+        return current === taskId ? null : current;
+      });
+    },
+    [clearDownloadMenuCloseTimeout]
+  );
+
+  const openDownloadMenu = useCallback(
+    (taskId: string, disabled: boolean) => {
+      if (disabled) {
+        return;
       }
-      return current === taskId ? null : current;
-    });
-  }, []);
+      clearDownloadMenuCloseTimeout();
+      setDownloadMenuTaskId(taskId);
+    },
+    [clearDownloadMenuCloseTimeout]
+  );
+
+  const scheduleDownloadMenuClose = useCallback(
+    (taskId: string) => {
+      clearDownloadMenuCloseTimeout();
+      downloadMenuCloseTimeoutRef.current = window.setTimeout(() => {
+        closeDownloadMenu(taskId);
+      }, 120);
+    },
+    [clearDownloadMenuCloseTimeout, closeDownloadMenu]
+  );
+
+  useEffect(() => {
+    return () => {
+      clearDownloadMenuCloseTimeout();
+    };
+  }, [clearDownloadMenuCloseTimeout]);
 
   const handleDownloadOptionClick = useCallback(
     async (task: DisplayTask, variant: "watermark" | "clean") => {
@@ -1884,7 +1916,7 @@ export default function TextToImageRecentTasks({
                     </Tooltip>
                   </>
                 ) : null}
-                <DropdownMenu
+                  <DropdownMenu
                   modal={false}
                   open={!downloadDisabled && downloadMenuOpen}
                   onOpenChange={(isOpen) => {
@@ -1906,6 +1938,8 @@ export default function TextToImageRecentTasks({
                       disabled={downloadDisabled}
                       onMouseEnter={() => openDownloadMenu(task.id, downloadDisabled)}
                       onFocus={() => openDownloadMenu(task.id, downloadDisabled)}
+                      onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
+                      onBlur={() => scheduleDownloadMenuClose(task.id)}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
@@ -1915,7 +1949,9 @@ export default function TextToImageRecentTasks({
                     align="center"
                     sideOffset={12}
                     className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.4)]"
-                    onMouseLeave={() => closeDownloadMenu(task.id)}
+                    onMouseEnter={clearDownloadMenuCloseTimeout}
+                    onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
+                    onFocusCapture={clearDownloadMenuCloseTimeout}
                     onCloseAutoFocus={(event) => {
                       event.preventDefault();
                     }}
@@ -1927,7 +1963,7 @@ export default function TextToImageRecentTasks({
                         void handleDownloadOptionClick(task, "watermark");
                       }}
                       className={cn(
-                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-white",
+                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
                         hasWatermarkTarget ? "cursor-pointer text-white/80" : "text-white/40"
                       )}
                     >
@@ -1941,7 +1977,7 @@ export default function TextToImageRecentTasks({
                         void handleDownloadOptionClick(task, "clean");
                       }}
                       className={cn(
-                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-white",
+                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
                         hasCleanTarget ? "cursor-pointer text-white/80" : "text-white/40"
                       )}
                     >

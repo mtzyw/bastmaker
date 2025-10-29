@@ -95,6 +95,15 @@ function extractAudioOutputs(task: unknown): string[] {
   return Array.from(bucket);
 }
 
+function normalizePromptOutputs(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+    .filter((entry) => entry.length > 0);
+}
+
 export async function POST(req: NextRequest) {
   let json: unknown;
   try {
@@ -149,7 +158,52 @@ export async function POST(req: NextRequest) {
   }
 
   if (!job) {
-    console.warn(`(freepik-webhook) job not found for provider_job_id=${providerTaskId}`);
+    const { data: promptRecord, error: promptError } = await adminSupabase
+      .from("ai_prompt_improvements")
+      .select("id, status, generated_prompts")
+      .eq("freepik_task_id", providerTaskId)
+      .maybeSingle();
+
+    if (promptError) {
+      console.error("[freepik-webhook] failed to load prompt improvement", promptError);
+      return NextResponse.json({ success: false }, { status: 500 });
+    }
+
+    if (!promptRecord) {
+      console.warn(`(freepik-webhook) job not found for provider_job_id=${providerTaskId}`);
+      return NextResponse.json({ success: true });
+    }
+
+    console.log("[freepik-webhook] prompt improvement payload", {
+      providerTaskId,
+      freepikStatus,
+      task,
+    });
+
+    const normalizedStatus = mapFreepikStatus(freepikStatus);
+    const generatedPrompts = normalizePromptOutputs(task.generated);
+    const errorMessage =
+      normalizedStatus === "failed"
+        ? formatProviderError(task.error) ?? "提示词优化失败，请稍后重试。"
+        : null;
+
+    const updatePayload: Database["public"]["Tables"]["ai_prompt_improvements"]["Update"] = {
+      status: normalizedStatus,
+      freepik_status: freepikStatus,
+      generated_prompts: generatedPrompts.length > 0 ? generatedPrompts : promptRecord.generated_prompts,
+      error_message: errorMessage,
+    };
+
+    const { error: updateError } = await adminSupabase
+      .from("ai_prompt_improvements")
+      .update(updatePayload)
+      .eq("id", promptRecord.id);
+
+    if (updateError) {
+      console.error("[freepik-webhook] failed to update prompt improvement", updateError);
+      return NextResponse.json({ success: false }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true });
   }
 
