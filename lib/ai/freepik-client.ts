@@ -138,6 +138,21 @@ export async function createFreepikSoundTask(
   return postToFreepik("v1/ai/sound-effects", payload);
 }
 
+export type FreepikLipSyncPayload = {
+  video_url: string;
+  audio_url: string;
+  seed?: number;
+  guidance_scale?: number;
+  return_private_url?: boolean;
+  webhook_url?: string;
+};
+
+export async function createFreepikLipSyncTask(
+  payload: FreepikLipSyncPayload
+): Promise<FreepikTaskResponse | Record<string, unknown> | null> {
+  return postToFreepik("v1/ai/lip-sync/latent-sync", payload);
+}
+
 export type FreepikImprovePromptPayload = {
   prompt: string;
   type: "image" | "video";

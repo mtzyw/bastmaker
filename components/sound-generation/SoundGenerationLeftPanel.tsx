@@ -18,7 +18,11 @@ import { useRepromptStore } from "@/stores/repromptStore";
 const MIN_DURATION = 0.5;
 const MAX_DURATION = 22;
 
-export default function SoundGenerationLeftPanel() {
+type SoundGenerationLeftPanelProps = {
+  title?: string;
+};
+
+export default function SoundGenerationLeftPanel({ title = "文生音效" }: SoundGenerationLeftPanelProps = {}) {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const repromptDraft = useRepromptStore((state) => state.draft);
@@ -229,7 +233,7 @@ export default function SoundGenerationLeftPanel() {
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
-          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文生音效</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">{title}</h1>
 
           <div className="text-sm mt-3 mb-2">提示词</div>
 

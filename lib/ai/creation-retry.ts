@@ -85,6 +85,10 @@ export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
   const modality = getString(item.modalityCode ?? item.metadata?.modality_code);
   const source = getString(item.metadata?.source);
   const mode = getString(item.metadata?.mode ?? item.inputParams?.mode) as NormalizedVideoMode | undefined;
+  if (source === "lip-sync") {
+    throw new Error("当前暂不支持对口型任务的重新生成");
+  }
+
   const isVideoLike =
     source === "video" ||
     modality === "t2v" ||

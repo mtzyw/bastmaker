@@ -105,9 +105,22 @@ function normalizePromptOutputs(value: unknown): string[] {
 }
 
 export async function POST(req: NextRequest) {
+  let rawBody: string;
+  try {
+    rawBody = await req.text();
+  } catch (error) {
+    console.error("[freepik-webhook] failed to read body", error);
+    return NextResponse.json({ success: false, error: "Invalid payload" }, { status: 400 });
+  }
+
+  if (!rawBody || rawBody.trim().length === 0) {
+    console.warn("[freepik-webhook] empty payload received");
+    return NextResponse.json({ success: true });
+  }
+
   let json: unknown;
   try {
-    json = await req.json();
+    json = JSON.parse(rawBody);
   } catch (error) {
     console.error("[freepik-webhook] invalid JSON", error);
     return NextResponse.json({ success: false, error: "Invalid JSON" }, { status: 400 });
@@ -209,7 +222,7 @@ export async function POST(req: NextRequest) {
 
   const metadata = (job.metadata_json ?? {}) as Record<string, any>;
   const outputType =
-    metadata.source === "video"
+    metadata.source === "video" || metadata.source === "lip-sync" || metadata.modality_code === "t2v"
       ? "video"
       : metadata.source === "sound" || metadata.modality_code === "t2a"
         ? "audio"

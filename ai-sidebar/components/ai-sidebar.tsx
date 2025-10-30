@@ -119,6 +119,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     const path = normalizePathname(pathname)
     if (path.startsWith("/video-effects")) return "ai-video-effects"
     if (path.startsWith("/sound-generation")) return "sound-generation"
+    if (path.startsWith("/lip-sync")) return "lip-sync"
     if (path.startsWith("/text-to-video")) return "text-to-video"
     if (path.startsWith("/image-to-video")) return "image-to-video"
     if (path.startsWith("/text-to-image")) return "text-to-image"
@@ -145,6 +146,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     if (itemId === "image-to-image") { router.push("/image-to-image"); onNavigate && onNavigate(); }
     if (itemId === "text-to-video") { router.push("/text-to-video"); onNavigate && onNavigate(); }
     if (itemId === "image-to-video") { router.push("/image-to-video"); onNavigate && onNavigate(); }
+    if (itemId === "lip-sync") { router.push("/lip-sync"); onNavigate && onNavigate(); }
     if (itemId === "ai-video-effects") { router.push("/video-effects"); onNavigate && onNavigate(); }
     if (itemId === "assets") { router.push("/my-creations"); onNavigate && onNavigate(); }
   }
