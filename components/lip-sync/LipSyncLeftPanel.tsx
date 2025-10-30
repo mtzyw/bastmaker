@@ -353,6 +353,7 @@ export default function LipSyncLeftPanel() {
               kind="video"
               asset={video}
               icon={<VideoIcon className="w-6 h-6 text-white/70" />}
+              showPreview
               onPick={() => videoInputRef.current?.click()}
               onClear={() => handleClear("video")}
             />
@@ -443,6 +444,7 @@ type UploadSectionProps = {
   asset: UploadedAsset | null;
   onPick: () => void;
   onClear: () => void;
+  showPreview?: boolean;
 };
 
 function UploadSection({
@@ -454,6 +456,7 @@ function UploadSection({
   asset,
   onPick,
   onClear,
+  showPreview,
 }: UploadSectionProps) {
   return (
     <section className="space-y-2">
@@ -465,58 +468,66 @@ function UploadSection({
         type="button"
         onClick={onPick}
         className={cn(
-          "w-full rounded-xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors text-left",
-          "px-4 py-10 flex flex-col items-center justify-center gap-3",
+          "group w-full overflow-hidden rounded-xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors text-left",
+          "px-4 py-4",
         )}
       >
-        <div>{icon}</div>
-        {asset ? (
-          <div className="text-center space-y-1">
-            <p className="text-sm text-white font-medium break-all">
-              {asset.file.name}
-            </p>
-            <p className="text-xs text-white/60">
-              {(asset.file.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-            {asset.uploading ? (
-              <span className="inline-flex items-center gap-1 text-xs text-white/70">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                上传中...
-              </span>
-            ) : asset.error ? (
-              <span className="text-xs text-red-400">{asset.error}</span>
-            ) : (
-              <span className="text-xs text-emerald-400">上传完成</span>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-white/60">{placeholder}</p>
-        )}
-      </button>
-      {asset ? (
-        <div className="flex items-center justify-between text-xs text-white/60 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
-          <span className="truncate">{asset.file.name}</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-white/70 hover:text-white"
-            onClick={(event) => {
-              event.stopPropagation();
-              onClear();
-            }}
-            disabled={asset.uploading}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
+        <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black/40">
+          {showPreview && asset?.remoteUrl && !asset.uploading && !asset.error && kind === "video" ? (
+            <video
+              src={asset.remoteUrl}
+              className="h-full w-full object-contain"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : asset?.previewUrl && kind === "video" ? (
+            <video
+              src={asset.previewUrl}
+              className="h-full w-full object-contain"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : asset && kind === "audio" ? (
+            <div className="flex flex-col items-center gap-2 text-white/70">
+              <Music2 className="h-8 w-8" />
+              <span className="text-xs">{asset.file.name}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-white/60">
+              {icon}
+              <p className="text-sm text-center">{placeholder}</p>
+            </div>
+          )}
+          {asset && !asset.uploading && !asset.error ? (
+            <div
+              onClick={(event) => {
+                event.stopPropagation();
+                onClear();
+              }}
+              className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/70 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onClear();
+                }
+              }}
+            >
+              <Trash2 className="h-5 w-5" />
+            </div>
+          ) : (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 text-xs text-white/80 opacity-0 transition-opacity group-hover:opacity-100">
+              点击上传
+            </div>
+          )}
         </div>
-      ) : null}
-      {asset?.previewUrl && kind === "video" ? (
-        <video
-          src={asset.previewUrl}
-          controls
-          className="w-full rounded-lg border border-white/10 bg-black/40"
-        />
-      ) : null}
+      </button>
     </section>
   );
 }
