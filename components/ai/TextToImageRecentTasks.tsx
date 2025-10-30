@@ -418,6 +418,9 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     typeof job.metadata?.effect_slug === "string" ? job.metadata.effect_slug : null;
   const effectTitle =
     typeof job.metadata?.effect_title === "string" ? job.metadata.effect_title : null;
+  const promptValue = parsePrompt(job.inputParams?.prompt ?? job.inputParams?.text ?? job.metadata?.prompt);
+  const showPrompt = job.metadata?.source !== "lip-sync";
+
   return {
     id: job.jobId,
     provider: formatProviderName(job.providerCode),
@@ -425,7 +428,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     typeLabel: getTypeLabel(job),
     modelLabel: getModelLabel(job),
     createdAtLabel: dayjs(job.createdAt).format("MM-DD HH:mm"),
-    prompt: parsePrompt(job.inputParams?.prompt ?? job.inputParams?.text ?? job.metadata?.prompt),
+    prompt: showPrompt ? promptValue : "",
     negativePrompt: parsePrompt(job.inputParams?.negative_prompt) || undefined,
     status: mapStatus(effectiveStatus),
     errorMessage:
@@ -1807,18 +1810,20 @@ export default function TextToImageRecentTasks({
               </header>
 
               <div className="space-y-2">
-                {!task.effectSlug && (
+                {!task.effectSlug && task.metadata?.source !== "lip-sync" && (
                   <>
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      <span className="text-white">Prompt:</span>{" "}
-                      {task.prompt || "—"}
-                    </p>
-                    {task.negativePrompt ? (
-                      <p className="text-xs text-white/50">
-                        <span className="text-white/70">Negative:</span>{" "}
-                        {task.negativePrompt}
-                      </p>
-                    ) : null}
+                      {task.prompt ? (
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          <span className="text-white">Prompt:</span>{" "}
+                          {task.prompt}
+                        </p>
+                      ) : null}
+                      {task.negativePrompt ? (
+                        <p className="text-xs text-white/50">
+                          <span className="text-white/70">Negative:</span>{" "}
+                          {task.negativePrompt}
+                        </p>
+                      ) : null}
                   </>
                 )}
               </div>
