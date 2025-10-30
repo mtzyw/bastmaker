@@ -458,6 +458,12 @@ function UploadSection({
   onClear,
   showPreview,
 }: UploadSectionProps) {
+  const [isVideoReady, setIsVideoReady] = useState(false);
+
+  useEffect(() => {
+    setIsVideoReady(false);
+  }, [asset?.remoteUrl, asset?.previewUrl, asset?.uploading]);
+
   return (
     <section className="space-y-2">
       <div>
@@ -481,6 +487,8 @@ function UploadSection({
               muted
               loop
               playsInline
+              onLoadedData={() => setIsVideoReady(true)}
+              onLoadStart={() => setIsVideoReady(false)}
             />
           ) : asset?.previewUrl && kind === "video" ? (
             <video
@@ -490,6 +498,8 @@ function UploadSection({
               muted
               loop
               playsInline
+              onLoadedData={() => setIsVideoReady(true)}
+              onLoadStart={() => setIsVideoReady(false)}
             />
           ) : asset && kind === "audio" ? (
             <div className="flex flex-col items-center gap-2 text-white/70">
@@ -526,6 +536,16 @@ function UploadSection({
               点击上传
             </div>
           )}
+          {asset?.uploading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black">
+              <span className="h-9 w-9 animate-spin rounded-full border-2 border-[#dc2e5a] border-t-transparent" />
+            </div>
+          ) : null}
+          {kind === "video" && asset && !asset.uploading && !asset.error && !isVideoReady ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black">
+              <span className="h-9 w-9 animate-spin rounded-full border-2 border-[#dc2e5a] border-t-transparent" />
+            </div>
+          ) : null}
         </div>
       </button>
     </section>
