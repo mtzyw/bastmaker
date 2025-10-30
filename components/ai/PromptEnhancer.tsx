@@ -18,37 +18,11 @@ const POLL_INTERVAL_MS = 2000;
 const MAX_POLL_ATTEMPTS = 8;
 const CANCELLED_REQUEST = "__prompt_enhancer_cancelled__";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "准备中",
-  queued: "排队中",
-  processing: "生成中",
-  completed: "已完成",
-  failed: "已失败",
-  CREATED: "已创建",
-  IN_PROGRESS: "生成中",
-  COMPLETED: "已完成",
-  FAILED: "已失败",
-};
-
-function formatStatusLabel(status?: string | null) {
-  if (!status) {
-    return null;
-  }
-  const direct = STATUS_LABELS[status];
-  if (direct) {
-    return direct;
-  }
-  const upper = STATUS_LABELS[status.toUpperCase()];
-  if (upper) {
-    return upper;
-  }
-  return status;
-}
-
-type TextToVideoPromptEnhancerProps = {
+type PromptEnhancerProps = {
   prompt: string;
   onApply: (value: string) => void;
   className?: string;
+  targetType?: "image" | "video";
 };
 
 type PromptImprovement = {
@@ -67,11 +41,12 @@ type PromptImprovementResponse = {
   success?: boolean;
 };
 
-export function TextToVideoPromptEnhancer({
+export function PromptEnhancer({
   prompt,
   onApply,
   className,
-}: TextToVideoPromptEnhancerProps) {
+  targetType = "video",
+}: PromptEnhancerProps) {
   const locale = useLocale();
   const language = useMemo(() => {
     if (!locale) {
@@ -84,7 +59,8 @@ export function TextToVideoPromptEnhancer({
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(prompt);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [statusLabel, setStatusLabel] = useState<string | null>(null);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
+    useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -100,12 +76,13 @@ export function TextToVideoPromptEnhancer({
       abortRef.current = false;
       setInputValue(latestPromptRef.current);
       setSuggestions([]);
-      setStatusLabel(null);
+      setSelectedSuggestionIndex(null);
       setErrorMessage(null);
       setIsLoading(false);
     } else {
       abortRef.current = true;
       setIsLoading(false);
+      setSelectedSuggestionIndex(null);
     }
 
     return () => {
@@ -145,22 +122,16 @@ export function TextToVideoPromptEnhancer({
         throw new Error("提示词优化任务不存在");
       }
 
-      const statusSource = improvement.freepikStatus ?? improvement.status;
-      setStatusLabel(
-        formatStatusLabel(statusSource) ?? formatStatusLabel(improvement.status),
-      );
-
       if (improvement.status === "failed") {
-        const message = improvement.errorMessage ?? "提示词优化失败，请稍后重试。";
+        const message =
+          improvement.errorMessage ?? "提示词优化失败，请稍后重试。";
         throw new Error(message);
       }
 
       if (improvement.generatedPrompts.length > 0) {
         setSuggestions(improvement.generatedPrompts);
+        setSelectedSuggestionIndex(0);
         setErrorMessage(null);
-        setStatusLabel(
-          formatStatusLabel(statusSource) ?? formatStatusLabel("completed"),
-        );
         return;
       }
     }
@@ -177,7 +148,7 @@ export function TextToVideoPromptEnhancer({
     abortRef.current = false;
     setIsLoading(true);
     setSuggestions([]);
-    setStatusLabel(null);
+    setSelectedSuggestionIndex(null);
     setErrorMessage(null);
 
     try {
@@ -187,7 +158,7 @@ export function TextToVideoPromptEnhancer({
         body: JSON.stringify({
           prompt: trimmed,
           language,
-          targetType: "video",
+          targetType,
         }),
       });
 
@@ -208,13 +179,6 @@ export function TextToVideoPromptEnhancer({
         throw new Error("创建提示词优化任务失败，请稍后重试");
       }
 
-      const statusSource = improvement.freepikStatus ?? improvement.status;
-      if (statusSource) {
-        setStatusLabel(
-          formatStatusLabel(statusSource) ?? formatStatusLabel(improvement.status),
-        );
-      }
-
       if (improvement.status === "failed") {
         const message =
           improvement.errorMessage ?? "提示词优化失败，请稍后重试。";
@@ -223,6 +187,7 @@ export function TextToVideoPromptEnhancer({
 
       if (improvement.generatedPrompts.length > 0) {
         setSuggestions(improvement.generatedPrompts);
+        setSelectedSuggestionIndex(0);
         setErrorMessage(null);
         return;
       }
@@ -238,8 +203,8 @@ export function TextToVideoPromptEnhancer({
       }
       const message =
         error instanceof Error ? error.message : "生成失败，请稍后重试";
-      setStatusLabel(null);
       setErrorMessage(message);
+      setSelectedSuggestionIndex(null);
     } finally {
       setIsLoading(false);
     }
@@ -249,6 +214,17 @@ export function TextToVideoPromptEnhancer({
     onApply(value);
     abortRef.current = true;
     setOpen(false);
+  };
+
+  const handleApplySelected = () => {
+    if (selectedSuggestionIndex === null) {
+      return;
+    }
+    const selected = suggestions[selectedSuggestionIndex];
+    if (!selected) {
+      return;
+    }
+    handleApply(selected);
   };
 
   return (
@@ -272,7 +248,7 @@ export function TextToVideoPromptEnhancer({
             智能优化提示词
           </DialogTitle>
           <DialogDescription className="text-sm text-white/60">
-            输入想法后自动优化为更适合视频生成的描述。
+            输入想法后自动优化为更适合生成的描述。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -288,11 +264,6 @@ export function TextToVideoPromptEnhancer({
           </div>
           <div className="flex items-center justify-between text-xs text-white/40">
             <span>{inputValue.length} / 2500</span>
-            {statusLabel ? (
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/70">
-                状态：{statusLabel}
-              </span>
-            ) : null}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -317,26 +288,42 @@ export function TextToVideoPromptEnhancer({
           ) : null}
           {suggestions.length > 0 ? (
             <div className="space-y-2">
-              <div className="text-xs text-white/60">优化结果</div>
+              <div className="flex items-center justify-between text-xs text-white/60">
+                <span>优化结果</span>
+                <Button
+                  size="sm"
+                  className="h-7 bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 text-xs px-3"
+                  onClick={handleApplySelected}
+                  disabled={
+                    selectedSuggestionIndex === null ||
+                    !suggestions[selectedSuggestionIndex]
+                  }
+                >
+                  使用该提示词
+                </Button>
+              </div>
               <div className="max-h-56 overflow-y-auto rounded-lg border border-white/10 bg-white/5">
                 <div className="p-3 space-y-2">
-                  {suggestions.map((entry, index) => (
-                    <div
-                      key={`${entry}-${index}`}
-                      className="rounded-lg border border-transparent bg-white/8 px-3 py-2 text-sm text-white/80 transition"
-                    >
-                      <div className="whitespace-pre-wrap break-words">{entry}</div>
-                      <div className="mt-2 flex justify-end">
-                        <Button
-                          size="sm"
-                          className="h-7 bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 text-xs px-3"
-                          onClick={() => handleApply(entry)}
-                        >
-                          使用该提示词
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                  {suggestions.map((entry, index) => {
+                    const isSelected = selectedSuggestionIndex === index;
+                    return (
+                      <button
+                        key={`${entry}-${index}`}
+                        type="button"
+                        onClick={() => setSelectedSuggestionIndex(index)}
+                        className={cn(
+                          "w-full rounded-lg border px-3 py-2 text-left text-sm text-white/80 transition focus:outline-none focus:ring-2 focus:ring-white/20",
+                          isSelected
+                            ? "border-white/30 bg-white/10"
+                            : "border-transparent bg-white/8 hover:border-white/15 hover:bg-white/10"
+                        )}
+                      >
+                        <div className="whitespace-pre-wrap break-words">
+                          {entry}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

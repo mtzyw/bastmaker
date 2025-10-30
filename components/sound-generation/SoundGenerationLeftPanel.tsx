@@ -231,13 +231,7 @@ export default function SoundGenerationLeftPanel() {
         <div className="pr-1 md:pr-7">
           <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文生音效</h1>
 
-          <div className="flex items-center justify-between mt-3 mb-2">
-            <div className="text-sm">提示词</div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <span>翻译提示词</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <div className="text-sm mt-3 mb-2">提示词</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">

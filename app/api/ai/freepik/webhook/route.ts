@@ -243,12 +243,12 @@ export async function POST(req: NextRequest) {
     updatedMetadata.error_message = errorMessage;
   }
 
-  const rawOutputs = task.generated?.length
-    ? task.generated
-    : task.urls?.length
-      ? task.urls
-      : task.public_url
-        ? [task.public_url]
+  const rawOutputs = task.urls?.length
+    ? task.urls
+    : task.public_url
+      ? [task.public_url]
+      : task.generated?.length
+        ? task.generated
         : [];
 
   let generatedOutputs = rawOutputs

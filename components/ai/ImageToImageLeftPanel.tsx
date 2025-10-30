@@ -4,10 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageGridUploader from "@/components/ai/ImageGridUploader";
-import { Coins, Trash2, Wand2 } from "lucide-react";
+import { Coins, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
 import {
@@ -19,6 +18,7 @@ import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -510,13 +510,7 @@ export default function ImageToImageLeftPanel({
           />
 
           {/* Prompt */}
-          <div className="flex items-center justify-between mt-3 mb-2">
-            <div className="text-sm">Prompt</div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <span>Translate Prompt</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <div className="text-sm mt-3 mb-2">Prompt</div>
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
@@ -529,10 +523,11 @@ export default function ImageToImageLeftPanel({
             </div>
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-between px-3 py-3">
-              <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
-                <Wand2 className="w-3.5 h-3.5 mr-2" />
-                Generate with AI
-              </Button>
+              <PromptEnhancer
+                prompt={prompt}
+                onApply={(value) => setPrompt(value)}
+                targetType="image"
+              />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
                 <span>{prompt.length} / 2000</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>

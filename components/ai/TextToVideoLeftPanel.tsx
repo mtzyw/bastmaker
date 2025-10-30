@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -25,7 +24,7 @@ import {
   getAllowedVideoLengths,
 } from "@/components/ai/video-models";
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
-import { TextToVideoPromptEnhancer } from "@/components/ai/TextToVideoPromptEnhancer";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -358,13 +357,7 @@ export default function TextToVideoLeftPanel() {
             />
           </div>
 
-          <div className="flex items-center justify-between mt-3 mb-2">
-            <div className="text-sm">提示词</div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <span>翻译提示词</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <div className="text-sm mt-3 mb-2">提示词</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
@@ -378,7 +371,7 @@ export default function TextToVideoLeftPanel() {
             </div>
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-between px-3 py-3">
-              <TextToVideoPromptEnhancer
+              <PromptEnhancer
                 prompt={prompt}
                 onApply={(value) => setPrompt(value)}
               />

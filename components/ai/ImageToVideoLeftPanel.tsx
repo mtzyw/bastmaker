@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Coins, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Coins, Sparkles, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   DEFAULT_VIDEO_LENGTH,
   DEFAULT_VIDEO_MODEL,
@@ -799,13 +799,7 @@ export default function ImageToVideoLeftPanel() {
           </div>
 
           {/* Prompt */}
-          <div className="flex items-center justify-between mt-3 mb-2">
-            <div className="text-sm">提示词</div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <span>翻译提示词</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <div className="text-sm mt-3 mb-2">提示词</div>
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
@@ -818,10 +812,10 @@ export default function ImageToVideoLeftPanel() {
             </div>
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-between px-3 py-3">
-              <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
-                <Wand2 className="w-3.5 h-3.5 mr-2" />
-                AI提示词
-              </Button>
+              <PromptEnhancer
+                prompt={prompt}
+                onApply={(value) => setPrompt(value)}
+              />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
                 <span>{prompt.length} / 1000</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>

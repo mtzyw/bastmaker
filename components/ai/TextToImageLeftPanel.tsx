@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Wand2, Trash2, Coins } from "lucide-react";
+import { Trash2, Coins } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
@@ -19,6 +19,7 @@ import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -290,14 +291,7 @@ export default function TextToImageLeftPanel({
             </div>
           )}
 
-          {/* 提示词 + 翻译开关 */}
-          <div className="flex items-center justify-between mt-3 mb-2">
-            <div className="text-sm">提示词</div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <span>翻译提示词</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <div className="text-sm mt-3 mb-2">提示词</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
@@ -311,10 +305,11 @@ export default function TextToImageLeftPanel({
             </div>
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-between px-3 py-3">
-              <Button variant="secondary" onClick={() => {}} className="h-8 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs">
-                <Wand2 className="w-3.5 h-3.5 mr-2" />
-                AI提示词
-              </Button>
+              <PromptEnhancer
+                prompt={prompt}
+                onApply={(value) => setPrompt(value)}
+                targetType="image"
+              />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
                 <span>{prompt.length} / 1000</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>

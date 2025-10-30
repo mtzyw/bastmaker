@@ -3,18 +3,16 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Wand2, Trash2 } from "lucide-react"
 
 export default function TextToImageGenerator() {
   const [prompt, setPrompt] = useState("")
-  const [translatePrompt, setTranslatePrompt] = useState(false)
   const [outputFormat, setOutputFormat] = useState("png")
   const [model, setModel] = useState("Nano Banana Free")
 
   const handleGenerate = () => {
-    console.log("生成图片:", { prompt, translatePrompt, outputFormat, model })
+    console.log("生成图片:", { prompt, outputFormat, model })
     // 这里可以添加实际的图片生成逻辑
   }
 
@@ -51,13 +49,7 @@ export default function TextToImageGenerator() {
 
         {/* 提示词区域 */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-foreground">提示词</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">翻译提示词</span>
-              <Switch checked={translatePrompt} onCheckedChange={setTranslatePrompt} />
-            </div>
-          </div>
+          <h2 className="text-lg font-medium text-foreground">提示词</h2>
 
           {/* 文本输入区域 */}
           <div className="relative">
