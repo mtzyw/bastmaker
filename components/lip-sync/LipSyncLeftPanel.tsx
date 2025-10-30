@@ -1,15 +1,15 @@
 "use client";
 
+import { Loader2, Music2, Trash2, Video as VideoIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Upload, Trash2, Loader2, Video as VideoIcon, Music2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import type { CreationItem } from "@/lib/ai/creations";
 import { DEFAULT_LIP_SYNC_MODEL, getLipSyncModelConfig } from "@/lib/ai/lip-sync-config";
+import { cn } from "@/lib/utils";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 
 type UploadKind = "video" | "audio";
 
@@ -111,26 +111,26 @@ export default function LipSyncLeftPanel() {
           setVideo((current) =>
             current && current.file === file
               ? {
-                  ...current,
-                  remoteUrl: result.url,
-                  uploading: false,
-                  key: result.key ?? null,
-                  contentType: result.contentType ?? current.contentType,
-                  size: typeof result.size === "number" ? result.size : current.size,
-                }
+                ...current,
+                remoteUrl: result.url,
+                uploading: false,
+                key: result.key ?? null,
+                contentType: result.contentType ?? current.contentType,
+                size: typeof result.size === "number" ? result.size : current.size,
+              }
               : current,
           );
         } else {
           setAudio((current) =>
             current && current.file === file
               ? {
-                  ...current,
-                  remoteUrl: result.url,
-                  uploading: false,
-                  key: result.key ?? null,
-                  contentType: result.contentType ?? current.contentType,
-                  size: typeof result.size === "number" ? result.size : current.size,
-                }
+                ...current,
+                remoteUrl: result.url,
+                uploading: false,
+                key: result.key ?? null,
+                contentType: result.contentType ?? current.contentType,
+                size: typeof result.size === "number" ? result.size : current.size,
+              }
               : current,
           );
         }
@@ -348,7 +348,7 @@ export default function LipSyncLeftPanel() {
           <div className="space-y-4">
             <UploadSection
               title="上传视频"
-              description="支持 mp4、mov、webm 等常见格式，建议时长 15-60 秒。"
+              description="支持 mp4、mov、webm 等常见格式。"
               placeholder="拖拽视频到此处或点击上传"
               kind="video"
               asset={video}
@@ -356,6 +356,7 @@ export default function LipSyncLeftPanel() {
               showPreview
               onPick={() => videoInputRef.current?.click()}
               onClear={() => handleClear("video")}
+              onDropFile={handleFileSelect}
             />
             <UploadSection
               title="上传音频"
@@ -366,6 +367,7 @@ export default function LipSyncLeftPanel() {
               icon={<Music2 className="w-6 h-6 text-white/70" />}
               onPick={() => audioInputRef.current?.click()}
               onClear={() => handleClear("audio")}
+              onDropFile={handleFileSelect}
             />
           </div>
 
@@ -401,10 +403,10 @@ export default function LipSyncLeftPanel() {
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               video?.remoteUrl &&
-                audio?.remoteUrl &&
-                !video?.uploading &&
-                !audio?.uploading &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              audio?.remoteUrl &&
+              !video?.uploading &&
+              !audio?.uploading &&
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait",
             )}
             disabled={
@@ -445,6 +447,7 @@ type UploadSectionProps = {
   onPick: () => void;
   onClear: () => void;
   showPreview?: boolean;
+  onDropFile: (file: File, kind: UploadKind) => void;
 };
 
 function UploadSection({
@@ -457,6 +460,7 @@ function UploadSection({
   onPick,
   onClear,
   showPreview,
+  onDropFile,
 }: UploadSectionProps) {
   const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -465,7 +469,27 @@ function UploadSection({
   }, [asset?.remoteUrl, asset?.previewUrl, asset?.uploading]);
 
   return (
-    <section className="space-y-2">
+    <section
+      className="space-y-2"
+      onDragOver={(event) => {
+        event.preventDefault();
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        if (asset?.uploading) return;
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+          const file = files[0];
+          if (kind === "video" && file.type.startsWith("video/")) {
+            void onDropFile(file, "video");
+          } else if (kind === "audio" && file.type.startsWith("audio/")) {
+            void onDropFile(file, "audio");
+          } else {
+            toast.error("文件格式不支持，请选择正确的文件类型");
+          }
+        }
+      }}
+    >
       <div>
         <h2 className="text-sm font-medium text-white/80">{title}</h2>
         <p className="text-xs text-white/50 mt-1">{description}</p>
