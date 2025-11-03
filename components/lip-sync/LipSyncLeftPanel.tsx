@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import type { CreationItem } from "@/lib/ai/creations";
 import { DEFAULT_LIP_SYNC_MODEL, getLipSyncModelConfig } from "@/lib/ai/lip-sync-config";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export default function LipSyncLeftPanel() {
   const [audio, setAudio] = useState<UploadedAsset | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const audioInputRef = useRef<HTMLInputElement | null>(null);
@@ -205,11 +207,13 @@ export default function LipSyncLeftPanel() {
           freepik_latest_status: effectiveLatest,
           freepik_initial_status: effectiveStatus,
           model_display_name: modelConfig.displayName,
+          is_public: isPublic,
         },
         inputParams: {
           model: DEFAULT_LIP_SYNC_MODEL,
           video_url: videoUrl,
           audio_url: audioUrl,
+          is_public: isPublic,
         },
         modalityCode: modelConfig.defaultModality,
         modelSlug: DEFAULT_LIP_SYNC_MODEL,
@@ -224,7 +228,7 @@ export default function LipSyncLeftPanel() {
         publicSummary: null,
       };
     },
-    [audio?.remoteUrl, modelConfig, video?.remoteUrl],
+    [audio?.remoteUrl, modelConfig, video?.remoteUrl, isPublic],
   );
 
   const handleSubmit = useCallback(async () => {
@@ -267,6 +271,7 @@ export default function LipSyncLeftPanel() {
         body: JSON.stringify({
           video_url: video.remoteUrl,
           audio_url: audio.remoteUrl,
+          is_public: isPublic,
         }),
       });
 
@@ -328,7 +333,7 @@ export default function LipSyncLeftPanel() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [audio, buildHistoryItem, removeHistoryItem, upsertHistoryItem, video]);
+  }, [audio, buildHistoryItem, removeHistoryItem, upsertHistoryItem, video, isPublic]);
 
   useEffect(() => {
     return () => {
@@ -399,6 +404,13 @@ export default function LipSyncLeftPanel() {
 
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6 space-y-3">
+          <div className="flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <Button
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",

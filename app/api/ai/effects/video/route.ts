@@ -33,6 +33,7 @@ const requestSchema = z.object({
     .optional(),
   // Keep image_url for backward compatibility with older clients if any
   image_url: z.string().url().optional(),
+  is_public: z.boolean().optional(),
 });
 
 // This mapping is the key to replacing the giant switch statement.
@@ -117,7 +118,8 @@ export async function POST(req: NextRequest) {
     return apiResponse.badRequest("Invalid request payload");
   }
 
-  const { effect_slug, assets, image_url } = parsed.data;
+  const { effect_slug, assets, image_url, is_public } = parsed.data;
+  const isPublic = is_public ?? true;
 
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -258,6 +260,7 @@ export async function POST(req: NextRequest) {
     reference_image_urls: referenceImageUrls,
     reference_image_count: referenceImageUrls.length,
     primary_image_url: primaryImageUrl ?? null,
+    is_public: isPublic,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase
@@ -275,10 +278,12 @@ export async function POST(req: NextRequest) {
         image_url: primaryImageUrl ?? null,
         primary_image_url: primaryImageUrl ?? null,
         ...payload,
+        is_public: isPublic,
       },
       metadata_json: metadataJsonForJob,
       cost_estimated_credits: effectiveCreditsCost,
       pricing_snapshot_json: { credits_cost: effectiveCreditsCost, currency: "credits", captured_at: new Date().toISOString() },
+      is_public: isPublic,
     })
     .select()
     .single();
@@ -308,7 +313,7 @@ export async function POST(req: NextRequest) {
     publicTitle,
     publicSummary,
     publicAssets: [],
-    isPublic: true,
+    isPublic,
   });
 
   if (resolvedReferenceMap.size > 0) {

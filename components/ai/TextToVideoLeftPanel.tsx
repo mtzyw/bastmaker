@@ -11,6 +11,7 @@ import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { Switch } from "@/components/ui/switch";
 import {
   AspectRatio,
   DEFAULT_VIDEO_LENGTH,
@@ -59,6 +60,7 @@ export default function TextToVideoLeftPanel() {
   const [resolution, setResolution] = useState<VideoResolutionValue>(DEFAULT_VIDEO_RESOLUTION);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   const hasValidModel = useMemo(
     () => textToVideoOptions.some((option) => option.value === model),
@@ -112,6 +114,9 @@ export default function TextToVideoLeftPanel() {
 
     setPrompt(repromptDraft.prompt ?? "");
     setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+    if (typeof repromptDraft.isPublic === "boolean") {
+      setIsPublic(repromptDraft.isPublic);
+    }
 
     const optionValues = textToVideoOptions.map((option) => option.value);
     const matchedModel =
@@ -226,6 +231,7 @@ export default function TextToVideoLeftPanel() {
           reference_image_count: 0,
           reference_image_urls: [],
           primary_image_url: null,
+          is_public: isPublic,
         },
         inputParams: {
           model: activeModel,
@@ -238,6 +244,7 @@ export default function TextToVideoLeftPanel() {
           mode: "text",
           reference_image_urls: [],
           primary_image_url: null,
+          is_public: isPublic,
         },
         modalityCode: "t2v",
         modelSlug: activeModel,
@@ -275,6 +282,7 @@ export default function TextToVideoLeftPanel() {
         video_length: videoLength,
         duration: Number(videoLength),
         aspect_ratio: aspectRatio,
+        is_public: isPublic,
       };
 
       const response = await fetch("/api/ai/freepik/video", {
@@ -341,6 +349,7 @@ export default function TextToVideoLeftPanel() {
     upsertHistoryItem,
     videoLength,
     videoModelConfig,
+    isPublic,
   ]);
 
   return (
@@ -463,6 +472,13 @@ export default function TextToVideoLeftPanel() {
       {/* 固定底部：Output + Create，与 text-to-image 一致 */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <div className="mb-3">
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">

@@ -19,6 +19,7 @@ import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
+import { Switch } from "@/components/ui/switch";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -53,6 +54,7 @@ export default function ImageToImageLeftPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
   const referenceImagesRef = useRef<ReferenceImage[]>([]);
 
   useEffect(() => {
@@ -97,6 +99,9 @@ export default function ImageToImageLeftPanel({
 
     setPrompt(repromptDraft.prompt ?? "");
     setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+    if (typeof repromptDraft.isPublic === "boolean") {
+      setIsPublic(repromptDraft.isPublic);
+    }
 
     if (repromptDraft.model) {
       const allowedValues = availableOptions.map((option) => option.value);
@@ -343,33 +348,35 @@ export default function ImageToImageLeftPanel({
           createdAt: createdAt ?? optimisticCreatedAt,
           costCredits: effectiveCredits,
           outputs: [],
-        metadata: {
-          source: "image-to-image",
-          translate_prompt: translatePrompt,
-          credits_cost: effectiveCredits,
-          freepik_latest_status: effectiveLatest,
-          freepik_initial_status: effectiveStatus,
-          freepik_task_id: providerJobId ?? null,
-          modality_code: "i2i",
-          prompt: trimmedPrompt,
-          original_prompt: trimmedPrompt,
-          is_image_to_image: true,
-          reference_image_count: referenceCount,
-          reference_images: referenceUrls,
-          reference_inputs: {
-            primary: referenceCount > 0,
+          metadata: {
+            source: "image-to-image",
+            translate_prompt: translatePrompt,
+            credits_cost: effectiveCredits,
+            freepik_latest_status: effectiveLatest,
+            freepik_initial_status: effectiveStatus,
+            freepik_task_id: providerJobId ?? null,
+            modality_code: "i2i",
+            prompt: trimmedPrompt,
+            original_prompt: trimmedPrompt,
+            is_image_to_image: true,
+            reference_image_count: referenceCount,
+            reference_images: referenceUrls,
+            reference_inputs: {
+              primary: referenceCount > 0,
+            },
+            reference_image_urls: referenceUrls,
+            primary_image_url: referenceUrls[0] ?? null,
+            is_public: isPublic,
           },
-          reference_image_urls: referenceUrls,
-          primary_image_url: referenceUrls[0] ?? null,
-        },
-        inputParams: {
-          model: apiModel,
-          prompt: trimmedPrompt,
-          reference_images: referenceUrls,
-          translate_prompt: translatePrompt,
-          reference_image_urls: referenceUrls,
-          primary_image_url: referenceUrls[0] ?? null,
-        },
+          inputParams: {
+            model: apiModel,
+            prompt: trimmedPrompt,
+            reference_images: referenceUrls,
+            translate_prompt: translatePrompt,
+            reference_image_urls: referenceUrls,
+            primary_image_url: referenceUrls[0] ?? null,
+            is_public: isPublic,
+          },
           modalityCode: "i2i",
           modelSlug: apiModel,
           errorMessage: null,
@@ -398,6 +405,7 @@ export default function ImageToImageLeftPanel({
         prompt: trimmedPrompt,
         reference_images: referenceUrls,
         translate_prompt: translatePrompt,
+        is_public: isPublic,
       };
 
       const response = await fetch("/api/ai/freepik/tasks", {
@@ -477,6 +485,7 @@ export default function ImageToImageLeftPanel({
     removeHistoryItem,
     translatePrompt,
     upsertHistoryItem,
+    isPublic,
   ]);
 
   return (
@@ -544,6 +553,13 @@ export default function ImageToImageLeftPanel({
       {/* 固定底部：Output + 创建按钮，与文字转图片保持一致 */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <div className="mb-3">
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">

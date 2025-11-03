@@ -23,12 +23,6 @@ type ToggleOption = {
 
 const TOGGLE_OPTIONS: readonly ToggleOption[] = [
   {
-    id: "public",
-    label: "公开可见性",
-    description: "允许特效出现在探索页与推荐位。",
-    defaultChecked: true,
-  },
-  {
     id: "protect",
     label: "复制保护",
     description: "防止他人直接克隆我的特效项目。",
@@ -60,6 +54,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropSource, setCropSource] = useState<{ src: string; fileName: string; fileType: string } | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     return () => {
@@ -259,6 +254,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
           url: localAsset.remoteUrl,
         },
       },
+      is_public: isPublic,
     };
 
     setIsSubmitting(true);
@@ -294,12 +290,14 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         freepik_initial_status: "processing",
         freepik_latest_status: "processing",
         primary_image_url: localAsset.remoteUrl,
+        is_public: isPublic,
       },
       inputParams: {
         effect_slug: effect.slug,
         reference_image_urls: [localAsset.remoteUrl],
         image_url: localAsset.remoteUrl,
         primary_image_url: localAsset.remoteUrl,
+        is_public: isPublic,
       },
       modalityCode: modality,
       modelSlug: effect.providerModel,
@@ -366,7 +364,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     } finally {
       setIsSubmitting(false);
     }
-  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem]);
+  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem, isPublic]);
 
   return (
     <div className="flex h-full w-full flex-col text-white">
@@ -562,6 +560,13 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
 
       <div className="shrink-0 border-t border-white/10 pb-0 pt-2 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <div className="mb-3">
             <div className="mb-2 text-sm text-white/80">Credits 消耗</div>
             <div className="flex items-center justify-between text-sm text-white/80">

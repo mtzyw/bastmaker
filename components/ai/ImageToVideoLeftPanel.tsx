@@ -25,6 +25,7 @@ import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { Switch } from "@/components/ui/switch";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
@@ -79,6 +80,7 @@ export default function ImageToVideoLeftPanel() {
   const [isUploadingOutro, setIsUploadingOutro] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   const isTransitionModel = model === TRANSITION_MODEL;
   const videoModelConfig = useMemo(() => getVideoModelConfig(model), [model]);
@@ -155,6 +157,9 @@ export default function ImageToVideoLeftPanel() {
 
     setPrompt(repromptDraft.prompt ?? "");
     setTranslatePrompt(Boolean(repromptDraft.translatePrompt));
+    if (typeof repromptDraft.isPublic === "boolean") {
+      setIsPublic(repromptDraft.isPublic);
+    }
 
     const optionValues = VIDEO_MODEL_SELECT_OPTIONS.map((option) => option.value);
     const matchedModel =
@@ -318,6 +323,7 @@ export default function ImageToVideoLeftPanel() {
               outroImageUrl,
             ].filter((url): url is string => Boolean(url)),
             primary_image_url: primaryImageUrl ?? null,
+            is_public: isPublic,
           },
           inputParams: {
             mode,
@@ -337,6 +343,7 @@ export default function ImageToVideoLeftPanel() {
               outroImageUrl,
             ].filter((url): url is string => Boolean(url)),
             primary_image_url: primaryImageUrl ?? null,
+            is_public: isPublic,
           },
           modalityCode: "i2v",
           modelSlug: model,
@@ -369,6 +376,7 @@ export default function ImageToVideoLeftPanel() {
         resolution,
         video_length: videoLength,
         duration: Number(videoLength),
+        is_public: isPublic,
       };
 
       if (primaryImageUrl) {
@@ -465,6 +473,7 @@ export default function ImageToVideoLeftPanel() {
     videoLength,
     videoModelConfig,
     uploadedImage,
+    isPublic,
   ]);
 
   useEffect(() => {
@@ -892,6 +901,13 @@ export default function ImageToVideoLeftPanel() {
       {/* Fixed bottom: Output + Create */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <div className="mb-3">
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">

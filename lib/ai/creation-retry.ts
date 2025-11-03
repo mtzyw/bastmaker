@@ -35,6 +35,7 @@ export type RepromptDraft =
       translatePrompt: boolean;
       model: string;
       referenceImageUrls: string[];
+      isPublic?: boolean;
     }
   | {
       kind: "text-to-video";
@@ -46,6 +47,7 @@ export type RepromptDraft =
       videoLength?: string;
       duration?: number;
       aspectRatio?: string | null;
+      isPublic?: boolean;
     }
   | {
       kind: "image-to-video";
@@ -63,6 +65,7 @@ export type RepromptDraft =
       outroImageUrl?: string | null;
       tailImageUrl?: string | null;
       additionalAssets?: Record<string, string>;
+      isPublic?: boolean;
     }
   | {
       kind: "sound-effects";
@@ -72,6 +75,7 @@ export type RepromptDraft =
       durationSeconds?: number;
       loop?: boolean;
       promptInfluence?: number;
+      isPublic?: boolean;
     };
 
 type NormalizedVideoMode = "text" | "image" | "transition";
@@ -223,6 +227,7 @@ function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
       reference_image_count: referenceImageUrls.length,
       reference_image_urls: referenceImageUrls,
       primary_image_url: referenceImageUrls[0] ?? null,
+      is_public: isPublic,
     },
     modalityCode: referenceImageUrls.length > 0 ? "i2i" : "t2i",
     isImageToImage: referenceImageUrls.length > 0,
@@ -289,6 +294,7 @@ function buildImageToImagePlan(item: CreationItem): RegenerationPlan {
       reference_image_count: referenceImageUrls.length,
       reference_image_urls: referenceImageUrls,
       primary_image_url: referenceImageUrls[0] ?? null,
+      is_public: isPublic,
     },
     modalityCode: "i2i",
     isImageToImage: true,
@@ -337,6 +343,7 @@ function buildSoundEffectPlan(item: CreationItem): RegenerationPlan {
   );
   const promptInfluence =
     influenceValue != null ? clampNumber(influenceValue, 0, 1) : config.defaultPromptInfluence;
+  const isPublic = getBoolean(item.metadata?.is_public, true);
 
   const payload: Record<string, unknown> = {
     model,
@@ -345,6 +352,7 @@ function buildSoundEffectPlan(item: CreationItem): RegenerationPlan {
     loop,
     prompt_influence: promptInfluence,
     translate_prompt: translatePrompt,
+    is_public: isPublic,
   };
 
   const optimistic = makeBaseOptimisticItem(item, {
@@ -364,6 +372,7 @@ function buildSoundEffectPlan(item: CreationItem): RegenerationPlan {
       prompt_influence: promptInfluence,
       modality_code: config.defaultModality,
       model_display_name: config.displayName,
+      is_public: isPublic,
     },
     inputParams: {
       model,
@@ -371,6 +380,7 @@ function buildSoundEffectPlan(item: CreationItem): RegenerationPlan {
       duration_seconds: durationSeconds,
       loop,
       prompt_influence: promptInfluence,
+      is_public: isPublic,
     },
     modalityCode: config.defaultModality,
     isImageToImage: false,
@@ -405,6 +415,7 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
     throw new Error("原始任务缺少视频时长，无法重新生成");
   }
   const videoLength = item.inputParams?.video_length ?? String(durationNumber);
+  const isPublic = getBoolean(item.metadata?.is_public, true);
 
   const payload: Record<string, unknown> = {
     mode: "text",
@@ -415,6 +426,7 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
     video_length: videoLength,
     duration: durationNumber,
     aspect_ratio: aspectRatio ?? undefined,
+    is_public: isPublic,
   };
 
   const modelConfig = safeGetVideoConfig(model);
@@ -437,6 +449,7 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
       prompt,
       original_prompt: prompt,
       model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+      is_public: isPublic,
     },
     inputParams: {
       model,
@@ -449,6 +462,7 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
       mode: "text",
       reference_image_urls: [],
       primary_image_url: null,
+      is_public: isPublic,
     },
     modalityCode: "t2v",
     isImageToImage: false,
@@ -498,6 +512,7 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
   if (mode === "transition" && (!introImageUrl || !outroImageUrl)) {
     throw new Error("原始任务缺少首尾图片，无法重新生成");
   }
+  const isPublic = getBoolean(item.metadata?.is_public, true);
 
   const payload: Record<string, unknown> = {
     mode,
@@ -513,6 +528,7 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
     intro_image_url: introImageUrl ?? undefined,
     outro_image_url: outroImageUrl ?? undefined,
     tail_image_url: tailImageUrl ?? undefined,
+    is_public: isPublic,
   };
 
   const referenceInputs = {
@@ -549,6 +565,7 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
       prompt,
       original_prompt: prompt,
       model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
+      is_public: isPublic,
     },
     inputParams: {
       model,
@@ -571,6 +588,7 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
         tail: tailImageUrl,
       }),
       primary_image_url: primaryImageUrl ?? null,
+      is_public: isPublic,
     },
     modalityCode: "i2v",
     isImageToImage: true,
@@ -619,6 +637,7 @@ function buildImageToImageReprompt(item: CreationItem): RepromptDraft {
   }
   const translatePromptValue = item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt;
   const referenceImageUrls = extractReferenceImageUrls(item);
+  const isPublicValue = item.metadata?.is_public;
 
   return {
     kind: "image-to-image",
@@ -627,6 +646,7 @@ function buildImageToImageReprompt(item: CreationItem): RepromptDraft {
     translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
     model: resolveTextToImageUiModel(model, item),
     referenceImageUrls,
+    isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
   };
 }
 
@@ -642,6 +662,7 @@ function buildTextToVideoReprompt(item: CreationItem): RepromptDraft {
   const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
   const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
   const videoLengthRaw = item.inputParams?.video_length ?? (durationNumber != null ? String(Math.trunc(durationNumber)) : undefined);
+  const isPublicValue = item.metadata?.is_public;
 
   return {
     kind: "text-to-video",
@@ -653,6 +674,7 @@ function buildTextToVideoReprompt(item: CreationItem): RepromptDraft {
     videoLength: videoLengthRaw ?? undefined,
     duration: durationNumber ?? undefined,
     aspectRatio: aspectRatio ?? undefined,
+    isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
   };
 }
 
@@ -668,6 +690,7 @@ function buildImageToVideoReprompt(item: CreationItem, mode: NormalizedVideoMode
   const aspectRatio = getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio);
   const durationNumber = normalizeNumber(item.inputParams?.duration ?? item.metadata?.duration);
   const videoLengthRaw = item.inputParams?.video_length ?? (durationNumber != null ? String(Math.trunc(durationNumber)) : undefined);
+  const isPublicValue = item.metadata?.is_public;
 
   const assets = buildEffectAssets(item);
   const primaryImageUrl =
@@ -693,6 +716,7 @@ function buildImageToVideoReprompt(item: CreationItem, mode: NormalizedVideoMode
     outroImageUrl: assets.outro?.url ?? null,
     tailImageUrl: assets.tail?.url ?? null,
     additionalAssets: Object.keys(additionalAssets).length > 0 ? additionalAssets : undefined,
+    isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
   };
 }
 
@@ -712,6 +736,7 @@ function buildSoundEffectReprompt(item: CreationItem): RepromptDraft {
   const influenceValue = normalizeNumber(
     item.inputParams?.prompt_influence ?? item.metadata?.prompt_influence
   );
+  const isPublicValue = item.metadata?.is_public;
 
   return {
     kind: "sound-effects",
@@ -721,6 +746,7 @@ function buildSoundEffectReprompt(item: CreationItem): RepromptDraft {
     durationSeconds: durationValue ?? undefined,
     loop: typeof loopValue === "boolean" ? loopValue : undefined,
     promptInfluence: influenceValue != null ? clampNumber(influenceValue, 0, 1) : undefined,
+    isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
   };
 }
 
@@ -734,11 +760,13 @@ function buildVideoEffectPlan(item: CreationItem, effectSlug: string): Regenerat
     throw new Error("原始特效任务缺少素材，无法重新生成");
   }
 
+  const isPublic = getBoolean(item.metadata?.is_public, true);
   const variables = extractEffectVariables(item);
   const payload: Record<string, unknown> = {
     effect_slug: effectSlug,
     assets,
     image_url: primaryAsset.url,
+    is_public: isPublic,
   };
   if (variables) {
     payload.variables = variables;
@@ -761,6 +789,7 @@ function buildVideoEffectPlan(item: CreationItem, effectSlug: string): Regenerat
     reference_image_count: referenceImageCount,
     reference_image_urls: referenceImageUrls,
     primary_image_url: primaryAsset.url,
+    is_public: isPublic,
   };
   const effectTitle = getString(item.metadata?.effect_title ?? item.inputParams?.effect_title);
   if (effectTitle) {
@@ -774,6 +803,7 @@ function buildVideoEffectPlan(item: CreationItem, effectSlug: string): Regenerat
     image_url: primaryAsset.url,
     primary_image_url: primaryAsset.url,
     ...mapEffectAssetsToInputParams(assets),
+    is_public: isPublic,
   };
   if (variables) {
     inputOverrides.variables = variables;

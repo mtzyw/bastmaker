@@ -42,6 +42,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
   const [promptInfluence, setPromptInfluence] = useState(modelConfig.defaultPromptInfluence);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     if (!repromptDraft || repromptDraft.kind !== "sound-effects") {
@@ -64,6 +65,10 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
         ? Math.min(Math.max(repromptDraft.promptInfluence, 0), 1)
         : modelConfig.defaultPromptInfluence;
     setPromptInfluence(Number(nextInfluence.toFixed(2)));
+
+    if (typeof repromptDraft.isPublic === "boolean") {
+      setIsPublic(repromptDraft.isPublic);
+    }
 
     clearRepromptDraft();
   }, [repromptDraft, clearRepromptDraft, modelConfig]);
@@ -120,6 +125,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
           loop,
           prompt_influence: normalizedInfluence,
           modality_code: modelConfig.defaultModality,
+          is_public: isPublic,
         },
         inputParams: {
           model: DEFAULT_SOUND_EFFECT_MODEL,
@@ -127,6 +133,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
           duration_seconds: normalizedDuration,
           loop,
           prompt_influence: normalizedInfluence,
+          is_public: isPublic,
         },
         modalityCode: modelConfig.defaultModality,
         modelSlug: DEFAULT_SOUND_EFFECT_MODEL,
@@ -164,6 +171,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
           loop,
           prompt_influence: normalizedInfluence,
           translate_prompt: translatePrompt,
+          is_public: isPublic,
         }),
       });
 
@@ -222,6 +230,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
     isSubmitting,
     upsertHistoryItem,
     removeHistoryItem,
+    isPublic,
   ]);
 
   const handleDurationChange = (value: number) => {
@@ -295,6 +304,13 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
 
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
+            <div className="flex flex-col">
+              <span>公开到个人主页</span>
+              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
           <div className="mb-3">
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">

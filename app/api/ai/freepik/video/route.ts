@@ -53,6 +53,7 @@ const requestSchema = z.object({
       })
     )
     .optional(),
+  is_public: z.boolean().optional(),
   variables: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -421,6 +422,7 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
+  const isPublic = data.is_public ?? true;
   const effectSlug = typeof data.effect_slug === "string" ? data.effect_slug.trim() : null;
   const assetsPayload = (data.assets ?? {}) as Record<string, { url: string }>;
   const variablesPayload = (data.variables ?? {}) as Record<string, unknown>;
@@ -668,6 +670,7 @@ export async function POST(req: NextRequest) {
     negative_prompt: negativePrompt ?? null,
     reference_image_urls: initialReferenceImageUrls,
     primary_image_url: primaryInputSource ?? null,
+    is_public: isPublic,
   };
 
   const pricingSnapshot = {
@@ -688,6 +691,7 @@ export async function POST(req: NextRequest) {
     mode,
     reference_image_urls: initialReferenceImageUrls,
     primary_image_url: primaryInputSource ?? null,
+    is_public: isPublic,
   };
 
   const { data: jobRecord, error: insertError } = await adminSupabase
@@ -702,6 +706,7 @@ export async function POST(req: NextRequest) {
       metadata_json: metadataJson,
       cost_estimated_credits: effectiveCreditsCost,
       pricing_snapshot_json: pricingSnapshot,
+      is_public: isPublic,
     })
     .select()
     .single();
@@ -721,7 +726,7 @@ export async function POST(req: NextRequest) {
     publicTitle: publicTitle || modelConfig.displayName,
     publicSummary,
     publicAssets: [],
-    isPublic: true,
+    isPublic,
   });
 
   const deduction = {
