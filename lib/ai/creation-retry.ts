@@ -83,6 +83,10 @@ type NormalizedVideoMode = "text" | "image" | "transition";
 export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
   const effectSlug = getString(item.metadata?.effect_slug ?? item.inputParams?.effect_slug);
   if (effectSlug) {
+    const source = getString(item.metadata?.source);
+    if (source === "image-effect") {
+      return buildImageEffectPlan(item, effectSlug);
+    }
     return buildVideoEffectPlan(item, effectSlug);
   }
 
@@ -824,6 +828,108 @@ function buildVideoEffectPlan(item: CreationItem, effectSlug: string): Regenerat
   return {
     endpoint: "/api/ai/effects/video",
     payload,
+    optimisticItem: optimistic,
+    buildPersistedItem: (result) =>
+      buildPersistedFromOptimistic(optimistic, result, {
+        metadata: {
+          freepik_initial_status: optimistic.metadata.freepik_initial_status ?? "processing",
+        },
+      }),
+  };
+}
+
+function buildImageEffectPlan(item: CreationItem, effectSlug: string): RegenerationPlan {
+  const assets = buildEffectAssets(item);
+
+  const primaryAsset = assets.primary;
+  if (!primaryAsset) {
+    throw new Error("原始图片特效任务缺少素材，无法重新生成");
+  }
+
+  const prompt = getString(item.metadata?.prompt ?? item.inputParams?.prompt);
+  if (!prompt) {
+    throw new Error("原始任务缺少提示词，无法重新生成");
+  }
+
+  const negativePrompt = getString(item.metadata?.negative_prompt ?? item.inputParams?.negative_prompt);
+  const aspectRatio = getString(item.metadata?.aspect_ratio ?? item.inputParams?.aspect_ratio);
+  const translatePrompt = getBoolean(item.metadata?.translate_prompt ?? item.inputParams?.translate_prompt);
+  const isPublic = getBoolean(item.metadata?.is_public, true);
+  const variables = extractEffectVariables(item);
+
+  const referenceImageUrls = Object.values(assets)
+    .map(({ url }) => url)
+    .filter((url) => typeof url === "string" && url.length > 0);
+
+  const referenceInputs = Object.fromEntries(
+    Object.keys(assets).map((slot) => [slot, true])
+  );
+  const referenceImageCount = referenceImageUrls.length;
+
+  const metadataOverrides: Record<string, unknown> = {
+    source: "image-effect",
+    modality_code: "i2i",
+    effect_slug: effectSlug,
+    effect_title: item.metadata?.effect_title ?? item.inputParams?.effect_title ?? null,
+    prompt,
+    negative_prompt: negativePrompt ?? null,
+    aspect_ratio: aspectRatio ?? null,
+    translate_prompt: translatePrompt,
+    reference_inputs: referenceInputs,
+    reference_image_count: referenceImageCount,
+    reference_image_urls: referenceImageUrls,
+    primary_image_url: primaryAsset.url,
+    is_public: isPublic,
+  };
+
+  if (variables) {
+    metadataOverrides.variables = variables;
+  }
+
+  const inputOverrides: Record<string, unknown> = {
+    effect_slug: effectSlug,
+    prompt,
+    negative_prompt: negativePrompt ?? null,
+    aspect_ratio: aspectRatio ?? null,
+    translate_prompt: translatePrompt,
+    reference_image_urls: referenceImageUrls,
+    primary_image_url: primaryAsset.url,
+    ...mapEffectAssetsToInputParams(assets),
+    is_public: isPublic,
+  };
+
+  if (variables) {
+    inputOverrides.variables = variables;
+  }
+
+  const optimistic = makeBaseOptimisticItem(item, {
+    jobId: generateTempJobId(),
+    modelSlug: item.modelSlug,
+    providerCode: item.providerCode,
+    costCredits: item.costCredits,
+    metadata: metadataOverrides,
+    inputParams: inputOverrides,
+    modalityCode: "i2i",
+    isImageToImage: true,
+    referenceImageCount,
+  });
+
+  const payload: Record<string, unknown> = {
+    effect_slug: effectSlug,
+    assets,
+    prompt,
+    negative_prompt: negativePrompt ?? undefined,
+    aspect_ratio: aspectRatio ?? undefined,
+    translate_prompt: translatePrompt,
+    is_public: isPublic,
+  };
+  if (variables) {
+    payload.variables = variables;
+  }
+
+  return {
+    endpoint: "/api/ai/effects/image",
+    payload: removeUndefined(payload),
     optimisticItem: optimistic,
     buildPersistedItem: (result) =>
       buildPersistedFromOptimistic(optimistic, result, {

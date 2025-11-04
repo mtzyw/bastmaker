@@ -186,6 +186,11 @@
         "name": "特效管理",
         "href": "/dashboard/effects",
         "icon": "Wand"
+      },
+      {
+        "name": "图片特效",
+        "href": "/dashboard/image-effects",
+        "icon": "Palette"
       }
     ]
   },

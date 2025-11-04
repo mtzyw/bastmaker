@@ -2,7 +2,11 @@ export type FreepikImagePayload = {
   prompt: string;
   aspect_ratio?: string;
   reference_images?: string[];
+  translate_prompt?: boolean;
+  negative_prompt?: string | null;
+  image_url?: string;
   webhook_url?: string;
+  variables?: Record<string, unknown>;
 };
 
 export type FreepikTaskResponse = {

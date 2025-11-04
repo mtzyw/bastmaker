@@ -682,6 +682,110 @@ export type Database = {
         }
         Relationships: []
       }
+      image_effect_inputs: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          instructions: string | null
+          is_required: boolean
+          max_size_mb: number | null
+          metadata_json: Json
+          slot: string
+          template_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          max_size_mb?: number | null
+          metadata_json?: Json
+          slot: string
+          template_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          instructions?: string | null
+          is_required?: boolean
+          max_size_mb?: number | null
+          metadata_json?: Json
+          slot?: string
+          template_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "image_effect_inputs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "image_effect_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      image_effect_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          metadata_json: Json
+          preview_image_url: string | null
+          pricing_credits_override: number | null
+          prompt_variables: Json
+          provider_code: string
+          provider_model: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata_json?: Json
+          preview_image_url?: string | null
+          pricing_credits_override?: number | null
+          prompt_variables?: Json
+          provider_code?: string
+          provider_model: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          metadata_json?: Json
+          preview_image_url?: string | null
+          pricing_credits_override?: number | null
+          prompt_variables?: Json
+          provider_code?: string
+          provider_model?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_share_conversions: {
         Row: {
           created_at: string

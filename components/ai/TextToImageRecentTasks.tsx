@@ -57,12 +57,13 @@ const CATEGORY_OPTIONS = [
   { key: "全部" as const, label: "全部" },
   { key: "视频" as const, label: "视频" },
   { key: "图片" as const, label: "图片" },
+  { key: "特效" as const, label: "特效" },
   { key: "音效" as const, label: "音效" },
 ];
 
 type CategoryFilter = (typeof CATEGORY_OPTIONS)[number]["key"];
 
-const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片", "音效"];
+const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片", "特效", "音效"];
 
 type TaskStatus = "failed" | "succeeded" | "processing";
 
@@ -124,6 +125,7 @@ const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefine
   全部: undefined,
   视频: ["t2v", "i2v"],
   图片: ["t2i", "i2i"],
+  特效: undefined,
   音效: ["t2a"],
 };
 
@@ -202,6 +204,15 @@ function formatProviderName(code?: string | null) {
 function matchesCategory(item: CreationItem, category: CategoryFilter) {
   if (category === "全部") {
     return true;
+  }
+  if (category === "特效") {
+    const effectSlug =
+      typeof item.metadata?.effect_slug === "string" && item.metadata.effect_slug.length > 0
+        ? item.metadata.effect_slug
+        : typeof item.inputParams?.effect_slug === "string"
+          ? item.inputParams.effect_slug
+          : null;
+    return Boolean(effectSlug);
   }
   const allowed = CATEGORY_MODALITY_MAP[category];
   if (!allowed || allowed.length === 0) {

@@ -186,6 +186,11 @@
         "name": "エフェクト管理",
         "href": "/dashboard/effects",
         "icon": "Wand"
+      },
+      {
+        "name": "画像エフェクト",
+        "href": "/dashboard/image-effects",
+        "icon": "Palette"
       }
     ]
   },

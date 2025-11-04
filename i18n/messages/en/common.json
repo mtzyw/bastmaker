@@ -186,6 +186,11 @@
         "name": "Video Effects",
         "href": "/dashboard/effects",
         "icon": "Wand"
+      },
+      {
+        "name": "Image Effects",
+        "href": "/dashboard/image-effects",
+        "icon": "Palette"
       }
     ]
   },
