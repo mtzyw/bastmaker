@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useMemo, useState } from "react";
 
 type Menu = {
   name: string;
@@ -37,6 +39,8 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { isLoading: isBenefitsLoading } = useUserBenefits();
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const t = useTranslations("Login");
 
@@ -62,6 +66,69 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
   }
 
   const isStripeEnabled = process.env.NEXT_PUBLIC_ENABLE_STRIPE === "true";
+  const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    if (!user) {
+      setInviteLink(null);
+      return;
+    }
+
+    let active = true;
+    supabase
+      .from("users")
+      .select("invite_code")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error("[invite-link] failed to fetch invite code", error);
+          setInviteLink(null);
+          return;
+        }
+        if (data?.invite_code) {
+          const origin =
+            typeof window !== "undefined"
+              ? window.location.origin
+              : process.env.NEXT_PUBLIC_SITE_URL ?? "";
+          if (!origin) {
+            setInviteLink(null);
+            return;
+          }
+          setInviteLink(`${origin}/invitation-landing?invite_code=${data.invite_code}`);
+        } else {
+          setInviteLink(null);
+        }
+      })
+      .catch((error) => {
+        console.error("[invite-link] unexpected error", error);
+        setInviteLink(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (copyState !== "copied") return;
+    const id = window.setTimeout(() => {
+      setCopyState("idle");
+    }, 2000);
+    return () => window.clearTimeout(id);
+  }, [copyState]);
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopyState("copied");
+    } catch (error) {
+      console.error("[invite-link] failed to copy", error);
+      setCopyState("error");
+    }
+  };
 
   const BenefitsLoadingFallback = () => (
     <Skeleton className="h-6 w-20 rounded-md" />
@@ -95,6 +162,19 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
             )}
           </div>
         )}
+
+        <Button
+          variant="outline"
+          className="mt-2 w-full justify-center bg-white/5 text-white hover:bg-white/10"
+          disabled={!inviteLink}
+          onClick={handleCopyInviteLink}
+        >
+          {copyState === "copied"
+            ? "邀请链接已复制"
+            : copyState === "error"
+              ? "复制失败，请重试"
+              : "推荐好友"}
+        </Button>
       </div>
 
       <DropdownMenuSeparator />

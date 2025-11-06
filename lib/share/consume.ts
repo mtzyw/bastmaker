@@ -38,6 +38,82 @@ export async function consumeShareAttributionForUser(
 
   const supabase = getServiceRoleClient();
 
+  const mode = payload.mode ?? "job";
+
+  if (mode === "invite") {
+    const { data: existingUser, error: existingUserError } = await supabase
+      .from("users")
+      .select("inviter_user_id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (existingUserError) {
+      console.error("[share-consume] failed to load user profile for invite", existingUserError);
+      return { consumed: false, reason: "user_fetch_failed" };
+    }
+
+    if (existingUser?.inviter_user_id) {
+      await clearShareAttributionCookie(options?.store).catch((error) => {
+        console.error("[share-consume] failed to clear cookie after existing inviter", error);
+      });
+      return { consumed: false, reason: "already_has_inviter" };
+    }
+
+    const { error: updateUserError } = await supabase
+      .from("users")
+      .update({ inviter_user_id: payload.ownerId })
+      .eq("id", userId);
+
+    if (updateUserError) {
+      console.error("[share-consume] failed to set inviter for user", updateUserError);
+      return { consumed: false, reason: "invite_set_failed" };
+    }
+
+    const { ownerCredits, inviteeCredits } = shareRewardConfig;
+    const notes = `Invite reward from ${payload.ownerId}`;
+
+    if (ownerCredits > 0) {
+      const { error } = await supabase.rpc("grant_share_reward_and_log", {
+        p_user_id: payload.ownerId,
+        p_credits_to_add: ownerCredits,
+        p_related_job_id: null,
+        p_log_type: SHARE_REWARD_OWNER_LOG_TYPE,
+        p_notes: notes,
+      });
+
+      if (error) {
+        console.error("[share-consume] failed to grant invite owner reward", error);
+      }
+    }
+
+    if (inviteeCredits > 0) {
+      const { error } = await supabase.rpc("grant_share_reward_and_log", {
+        p_user_id: userId,
+        p_credits_to_add: inviteeCredits,
+        p_related_job_id: null,
+        p_log_type: SHARE_REWARD_INVITEE_LOG_TYPE,
+        p_notes: notes,
+      });
+
+      if (error) {
+        console.error("[share-consume] failed to grant invitee reward", error);
+      }
+    }
+
+    await clearShareAttributionCookie(options?.store).catch((error) => {
+      console.error("[share-consume] failed to clear invite cookie", error);
+    });
+
+    return { consumed: true };
+  }
+
+  if (!payload.jobId) {
+    await clearShareAttributionCookie(options?.store).catch((error) => {
+      console.error("[share-consume] failed to clear cookie with missing job id", error);
+    });
+    return { consumed: false, reason: "missing_job" };
+  }
+
   const { data: job, error: jobError } = await supabase
     .from("ai_jobs")
     .select(

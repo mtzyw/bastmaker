@@ -1,13 +1,15 @@
 "use client"
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useMemo, useState } from "react"
-import { useRouter, usePathname } from "@/i18n/routing"
-import { Button } from "@/components/ui/button"
-import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, usePathname } from "@/i18n/routing";
+import { Button } from "@/components/ui/button";
+import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { createClient } from "@/lib/supabase/client";
 
 interface MenuItem {
   id: string
@@ -21,7 +23,11 @@ interface MenuSection {
 }
 
 export function AISidebar({ className, onNavigate }: { className?: string, onNavigate?: () => void }) {
-  const router = useRouter()
+  const router = useRouter();
+  const { user } = useAuth();
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const supabase = useMemo(() => createClient(), []);
 
   const menuSections: MenuSection[] = [
     {
@@ -153,6 +159,66 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     if (itemId === "assets") { router.push("/my-creations"); onNavigate && onNavigate(); }
   }
 
+  useEffect(() => {
+    if (!user) {
+      setInviteLink(null);
+      return;
+    }
+
+    let active = true;
+    supabase
+      .from("users")
+      .select("invite_code")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error("[sidebar-invite] failed to fetch invite code", error);
+          setInviteLink(null);
+          return;
+        }
+        if (data?.invite_code) {
+          const origin =
+            typeof window !== "undefined"
+              ? window.location.origin
+              : process.env.NEXT_PUBLIC_SITE_URL ?? "";
+          setInviteLink(
+            origin
+              ? `${origin}/invitation-landing?invite_code=${data.invite_code}`
+              : `/invitation-landing?invite_code=${data.invite_code}`,
+          );
+        } else {
+          setInviteLink(null);
+        }
+      })
+      .catch((error) => {
+        console.error("[sidebar-invite] unexpected error", error);
+        setInviteLink(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (copyState !== "copied") return;
+    const id = window.setTimeout(() => setCopyState("idle"), 2000);
+    return () => window.clearTimeout(id);
+  }, [copyState]);
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopyState("copied");
+    } catch (error) {
+      console.error("[sidebar-invite] copy failed", error);
+      setCopyState("error");
+    }
+  };
+
   return (
     <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
       {/* Scrollable menu content */}
@@ -209,8 +275,30 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
       </ScrollArea>
       {/* Fixed bottom login */}
       <div className="p-4 border-t border-white/10">
-        <Button className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white">登录</Button>
+        {user ? (
+          <Button
+            className="w-full h-11 text-base bg-gradient-to-r from-[#ff4d8d] to-[#7b61ff] text-white hover:opacity-90"
+            disabled={!inviteLink}
+            onClick={handleCopyInviteLink}
+          >
+            {copyState === "copied"
+              ? "邀请链接已复制"
+              : copyState === "error"
+                ? "复制失败，请重试"
+                : "推荐好友"}
+          </Button>
+        ) : (
+          <Button
+            className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => {
+              router.push("/sign-up");
+              onNavigate && onNavigate();
+            }}
+          >
+            登录
+          </Button>
+        )}
       </div>
     </div>
-  )
+  );
 }

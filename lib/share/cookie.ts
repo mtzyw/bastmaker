@@ -7,12 +7,15 @@ import {
   SHARE_ATTRIBUTION_COOKIE_SECRET_ENV,
 } from './constants';
 
+type ShareAttributionMode = "job" | "invite";
+
 type ShareAttributionBase = {
-  jobId: string;
+  jobId: string | null;
   ownerId: string;
   shareSlug: string;
   locale?: string;
   source?: string;
+  mode?: ShareAttributionMode;
 };
 
 export type ShareAttributionPayload = ShareAttributionBase & {
@@ -83,7 +86,11 @@ function verifyToken(token: string): ShareAttributionPayload | null {
     return null;
   }
 
-  return payload;
+  return {
+    ...payload,
+    jobId: payload.jobId ?? null,
+    mode: (payload.mode ?? "job") as ShareAttributionMode,
+  };
 }
 
 async function getCookieStore(store?: RequestCookies) {
@@ -97,8 +104,15 @@ export async function setShareAttributionCookie(
 ) {
   const maxAge = options?.maxAge ?? SHARE_ATTRIBUTION_COOKIE_MAX_AGE;
   const now = Date.now();
+  const mode: ShareAttributionMode =
+    basePayload.mode ?? (basePayload.jobId ? "job" : "invite");
   const payload: ShareAttributionPayload = {
-    ...basePayload,
+    jobId: basePayload.jobId ?? null,
+    ownerId: basePayload.ownerId,
+    shareSlug: basePayload.shareSlug,
+    locale: basePayload.locale,
+    source: basePayload.source,
+    mode,
     issuedAt: now,
     expiresAt: now + maxAge * 1000,
   };
