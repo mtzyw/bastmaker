@@ -39,8 +39,11 @@ type ModelOption = {
 };
 
 const DETAIL_IMAGE_COUNT = 6;
+const ALLOWED_MODEL_VALUES = new Set(["Nano Banana Free", "Seedream 4", "Seedream 4 Edit"]);
 
-const BASE_MODEL_OPTIONS: ModelOption[] = TEXT_TO_IMAGE_MODEL_OPTIONS.map((option) => ({
+const BASE_MODEL_OPTIONS: ModelOption[] = TEXT_TO_IMAGE_MODEL_OPTIONS.filter((option) =>
+  ALLOWED_MODEL_VALUES.has(option.value)
+).map((option) => ({
   value: option.apiValue ?? option.value,
   label: option.label,
   description: option.description,
@@ -52,15 +55,11 @@ const formSchema = z.object({
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1),
   description: z.string().optional(),
-  category: z.string().optional(),
   provider_model: z.string().min(1),
-  model_display_name: z.string().min(1),
   pricing_credits_override: z.coerce.number().int().min(0).default(6),
   display_order: z.coerce.number().int().default(0),
   preview_image_url: z.string().url().optional(),
   prompt: z.string().min(1),
-  negative_prompt: z.string().optional(),
-  aspect_ratio: z.string().optional(),
   mainImageUrl: z.string().url().optional(),
   detailImageUrls: z.array(z.string().url()).optional(),
 });
@@ -83,7 +82,6 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
     resolver: zodResolver(formSchema),
     defaultValues: {
       provider_model: defaultModelOption?.value ?? '',
-      model_display_name: defaultModelOption?.label ?? '',
       pricing_credits_override: 6,
       display_order: 0,
       detailImageUrls: Array(DETAIL_IMAGE_COUNT).fill(''),
@@ -119,26 +117,16 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
       form.getValues('provider_model') ??
       '';
 
-    const matchedOption = modelOptions.find((option) => option.value === inferredProviderModel);
-
     const defaultValues: FormValues = {
       id: effectToEdit?.id || undefined,
       slug: effectToEdit?.slug || '',
       title: effectToEdit?.title || '',
       description: effectToEdit?.description || '',
-      category: effectToEdit?.category || '',
       provider_model: inferredProviderModel,
-      model_display_name:
-        (metadata.model_display_name as string) ||
-        matchedOption?.label ||
-        effectToEdit?.title ||
-        '',
       pricing_credits_override: effectToEdit?.pricing_credits_override ?? 6,
       display_order: effectToEdit?.display_order ?? 0,
       preview_image_url: effectToEdit?.preview_image_url || '',
       prompt: (freepikParams.prompt as string) || '',
-      negative_prompt: (freepikParams.negative_prompt as string) || '',
-      aspect_ratio: (freepikParams.aspect_ratio as string) || '',
       mainImageUrl: (pageContent.mainImageUrl as string) || '',
       detailImageUrls: Array.isArray(pageContent.detailImageUrls)
         ? (pageContent.detailImageUrls as string[])
@@ -154,43 +142,13 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
       ];
     }
 
-    if (!defaultValues.model_display_name || defaultValues.model_display_name.length === 0) {
-      defaultValues.model_display_name =
-        matchedOption?.label || effectToEdit?.title || 'Custom Model';
-    }
-
     form.reset(defaultValues);
   }, [isOpen, effectToEdit, modelOptions, form]);
 
   const providerModel = form.watch('provider_model');
 
-  const selectedModelOption = useMemo(
-    () => modelOptions.find((option) => option.value === providerModel),
-    [modelOptions, providerModel]
-  );
-
   const handleModelSelect = (value: string) => {
-    const nextOption = modelOptions.find((option) => option.value === value);
-    const previousValue = form.getValues('provider_model');
-    const previousOption = modelOptions.find((option) => option.value === previousValue);
-    const currentDisplayName = form.getValues('model_display_name');
-
     form.setValue('provider_model', value, { shouldDirty: true, shouldValidate: true });
-
-    if (nextOption) {
-      const shouldOverrideDisplayName =
-        !currentDisplayName ||
-        currentDisplayName === previousOption?.label ||
-        currentDisplayName === (effectToEdit?.title ?? '') ||
-        currentDisplayName === 'Custom Model';
-
-      if (shouldOverrideDisplayName) {
-        form.setValue('model_display_name', nextOption.label, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      }
-    }
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -258,10 +216,6 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
                     <Textarea id="description" {...form.register('description')} />
                   </div>
                   <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Input id="category" {...form.register('category')} placeholder="e.g., 人物美化" />
-                  </div>
-                  <div>
                     <Label htmlFor="preview_image_url">Preview Image URL</Label>
                     <Input id="preview_image_url" {...form.register('preview_image_url')} placeholder="https://..." />
                   </div>
@@ -270,11 +224,19 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="provider_model">Provider Model</Label>
-                    <Input id="provider_model" {...form.register('provider_model')} placeholder="freepik-model-id" />
-                  </div>
-                  <div>
-                    <Label htmlFor="model_display_name">Model Display Name</Label>
-                    <Input id="model_display_name" {...form.register('model_display_name')} />
+                    <Select value={providerModel} onValueChange={handleModelSelect}>
+                      <SelectTrigger id="provider_model">
+                        <SelectValue placeholder="选择模型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {modelOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                            {option.credits ? ` · ${option.credits} Credits` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -291,10 +253,6 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="aspect_ratio">Default Aspect Ratio</Label>
-                    <Input id="aspect_ratio" placeholder="1:1" {...form.register('aspect_ratio')} />
-                  </div>
-                  <div>
                     <Label htmlFor="mainImageUrl">Main Gallery Image URL</Label>
                     <Input id="mainImageUrl" placeholder="https://..." {...form.register('mainImageUrl')} />
                   </div>
@@ -305,14 +263,6 @@ export const ImageEffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: Im
                 <div>
                   <Label htmlFor="prompt">Prompt</Label>
                   <Textarea id="prompt" className="min-h-[120px]" {...form.register('prompt')} />
-                </div>
-                <div>
-                  <Label htmlFor="negative_prompt">Negative Prompt</Label>
-                  <Textarea
-                    id="negative_prompt"
-                    className="min-h-[80px]"
-                    {...form.register('negative_prompt')}
-                  />
                 </div>
               </div>
 

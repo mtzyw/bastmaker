@@ -309,22 +309,7 @@ export default function LipSyncLeftPanel() {
         upsertHistoryItem(item);
       }
 
-      const credits = payload?.creditsCost;
-      const remaining = payload?.updatedBenefits?.totalAvailableCredits;
-      const parts: string[] = [];
-      if (typeof credits === "number") {
-        parts.push(`本次扣除 ${credits} Credits`);
-      }
-      if (typeof remaining === "number") {
-        parts.push(`当前余额 ${remaining} Credits`);
-      }
-      if (parts.length > 0) {
-        setStatusMessage(parts.join("，"));
-      } else {
-        setStatusMessage(null);
-      }
-
-      toast.success("对口型任务已提交");
+      setStatusMessage(null);
     } catch (error) {
       removeHistoryItem(tempJobId);
       const message =
@@ -439,9 +424,7 @@ export default function LipSyncLeftPanel() {
               "开始对口型"
             )}
           </Button>
-          {statusMessage ? (
-            <p className="text-sm text-white/70">{statusMessage}</p>
-          ) : null}
+          {statusMessage ? null : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

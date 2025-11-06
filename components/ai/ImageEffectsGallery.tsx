@@ -56,9 +56,6 @@ function ImageEffectCard({ effect }: { effect: ImageEffectsGalleryItem }) {
         </div>
       </div>
       <p className="mt-3 text-sm font-medium text-white">{effect.title}</p>
-      {effect.description ? (
-        <p className="text-xs text-white/50">{effect.description}</p>
-      ) : null}
     </Link>
   );
 }

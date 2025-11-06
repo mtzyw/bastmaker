@@ -50,6 +50,29 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const [isPublic, setIsPublic] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const HIDDEN_PROMPT_SLUGS = new Set([
+    "jojo-ai-filter",
+    "3d-figurine-image-generation",
+  ]);
+  const isPromptHidden = HIDDEN_PROMPT_SLUGS.has(effect.slug);
+  const isAspectRatioHidden = isPromptHidden;
+
+  const resolvedPrompt = useMemo(
+    () => (isPromptHidden ? defaultPrompt : prompt),
+    [isPromptHidden, defaultPrompt, prompt]
+  );
+
+  const resolvedAspectRatio = useMemo(() => {
+    if (isAspectRatioHidden) {
+      return defaultAspectRatio && defaultAspectRatio.length > 0
+        ? defaultAspectRatio
+        : undefined;
+    }
+    return aspectRatio;
+  }, [isAspectRatioHidden, defaultAspectRatio, aspectRatio]);
+
+  const promptForSubmit = resolvedPrompt.trim();
+
   useEffect(() => {
     setPrompt(defaultPrompt);
   }, [defaultPrompt]);
@@ -164,8 +187,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
           effect_slug: effect.slug,
           effect_title: effect.title,
           credits_cost: creditsCost,
-          prompt,
-          aspect_ratio: aspectRatio,
+          prompt: resolvedPrompt,
+          aspect_ratio: resolvedAspectRatio ?? null,
           reference_inputs: { primary: true },
           reference_image_urls: primaryImageUrl ? [primaryImageUrl] : [],
           reference_image_count: primaryImageUrl ? 1 : 0,
@@ -176,8 +199,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
         },
         inputParams: {
           effect_slug: effect.slug,
-          prompt,
-          aspect_ratio: aspectRatio,
+          prompt: resolvedPrompt,
+          aspect_ratio: resolvedAspectRatio,
           translate_prompt: false,
           reference_image_urls: primaryImageUrl ? [primaryImageUrl] : [],
           primary_image_url: primaryImageUrl,
@@ -197,7 +220,18 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
         publicSummary: null,
       };
     },
-    [aspectRatio, effect.providerCode, effect.providerModel, effect.slug, effect.title, isPublic, localAsset?.previewUrl, localAsset?.remoteUrl, prompt, creditsCost]
+    [
+      creditsCost,
+      effect.providerCode,
+      effect.providerModel,
+      effect.slug,
+      effect.title,
+      isPublic,
+      localAsset?.previewUrl,
+      localAsset?.remoteUrl,
+      resolvedAspectRatio,
+      resolvedPrompt,
+    ]
   );
 
   const handleCreate = useCallback(async () => {
@@ -211,7 +245,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       return;
     }
 
-    if (!prompt.trim()) {
+    if (!promptForSubmit) {
       toast.error("提示词不能为空");
       return;
     }
@@ -247,8 +281,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
             url: localAsset.remoteUrl,
           },
         },
-        prompt: prompt.trim(),
-        aspect_ratio: aspectRatio,
+        prompt: promptForSubmit,
+        aspect_ratio: resolvedAspectRatio,
         is_public: isPublic,
       };
 
@@ -289,16 +323,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
         upsertHistoryItem(persistedItem);
       }
 
-      const parts: string[] = [];
-      if (typeof data?.creditsCost === "number") {
-        parts.push(`本次扣除 ${data.creditsCost} Credits`);
-      }
-      const remaining = data?.updatedBenefits?.totalAvailableCredits;
-      if (typeof remaining === "number") {
-        parts.push(`当前余额 ${remaining} Credits`);
-      }
-      setStatusMessage(parts.length > 0 ? parts.join("，") : null);
-      toast.success("图片特效任务已创建");
+      setStatusMessage(null);
     } catch (error: any) {
       removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
@@ -308,14 +333,14 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       setIsSubmitting(false);
     }
   }, [
-    aspectRatio,
     buildHistoryItem,
     effect.slug,
     isPublic,
     isSubmitting,
     localAsset?.remoteUrl,
-    prompt,
+    promptForSubmit,
     removeHistoryItem,
+    resolvedAspectRatio,
     upsertHistoryItem,
   ]);
 
@@ -407,37 +432,43 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
               ) : null}
             </div>
 
-            <div className="space-y-2">
-              <h2 className="text-sm font-medium text-white/80">提示词</h2>
-              <Textarea
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                className="min-h-[160px] resize-y bg-white/5 text-white placeholder:text-white/60"
-                maxLength={1000}
-              />
-              <p className="text-xs text-white/50 text-right">{prompt.length} / 1000</p>
-            </div>
-
-            <div className="space-y-2">
-              <h2 className="text-sm font-medium text-white/80">纵横比</h2>
-              <div className="flex flex-wrap gap-2">
-                {["1:1", "3:4", "4:5", "9:16", "16:9"].map((ratio) => (
-                  <button
-                    key={ratio}
-                    type="button"
-                    onClick={() => setAspectRatio(ratio)}
-                    className={cn(
-                      "rounded-full border border-white/10 px-3 py-1 text-xs transition",
-                      aspectRatio === ratio
-                        ? "bg-white text-gray-900"
-                        : "bg-white/5 text-white/70 hover:bg-white/10"
-                    )}
-                  >
-                    {ratio}
-                  </button>
-                ))}
+            {!isPromptHidden ? (
+              <div className="space-y-2">
+                <h2 className="text-sm font-medium text-white/80">提示词</h2>
+                <Textarea
+                  value={prompt}
+                  onChange={(event) => setPrompt(event.target.value)}
+                  className="min-h-[160px] resize-y bg-white/5 text-white placeholder:text-white/60"
+                  maxLength={1000}
+                />
+                <p className="text-xs text-white/50 text-right">
+                  {prompt.length} / 1000
+                </p>
               </div>
-            </div>
+            ) : null}
+
+            {!isAspectRatioHidden ? (
+              <div className="space-y-2">
+                <h2 className="text-sm font-medium text-white/80">纵横比</h2>
+                <div className="flex flex-wrap gap-2">
+                  {["1:1", "3:4", "4:5", "9:16", "16:9"].map((ratio) => (
+                    <button
+                      key={ratio}
+                      type="button"
+                      onClick={() => setAspectRatio(ratio)}
+                      className={cn(
+                        "rounded-full border border-white/10 px-3 py-1 text-xs transition",
+                        aspectRatio === ratio
+                          ? "bg-white text-gray-900"
+                          : "bg-white/5 text-white/70 hover:bg-white/10"
+                      )}
+                    >
+                      {ratio}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
         </div>
       </ScrollArea>
@@ -461,14 +492,14 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
           <Button
             className={cn(
               "h-12 w-full bg-gray-900 text-white transition-colors disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
-              prompt.trim() &&
+              promptForSubmit &&
                 localAsset?.remoteUrl &&
                 "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               (isSubmitting || isUploading) && "cursor-wait"
             )}
             disabled={
               !providerReady ||
-              !prompt.trim() ||
+              !promptForSubmit ||
               !localAsset?.remoteUrl ||
               isSubmitting ||
               isUploading
@@ -477,9 +508,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
           >
             {providerReady ? (isSubmitting ? "生成中..." : "创建图片特效") : "模板未配置"}
           </Button>
-          {statusMessage ? (
-            <p className="text-xs text-white/60">{statusMessage}</p>
-          ) : null}
           {errorMessage ? (
             <p className="text-xs text-red-400">{errorMessage}</p>
           ) : null}

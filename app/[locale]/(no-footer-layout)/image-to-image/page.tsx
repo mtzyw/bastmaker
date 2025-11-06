@@ -46,7 +46,17 @@ export default async function ImageToImagePage() {
       section2Split="25/75"
       sections={sections}
       withSidebar={false}
-      section2Left={<ImageToImageLeftPanel excludeModels={["Flux Dev", "Hyperflux", "Google Imagen4"]} />}
+      section2Left={
+        <ImageToImageLeftPanel
+          excludeModels={[
+            "Flux Dev",
+            "Hyperflux",
+            "Google Imagen4",
+            "Flux Pro 1.1",
+            "Seedream 4",
+          ]}
+        />
+      }
       section2Right={
         <TextToImageRecentTasks
           initialCategory="图片"

@@ -1,22 +1,26 @@
 "use server";
 
 import { z } from "zod";
+import { TEXT_TO_IMAGE_MODEL_OPTIONS } from "@/components/ai/text-image-models";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
 import { actionResponse } from "@/lib/action-response";
+
+const MODEL_LABEL_BY_SLUG = new Map(
+  TEXT_TO_IMAGE_MODEL_OPTIONS.map((option) => [
+    option.apiValue ?? option.value,
+    option.label,
+  ])
+);
 
 const formSchema = z.object({
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1),
   description: z.string().optional(),
-  category: z.string().optional(),
   provider_model: z.string().min(1),
   pricing_credits_override: z.coerce.number().int().min(0).default(6),
   display_order: z.coerce.number().int().default(0),
   preview_image_url: z.string().url().optional(),
   prompt: z.string().min(1),
-  negative_prompt: z.string().optional(),
-  aspect_ratio: z.string().optional(),
-  model_display_name: z.string().min(1),
   mainImageUrl: z.string().url().optional(),
   detailImageUrls: z
     .array(z.string().url("Invalid URL format"))
@@ -41,6 +45,8 @@ export async function createImageEffect(formData: FormData) {
   }
 
   const data = parsed.data;
+  const modelDisplayName =
+    MODEL_LABEL_BY_SLUG.get(data.provider_model) ?? data.provider_model;
 
   try {
     const supabase = getServiceRoleClient();
@@ -61,11 +67,9 @@ export async function createImageEffect(formData: FormData) {
     }
 
     const metadata_json = {
-      model_display_name: data.model_display_name,
+      model_display_name: modelDisplayName,
       freepik_params: {
         prompt: data.prompt,
-        negative_prompt: data.negative_prompt ?? undefined,
-        aspect_ratio: data.aspect_ratio ?? undefined,
       },
       pageContent: {
         mainImageUrl: data.mainImageUrl ?? null,
@@ -80,7 +84,6 @@ export async function createImageEffect(formData: FormData) {
       slug: data.slug,
       title: data.title,
       description: data.description,
-      category: data.category,
       provider_code: "freepik",
       provider_model: data.provider_model,
       pricing_credits_override: data.pricing_credits_override,

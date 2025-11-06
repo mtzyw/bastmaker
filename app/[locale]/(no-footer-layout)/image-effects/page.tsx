@@ -4,7 +4,6 @@ import ImageEffectsGallery, {
 import Footer from "@/components/footer/Footer";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
-import { IMAGE_EFFECTS } from "@/lib/image-effects/effects";
 import { listActiveImageEffects } from "@/lib/image-effects/templates";
 import { loadImageEffectCopy } from "@/lib/image-effects/content";
 import { Metadata } from "next";
@@ -31,16 +30,6 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   });
 }
 
-function mapFallbackEffects(): ImageEffectsGalleryItem[] {
-  return IMAGE_EFFECTS.map((effect) => ({
-    slug: effect.slug,
-    title: effect.title,
-    category: effect.category,
-    description: effect.description,
-    previewImageUrl: null,
-  }));
-}
-
 export default async function ImageEffectsPage({ params }: PageProps) {
   const { locale } = await params;
   let effects: ImageEffectsGalleryItem[] = [];
@@ -58,10 +47,6 @@ export default async function ImageEffectsPage({ params }: PageProps) {
     }
   } catch (error) {
     console.error("[image-effects] failed to load templates for gallery", error);
-  }
-
-  if (effects.length === 0) {
-    effects = mapFallbackEffects();
   }
 
   const localizedEffects = await Promise.all(

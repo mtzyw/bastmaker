@@ -1851,10 +1851,7 @@ export default function TextToImageRecentTasks({
                 : task.status === "processing"
                 ? (
                     <div className="flex w-full max-w-[260px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-6 py-10">
-                      <div className="flex flex-col items-center gap-3 text-white/70">
-                        <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
-                        <span className="text-xs">生成中...</span>
-                      </div>
+                      <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     </div>
                   )
                 : null}
@@ -1900,14 +1897,14 @@ export default function TextToImageRecentTasks({
                   </TooltipTrigger>
                   <TooltipContent side="top">Regenerator</TooltipContent>
                 </Tooltip>
-                {task.status === "succeeded" && !task.effectSlug && task.media?.kind === "image" ? (
+                {task.status === "succeeded" && task.media?.kind === "image" ? (
                   <>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                           aria-label="图片转图片"
                           onClick={() => void handleStartImageToImage(task)}
                         >
@@ -1921,7 +1918,7 @@ export default function TextToImageRecentTasks({
                         <Button
                           variant="ghost"
                           size="icon"
-                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
                           aria-label="图片转视频"
                           onClick={() => void handleStartImageToVideo(task)}
                         >
@@ -2017,12 +2014,6 @@ export default function TextToImageRecentTasks({
                 </Button>
                 {isRegenerating(task.id) ? (
                   <span className="ml-2 text-white/60">重新生成中...</span>
-                ) : task.status !== "succeeded" ? (
-                  <span className="ml-2">
-                    {task.status === "failed"
-                      ? "Retry available soon"
-                      : "生成中..."}
-                  </span>
                 ) : null}
               </footer>
             </article>

@@ -434,18 +434,7 @@ export default function ImageToVideoLeftPanel() {
         );
       }
 
-      const parts: string[] = [];
-
-      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
-        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
-      }
-
-      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
-      if (typeof remainingCredits === "number") {
-        parts.push(`当前余额 ${remainingCredits} Credits`);
-      }
-
-      setStatusMessage(parts.length > 0 ? parts.join("，") : null);
+      setStatusMessage(null);
 
     } catch (error) {
       if (tempJobId) {
@@ -930,9 +919,7 @@ export default function ImageToVideoLeftPanel() {
             <Sparkles className="w-4 h-4 mr-2" />
             {isSubmitting ? "创建中..." : "创建"}
           </Button>
-          {statusMessage ? (
-            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
-          ) : null}
+          {statusMessage ? null : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

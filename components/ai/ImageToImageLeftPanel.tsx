@@ -452,18 +452,7 @@ export default function ImageToImageLeftPanel({
         );
       }
 
-      const parts: string[] = [];
-
-      if (typeof taskInfo?.creditsCost === "number" && taskInfo.creditsCost > 0) {
-        parts.push(`本次扣除 ${taskInfo.creditsCost} Credits`);
-      }
-
-      const remainingCredits = taskInfo?.updatedBenefits?.totalAvailableCredits;
-      if (typeof remainingCredits === "number") {
-        parts.push(`当前余额 ${remainingCredits} Credits`);
-      }
-
-      setStatusMessage(parts.length > 0 ? parts.join("，") : null);
+      setStatusMessage(null);
 
     } catch (error) {
       if (tempJobId) {
@@ -587,9 +576,7 @@ export default function ImageToImageLeftPanel({
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
           ) : null}
-          {statusMessage ? (
-            <p className="mt-3 text-sm text-emerald-400">{statusMessage}</p>
-          ) : null}
+          {statusMessage ? null : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
