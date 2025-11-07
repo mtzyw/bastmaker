@@ -15,8 +15,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { InviteCookieSetter } from "@/components/invite/InviteCookieSetter";
-import { InviteGoogleButton } from "@/components/invite/InviteGoogleButton";
-import { Button } from "@/components/ui/button";
+import { InviteEmailSignup } from "@/components/invite/InviteEmailSignup";
 import { Locale, DEFAULT_LOCALE } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
@@ -112,11 +111,10 @@ export default async function InvitationLandingPage({
     (typeof inviter.full_name === "string" && inviter.full_name.trim().length > 0)
       ? inviter.full_name.trim()
       : inviter.invite_code ?? inviteCode;
-  const signupUrl = `${buildLocalePath(locale, "/sign-up")}?invite_code=${encodeURIComponent(
+  const loginUrl = `${buildLocalePath(locale, "/login")}`;
+  const googleNextPath = `${buildLocalePath(locale, "/sign-up")}?invite_code=${encodeURIComponent(
     inviteCode,
   )}`;
-  const loginUrl = `${buildLocalePath(locale, "/login")}`;
-  const googleNextPath = signupUrl;
   const inviteeRewardCredits = shareRewardConfig.inviteeCredits ?? 0;
   const inviterHeadline =
     typeof displayName === "string" ? displayName.toUpperCase() : displayName;
@@ -162,37 +160,12 @@ export default async function InvitationLandingPage({
             </div>
 
             <div className="w-full max-w-lg space-y-6 text-left text-white/80">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-white/50">
-                  邮箱地址
-                </label>
-                <input
-                  type="email"
-                  placeholder="输入你的邮箱"
-                  className="h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-                />
-              </div>
-
-              <Button className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90">
-                Continue
-              </Button>
-
-              <div className="flex items-center gap-4 text-xs text-white/40">
-                <span className="h-px flex-1 bg-white/10" />
-                <span>或</span>
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-
-              <div className="space-y-3">
-                <InviteGoogleButton nextPath={googleNextPath} />
-              </div>
-
-              <p className="pt-4 text-center text-xs text-white/50">
-                已有账号？
-                <Link href={loginUrl} className="ml-1 text-pink-400 hover:text-pink-300">
-                  直接登录
-                </Link>
-              </p>
+              <InviteEmailSignup
+                inviteCode={inviteCode}
+                nextPath={buildLocalePath(locale, "/")}
+                googleNextPath={googleNextPath}
+                loginUrl={loginUrl}
+              />
               <p className="text-center text-[11px] text-white/30">
                 注册表示你已阅读并同意我们的{" "}
                 <Link
