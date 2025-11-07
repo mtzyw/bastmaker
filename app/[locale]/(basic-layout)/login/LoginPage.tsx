@@ -2,14 +2,13 @@
 
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Alert } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { Github, Loader2, Mail } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,7 +19,7 @@ type PendingAction = "send-code" | null;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, signInWithGoogle, signInWithGithub } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -224,24 +223,13 @@ export default function LoginPage() {
     }
   };
 
-  const handleGithubLogin = async () => {
-    try {
-      const { error } = await signInWithGithub(next || "");
-      if (error) throw error;
-    } catch (error) {
-      toast.error(t("Toast.Github.errorTitle"), {
-        description: t("Toast.Github.errorDescription"),
-      });
-    }
-  };
-
   const renderTurnstile = () => {
     if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || !showTurnstile) {
       return null;
     }
 
     return (
-      <div className="mt-2">
+      <div className="flex justify-center">
         <Turnstile
           key={captchaMountKey}
           siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
@@ -261,128 +249,191 @@ export default function LoginPage() {
     );
   }
 
+  const headline = step === "details" ? "设置账号信息" : "注册你的 Bestmaker 账号";
+  const subHeadline =
+    step === "details"
+      ? "为通过验证的邮箱设置用户名与密码，完成最后一步。"
+      : "使用邮箱或社交账号创建账户，解锁更多 AI 工具与积分奖励。";
+  const inputClass =
+    "h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none";
+
   return (
-    <div className="flex flex-1 items-center justify-center py-12">
-      <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {step === "details" ? "设置账号信息" : t("title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {step === "details"
-              ? "为验证后的邮箱设置一个用户名和密码。"
-              : t("description")}
+    <main className="flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white">
+      <div className="relative w-full max-w-3xl">
+        <div className="relative z-10 mx-auto -mb-8 w-full max-w-lg rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]">
+          <p className="text-sm font-semibold leading-relaxed">
+            新手注册立享欢迎积分与好友奖励
+          </p>
+          <p className="text-xs font-medium text-white/85">
+            输入邮箱即可获取验证码，5 分钟内完成注册。
           </p>
         </div>
 
-        {step === "email" && (
-          <div className="grid gap-6">
-            <div className="grid w-[300px] gap-4">
-              <Button variant="outline" onClick={handleGoogleLogin}>
-                <GoogleIcon className="mr-2 h-4 w-4" />
-                {t("signInMethods.signInWithGoogle")}
-              </Button>
-              <Button variant="outline" onClick={handleGithubLogin}>
-                <Github className="mr-2 h-4 w-4" />
-                {t("signInMethods.signInWithGithub")}
-              </Button>
+        <div className="relative rounded-[32px] border border-white/10 bg-[#161616] px-8 pb-12 pt-24 shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur">
+          <div className="flex flex-col items-center gap-8 text-center">
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{headline}</h1>
+              <p className="text-sm text-white/70 md:text-base">{subHeadline}</p>
             </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  {t("signInMethods.or")}
-                </span>
-              </div>
-            </div>
+            <div className="w-full max-w-lg space-y-8 text-left text-white/85">
+              {step === "email" && (
+                <>
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={handleGoogleLogin}
+                      className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] font-semibold text-white hover:bg-white/15"
+                    >
+                      <GoogleIcon className="mr-2 h-4 w-4" />
+                      {t("signInMethods.signInWithGoogle")}
+                    </Button>
+                  </div>
 
-            <div className="grid w-[300px] gap-3">
-              <Input
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                  <div className="flex items-center gap-4 text-xs text-white/40">
+                    <span className="h-px flex-1 bg-white/10" />
+                    <span>{t("signInMethods.or")}</span>
+                    <span className="h-px flex-1 bg-white/10" />
+                  </div>
 
-              {renderTurnstile()}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                        邮箱地址
+                      </label>
+                      <Input
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
 
-              <Button onClick={handleSendCode} disabled={isSending}>
-                Continue {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-              </Button>
+                    {renderTurnstile()}
 
-              <Button variant="ghost" onClick={() => router.push("/sign-in")}>
-                Already have an account? Log in here
-              </Button>
-            </div>
-          </div>
-        )}
+                    <Button
+                      onClick={handleSendCode}
+                      disabled={isSending}
+                      className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                    >
+                      发送验证码{" "}
+                      {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                    </Button>
 
-        {step === "verify" && (
-          <div className="grid w-[300px] gap-3">
-            <Alert className="bg-muted/40">
-              <Mail className="h-4 w-4" />
-              <div>
-                <p className="text-sm">We sent a verification code to</p>
-                <div className="mt-1">
-                  <Badge variant="secondary" className="font-medium">
-                    {email}
-                  </Badge>
+                    <p className="text-center text-xs text-white/50">
+                      已有账号？
+                      <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
+                        直接登录
+                      </Link>
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {step === "verify" && (
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span>验证码已发送到</span>
+                    </div>
+                    <p className="mt-1 break-all font-semibold text-white">{email}</p>
+                  </div>
+
+                  <Input
+                    placeholder="输入 6 位验证码"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className={inputClass}
+                  />
+
+                  <Button
+                    onClick={handleVerify}
+                    disabled={isVerifying}
+                    className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                  >
+                    验证邮箱{" "}
+                    {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                  </Button>
+
+                  {renderTurnstile()}
+
+                  <div className="flex items-center justify-between text-xs text-white/60">
+                    <button
+                      className="underline underline-offset-4 hover:text-white"
+                      onClick={handleUseDifferentEmail}
+                    >
+                      换一个邮箱
+                    </button>
+                    <button
+                      className="font-semibold text-[#dc2e5a]"
+                      onClick={handleResendCode}
+                      disabled={isSending || resendSeconds > 0}
+                      title={resendSeconds > 0 ? `请等待 ${resendSeconds}s` : undefined}
+                    >
+                      {resendSeconds > 0 ? `重新发送 (${resendSeconds}s)` : "重新发送"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </Alert>
-            <Input
-              placeholder="Enter 6-digit code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-            <Button onClick={handleVerify} disabled={isVerifying}>
-              Verify {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-            </Button>
+              )}
 
-            {renderTurnstile()}
-
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <button
-                className="underline underline-offset-2 hover:text-foreground"
-                onClick={handleUseDifferentEmail}
-              >
-                Use a different email
-              </button>
-              <button
-                className="underline underline-offset-2 hover:text-foreground disabled:no-underline disabled:opacity-50"
-                onClick={handleResendCode}
-                disabled={isSending || resendSeconds > 0}
-                title={resendSeconds > 0 ? `Please wait ${resendSeconds}s` : undefined}
-              >
-                {resendSeconds > 0 ? `Resend in ${resendSeconds}s` : "Resend code"}
-              </button>
+              {step === "details" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                      用户名
+                    </label>
+                    <Input
+                      placeholder="给自己取一个名字"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                      密码
+                    </label>
+                    <Input
+                      type="password"
+                      placeholder="设置登录密码（至少 8 位）"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={`${inputClass} mt-1`}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCompleteSignup}
+                    disabled={isCompleting}
+                    className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                  >
+                    完成注册{" "}
+                    {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-        )}
 
-        {step === "details" && (
-          <div className="grid w-[300px] gap-3">
-            <Input
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button onClick={handleCompleteSignup} disabled={isCompleting}>
-              Complete sign up{" "}
-              {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-            </Button>
+            <p className="text-center text-[11px] text-white/30">
+              注册即表示同意我们的{" "}
+              <Link
+                className="text-white/50 underline underline-offset-4 hover:text-white"
+                href="/terms-of-service"
+              >
+                使用条款
+              </Link>{" "}
+              与{" "}
+              <Link
+                className="text-white/50 underline underline-offset-4 hover:text-white"
+                href="/privacy-policy"
+              >
+                隐私政策
+              </Link>
+              。
+            </p>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
