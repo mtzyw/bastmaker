@@ -14,11 +14,13 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { InviteCookieSetter } from "@/components/invite/InviteCookieSetter";
+import { InviteGoogleButton } from "@/components/invite/InviteGoogleButton";
 import { Button } from "@/components/ui/button";
 import { Locale, DEFAULT_LOCALE } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
-import { setShareAttributionCookie } from "@/lib/share/cookie";
+import { shareRewardConfig } from "@/config/share";
 
 type Params = Promise<{ locale: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined> | undefined>;
@@ -62,12 +64,18 @@ export async function generateMetadata({
     .eq("invite_code", inviteCode)
     .maybeSingle();
 
-  const displayName = inviter?.full_name ?? inviter?.invite_code ?? inviteCode;
+  const inviteDisplayName =
+    (typeof inviter?.full_name === "string" && inviter.full_name.trim().length > 0)
+      ? inviter.full_name.trim()
+      : null;
+  const inviteSlug = inviter?.invite_code ?? inviteCode;
+  const inviteTitleName = inviteDisplayName ?? inviteSlug;
+
 
   return constructMetadata({
     page: "InvitationLanding",
-    title: `${displayName} 邀请你加入`,
-    description: `${displayName} 邀请你体验我们的 AI 功能，立即注册享受额外权益。`,
+    title: `${inviteTitleName} 邀请你加入`,
+    description: `${inviteTitleName} 邀请你体验我们的 AI 功能，立即注册享受额外权益。`,
     locale: locale as Locale,
     path: "/invitation-landing",
   });
@@ -98,35 +106,38 @@ export default async function InvitationLandingPage({
     notFound();
   }
 
-  try {
-    await setShareAttributionCookie(
-      {
-        mode: "invite",
-        jobId: null,
-        ownerId: inviter.id,
-        shareSlug: inviter.invite_code ?? inviteCode,
-        locale,
-        source: "invite",
-      },
-      // Invitation links往往是公开访问，不需要额外的 cookie store
-      undefined,
-    );
-  } catch (error) {
-    console.error("[invitation-landing] failed to set invite cookie", error);
-  }
+  const shareSlug = inviter.invite_code ?? inviteCode;
 
-  const displayName = inviter.full_name ?? inviter.invite_code ?? inviteCode;
+  const displayName =
+    (typeof inviter.full_name === "string" && inviter.full_name.trim().length > 0)
+      ? inviter.full_name.trim()
+      : inviter.invite_code ?? inviteCode;
   const signupUrl = `${buildLocalePath(locale, "/sign-up")}?invite_code=${encodeURIComponent(
     inviteCode,
   )}`;
   const loginUrl = `${buildLocalePath(locale, "/login")}`;
+  const googleNextPath = signupUrl;
+  const inviteeRewardCredits = shareRewardConfig.inviteeCredits ?? 0;
+  const inviterHeadline =
+    typeof displayName === "string" ? displayName.toUpperCase() : displayName;
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white">
-        <div className="w-full max-w-4xl rounded-[32px] border border-white/10 bg-[#1c1c1a] p-8 shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur">
+      <div className="relative w-full max-w-3xl">
+        <InviteCookieSetter ownerId={inviter.id} shareSlug={shareSlug} locale={locale} />
+        <div className="relative z-10 mx-auto w-full max-w-lg -mb-8 rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]">
+          <p className="text-sm font-semibold leading-relaxed">
+            {inviterHeadline} has invited you to try BestMaker AI
+          </p>
+          <p className="text-xs font-medium text-white/85">
+            Sign up now and get {inviteeRewardCredits} extra free credits.
+          </p>
+        </div>
+
+        <div className="relative rounded-[32px] border border-white/10 bg-[#161616] px-8 pb-12 pt-24 shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur">
           <div className="flex flex-col items-center gap-8 text-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/20 bg-white/10 shadow-lg">
+              <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-lg">
                 {inviter.avatar_url ? (
                   <Image
                     src={inviter.avatar_url}
@@ -140,55 +151,69 @@ export default async function InvitationLandingPage({
                   </div>
                 )}
               </div>
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff4d8d]/20 to-[#7b61ff]/20 px-5 py-2 text-sm font-medium text-white/80">
-                  <span>{displayName}</span>
-                  <span className="text-white/60">邀请你加入</span>
-                </div>
-                <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                  加入我们的创作社区，领取专属体验权益
+              <div className="space-y-3">
+                <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                  Sign Up for BestMaker AI
                 </h1>
-                <p className="text-sm text-white/60 md:text-base">
-                  通过好友邀请注册，即可获得额外积分与专属模板。立即注册，解锁更多 AI 创作能力。
+                <p className="text-sm text-white/70 md:text-base">
+                  使用好友邀请注册，立即解锁更多 AI 模板、专属积分与最新 Beta 能力。
                 </p>
               </div>
             </div>
 
-            <div className="w-full max-w-md space-y-4 rounded-3xl border border-white/10 bg-black/20 p-6 shadow-inner">
-              <Button className="h-12 w-full text-base font-semibold" asChild>
-                <Link href={signupUrl}>使用邮箱或手机号注册</Link>
+            <div className="w-full max-w-lg space-y-6 text-left text-white/80">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-white/50">
+                  邮箱地址
+                </label>
+                <input
+                  type="email"
+                  placeholder="输入你的邮箱"
+                  className="h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+              </div>
+
+              <Button className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90">
+                Continue
               </Button>
-              <div className="flex items-center gap-3 text-xs text-white/40">
+
+              <div className="flex items-center gap-4 text-xs text-white/40">
                 <span className="h-px flex-1 bg-white/10" />
                 <span>或</span>
                 <span className="h-px flex-1 bg-white/10" />
               </div>
-              <div className="flex flex-col gap-3 text-sm text-white/70">
-                <Button variant="outline" className="h-12 justify-center text-base" asChild>
-                  <Link href={loginUrl}>已有账号？登录继续</Link>
-                </Button>
-                <p className="text-xs text-white/40">
-                  注册即表示同意我们的{" "}
-                  <Link
-                    className="text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
-                    href={buildLocalePath(locale, "/terms-of-service")}
-                  >
-                    使用条款
-                  </Link>{" "}
-                  与{" "}
-                  <Link
-                    className="text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white"
-                    href={buildLocalePath(locale, "/privacy-policy")}
-                  >
-                    隐私政策
-                  </Link>
-                  。
-                </p>
+
+              <div className="space-y-3">
+                <InviteGoogleButton nextPath={googleNextPath} />
               </div>
+
+              <p className="pt-4 text-center text-xs text-white/50">
+                已有账号？
+                <Link href={loginUrl} className="ml-1 text-pink-400 hover:text-pink-300">
+                  直接登录
+                </Link>
+              </p>
+              <p className="text-center text-[11px] text-white/30">
+                注册表示你已阅读并同意我们的{" "}
+                <Link
+                  className="text-white/50 underline underline-offset-4 hover:text-white"
+                  href={buildLocalePath(locale, "/terms-of-service")}
+                >
+                  使用条款
+                </Link>{" "}
+                与{" "}
+                <Link
+                  className="text-white/50 underline underline-offset-4 hover:text-white"
+                  href={buildLocalePath(locale, "/privacy-policy")}
+                >
+                  隐私政策
+                </Link>
+                。
+              </p>
             </div>
           </div>
         </div>
-      </main>
-
+      </div>
+    </main>
   );
 }

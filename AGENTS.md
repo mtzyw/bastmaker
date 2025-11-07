@@ -1,34 +1,33 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- The app router lives under `app/`, with each feature bundling UI, server actions, and handlers inside its route segment (for example, `app/dashboard/`).
-- Feature-specific modules stay colocated: `ai-sidebar/`, `ai-model-dropdown/`, and `text-to-image-generator/`.
-- Reusable UI sits in `components/`, hooks in `hooks/`, state stores in `stores/`, and shared utilities in `lib/`.
-- Contract types belong in `types/` or `interface/`; static assets and markdown content reside in `public/`, `blogs/`, `content/`, or `docs/` as appropriate.
+- App Router lives under `app/`; colocate UI, server actions, and handlers in each segment (e.g., `app/dashboard/feature`).
+- Feature bundles (`ai-sidebar/`, `ai-model-dropdown/`, `text-to-image-generator/`) own their assets, while shared UI sits in `components/`, hooks in `hooks/`, stores in `stores/`, and utilities in `lib/`.
+- Types live in `types/` or `interface/`, config and localization in `config/` and `i18n/`, static content in `public/`, `blogs/`, `content/`, `docs/`, and Supabase migrations plus generated types in `supabase/` and `lib/supabase/`.
 
 ## Build, Test, and Development Commands
-- `pnpm install` syncs dependencies after pulling changes.
-- `pnpm dev` runs the Next.js dev server on `http://localhost:3000`.
-- `pnpm build` creates the production bundle; follow with `pnpm start` to serve it locally.
-- `pnpm lint` applies ESLint and Tailwind rules; `pnpm analyze` opens the bundle analyzer.
-- Database migrations use `pnpm db:new-migration "add-feature"` and `pnpm db:update` to apply schema updates and regenerate Supabase types.
+- `pnpm install` keeps dependencies in sync.
+- `pnpm dev` serves `http://localhost:3000`; `pnpm build` compiles production output and `pnpm start` previews it.
+- `pnpm lint` enforces the ESLint + Tailwind rules (`pnpm lint --fix` for autofix) and `pnpm analyze` builds with `ANALYZE=true`.
+- Database workflow: `pnpm db:new-migration "add-feature"` → `pnpm db:update` (push schema + regenerate `lib/supabase/types.ts`); run `pnpm db:login` / `pnpm db:link` when swapping Supabase projects.
 
 ## Coding Style & Naming Conventions
-- TypeScript runs in `strict` mode—annotate props, async returns, and Supabase payloads.
-- Prefer the `@/` alias over deep relative imports; keep Tailwind classes inline, introducing `clsx` or `cva` only for conditional styling.
-- Name components `ComponentName.tsx`, hooks `useThing.ts`, utilities `kebab-case.ts`, and colocate server actions with their consuming component.
+- Strict TypeScript is required; annotate props, async returns, and Supabase payloads.
+- Prefer the `@/` alias over deep relatives and keep server actions next to their consuming component.
+- Tailwind classes stay inline; bring `clsx` or `cva` only for conditional variants.
+- Name components `FeaturePanel.tsx`, hooks `useFeature.ts`, utilities `kebab-case.ts`, and follow ESLint defaults (2-space indent, trailing commas).
 
 ## Testing Guidelines
-- Vitest with React Testing Library powers unit coverage; mirror the source structure using `Component.test.tsx` or `__tests__/`.
-- Run the full suite with `npx vitest run` or target a spec (`npx vitest run components/Button.test.tsx`).
-- Mock Supabase via fixtures in `lib/` and ensure adapters remain type-safe after schema changes.
+- Vitest with React Testing Library powers coverage; mirror the source tree with `Component.test.tsx` files or colocated `__tests__/`.
+- `npx vitest run` executes the suite, and `npx vitest run components/Button.test.tsx` targets a single spec.
+- Mock Supabase clients with `lib/` fixtures, rerun `pnpm db:update` after schema tweaks, and add regression tests for each new server action or adapter.
 
 ## Commit & Pull Request Guidelines
-- Use imperative commit messages prefixed with `feat:`, `fix:`, `chore:`, etc.
-- PRs should link issues, summarize user-facing changes, include screenshots for UI work, and note migrations or env updates.
-- Provide verification steps such as `pnpm build`, `pnpm lint`, or focused vitest runs.
+- Write imperative, prefixed commit messages (`feat: add dashboard filters`) and keep each commit focused.
+- PRs link issues, summarize user-visible changes, attach UI screenshots, and mention migrations or env updates.
+- Always list verification steps such as `pnpm build`, `pnpm lint`, or a targeted Vitest command so reviewers can replay checks.
 
 ## Security & Configuration Tips
-- Copy `.env.example` to `.env.local` and keep secrets out of version control; expose browser-safe values with `NEXT_PUBLIC_`.
-- After schema edits, always run `pnpm db:update` to refresh generated types.
-- Favor configuration flags over hard-coded switches, and rotate Supabase keys via the dashboard.
+- Copy `.env.example` to `.env.local`, keep secrets out of Git, and expose browser-safe values with `NEXT_PUBLIC_`.
+- After adjusting Supabase schema, rerun `pnpm db:update` to refresh generated types and commit the diff.
+- Prefer feature flags or configuration in `config/` over hard-coded switches, and rotate Supabase keys regularly in the dashboard.
