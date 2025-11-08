@@ -1,0 +1,115 @@
+{
+  "displayTitle": "3D Figurine Image Generator",
+  "seoTitle": "Create Stylized 3D Figurine Photos Online",
+  "seoDescription": "Upload any portrait and turn it into a collectible-style 3D figurine render. Perfect for product mockups, fan art, and playful social posts.",
+  "hero": {
+    "heading": "Create 3D Figurine Photos with AI",
+    "description": "Use the figurine template to convert real portraits into miniature collectible renders. The AI rebuilds lighting, shading, and props so that every character looks like a premium designer toy.",
+    "cta": {
+      "label": "Start Designing",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "Preview the Figurine Style",
+    "subheading": "Different angles and outfits show how the AI handles stylized shading, glossy materials, and dramatic poses."
+  },
+  "galleryItems": [
+    {
+      "title": "Hero Pose Render",
+      "description": "Showcases rim lighting and reflective armor for a cinematic toy look."
+    },
+    {
+      "title": "Cute Chibi Variant",
+      "description": "Round proportions, pastel palette, and soft plastic materials for kawaii brands."
+    },
+    {
+      "title": "Collector Edition Pack",
+      "description": "Adds thematic bases, packaging shadows, and colorized acrylic props."
+    }
+  ],
+  "features": {
+    "heading": "Immersive Highlights",
+    "items": [
+      {
+        "title": "Material-aware shading",
+        "description": "AI recreates PVC, resin, or metallic finishes with physically accurate reflections.",
+        "ctaLabel": "Try the figurine editor",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "Pose swap in one prompt",
+        "description": "Describe a new attitude or accessory and the template rebuilds it instantly.",
+        "ctaLabel": "See prompt tips",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "Scene presets",
+        "description": "Switch between desk display, museum lighting, or toy shelf backgrounds without manual compositing.",
+        "ctaLabel": "View presets",
+        "ctaHref": "#presets"
+      },
+      {
+        "title": "Ready for marketing",
+        "description": "Outputs square or portrait renders that fit marketplaces, launch decks, or merch drops.",
+        "ctaLabel": "Download sample pack",
+        "ctaHref": "#downloads"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "Why creators love this template",
+    "description": "Design figurine-style assets in minutes instead of hiring a full 3D pipeline.",
+    "items": [
+      {
+        "title": "Friendly controls",
+        "description": "Slider-based editor lets you dial glossy vs. matte, lighting warmth, and backdrop blur.",
+        "icon": "Sparkles"
+      },
+      {
+        "title": "Consistent batches",
+        "description": "Upload multiple references and keep proportions, outfits, and palettes aligned across a collection.",
+        "icon": "Palette"
+      },
+      {
+        "title": "Hi-res output",
+        "description": "Generates 4K+ renders suitable for posters, packaging, or crowdfunding assets.",
+        "icon": "Camera"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "More creative AI image templates",
+    "description": "Continue exploring stylized workflows and expand your asset library.",
+    "linkLabel": "Browse all effects"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "Do I need a 3D background to use this?",
+        "answer": "No. Upload a clear portrait photo and the AI handles modeling, shading, and figurine materials automatically."
+      },
+      {
+        "question": "What kind of photos work best?",
+        "answer": "Front-facing or 3/4 portraits with good lighting yield the most accurate figurine likeness. Avoid heavy filters or low resolution images."
+      },
+      {
+        "question": "Can I change outfits or props?",
+        "answer": "Yes. Use prompt keywords such as “cyberpunk armor” or “holding a neon katana” to instantly restyle the figurine."
+      },
+      {
+        "question": "Is the output transparent?",
+        "answer": "Exports include both background scenes and optional transparent PNG layers for quick compositing."
+      },
+      {
+        "question": "Is there a limit on renders?",
+        "answer": "You can iterate freely within your credit balance. Saved templates help you reuse the same style for a full collection."
+      },
+      {
+        "question": "Can I commercialize the results?",
+        "answer": "Yes. You own the renders you create, so feel free to use them for storefronts, campaigns, or merch proposals."
+      }
+    ]
+  }
+}

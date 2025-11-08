@@ -1,0 +1,115 @@
+{
+  "displayTitle": "3D 手办图片生成器",
+  "seoTitle": "免费 3D 手办风格图片生成器",
+  "seoDescription": "上传照片即可生成收藏级 3D 手办渲染，适合产品概念、粉丝创作与社交媒体发布。",
+  "hero": {
+    "heading": "一键生成 3D 手办风格图片",
+    "description": "通过 3D 手办模板，将真人照片重新塑造成迷你手办。AI 会自动处理光影、材质与配件，让角色像真实的设计师玩具一样高级。",
+    "cta": {
+      "label": "立即开始设计",
+      "href": "#editor"
+    }
+  },
+  "gallery": {
+    "heading": "手办风格案例",
+    "subheading": "多角度、多主题展示 AI 对光泽、材质与姿态的重构能力。"
+  },
+  "galleryItems": [
+    {
+      "title": "英雄姿态",
+      "description": "高光盔甲与轮廓补光，打造电影感的收藏款手办。"
+    },
+    {
+      "title": "萌系形象",
+      "description": "圆润比例、粉彩配色与软质塑料，让角色更可爱。"
+    },
+    {
+      "title": "收藏套装",
+      "description": "自动添加底座、包装阴影与主题配件，方便商品展示。"
+    }
+  ],
+  "features": {
+    "heading": "沉浸式亮点",
+    "items": [
+      {
+        "title": "材质感知渲染",
+        "description": "支持 PVC、树脂、金属等不同材质的光泽表现，细节真实。",
+        "ctaLabel": "体验手办模板",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "提示词自由换装",
+        "description": "输入姿态或配件关键词，即可快速生成全新造型。",
+        "ctaLabel": "查看提示词示例",
+        "ctaHref": "#prompts"
+      },
+      {
+        "title": "场景预设",
+        "description": "内置桌面、橱窗、展柜等布景，无需再额外抠图合成。",
+        "ctaLabel": "浏览场景",
+        "ctaHref": "#presets"
+      },
+      {
+        "title": "营销友好",
+        "description": "输出符合电商与品牌宣传需求的高清比例，可直接投放。",
+        "ctaLabel": "下载示例包",
+        "ctaHref": "#downloads"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "为什么创作者都在用",
+    "description": "几分钟就能完成一套手办效果图，替你节省昂贵的建模与渲染成本。",
+    "items": [
+      {
+        "title": "操作友好",
+        "description": "无需 3D 软件经验，调节光泽、色温与背景模糊即可完成。",
+        "icon": "Sparkles"
+      },
+      {
+        "title": "风格批量统一",
+        "description": "同一套模板即可生成多角色手办，造型高度一致，方便成系列发布。",
+        "icon": "Palette"
+      },
+      {
+        "title": "高分辨率输出",
+        "description": "支持 4K+ 高清渲染，可用于海报、众筹页或线下物料制作。",
+        "icon": "Camera"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "继续探索更多 AI 图片模板",
+    "description": "结合其他风格模板，一次性扩充你的视觉资产库。",
+    "linkLabel": "查看更多特效"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "需要 3D 模型基础吗？",
+        "answer": "不需要。上传清晰人像即可，AI 会负责建模、贴图与光影。"
+      },
+      {
+        "question": "什么照片效果最好？",
+        "answer": "建议使用正脸或 3/4 角度、光线均匀的照片。避免严重滤镜或低分辨率。"
+      },
+      {
+        "question": "可以替换服装与配件吗？",
+        "answer": "可以。通过提示词描述“机甲盔甲”“彩色耳机”等即可一键替换。"
+      },
+      {
+        "question": "导出的背景可以透明吗？",
+        "answer": "支持导出带背景场景或透明 PNG，方便后期排版。"
+      },
+      {
+        "question": "生成次数有限制吗？",
+        "answer": "在积分范围内可无限迭代。模板会记住你的参数，方便批量创作。"
+      },
+      {
+        "question": "商用是否需要额外授权？",
+        "answer": "你对自己生成的图片拥有使用权，可用于电商、宣传或衍生设计。"
+      }
+    ]
+  }
+}

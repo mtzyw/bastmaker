@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
 import type { ImageEffectCopy } from "@/lib/image-effects/content";
 import { getImageEffectContent } from "@/config/image-effects-content";
+import { getVideoEffectContent } from "@/config/video-effects-content";
 import type { LucideIcon } from "lucide-react";
 import { Sparkles, Palette, Camera } from "lucide-react";
 
@@ -124,9 +125,14 @@ export function ImageEffectsDetailContent({
   const moreEffectsLinkLabel = copy?.moreEffects?.linkLabel ?? "浏览全部特效";
 
   const faqHeading = copy?.faq?.heading ?? "常见问题";
+  const shouldUseVideoFaq = effect.slug === "3d-figurine-image-generation";
+  const fallbackFaqSource = shouldUseVideoFaq
+    ? getVideoEffectContent("ai-hugging")?.FAQ_ITEMS
+    : legacyContent?.FAQ_ITEMS;
+
   const faqItems: FaqItem[] = copy?.faq?.items
     ? copy.faq.items
-    : (legacyContent?.FAQ_ITEMS ?? []).map((item: any) => ({
+    : (fallbackFaqSource ?? []).map((item: any) => ({
         question: item.q,
         answer: item.a,
       }));
@@ -236,34 +242,31 @@ export function ImageEffectsDetailContent({
             {valueItems.map(({ title, description, Icon }) => (
               <article
                 key={title}
-                className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg"
+                className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-6 text-center"
               >
-                <Icon className="h-8 w-8 text-white/80" />
-                <h4 className="mt-4 text-lg font-semibold">{title}</h4>
-                <p className="mt-2 text-sm text-white/60">{description}</p>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                  <Icon className="h-6 w-6 text-white/80" />
+                </div>
+                <h4 className="text-lg font-semibold">{title}</h4>
+                <p className="text-sm text-white/65">{description}</p>
               </article>
             ))}
           </div>
         </section>
 
         <section className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h3 className="text-2xl font-semibold md:text-3xl">
-                {moreEffectsHeading}
-              </h3>
-              <p className="text-sm text-white/60">{moreEffectsDescription}</p>
-            </div>
-            <Button asChild>
-              <Link href="/image-effects">{moreEffectsLinkLabel}</Link>
-            </Button>
+          <div className="space-y-2 text-center">
+            <h3 className="text-2xl font-semibold md:text-3xl">
+              {moreEffectsHeading}
+            </h3>
+            <p className="text-sm text-white/60">{moreEffectsDescription}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {suggestedEffects.map((item) => (
               <Link
                 key={item.id}
                 href={`/image-effects/${item.slug}`}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:border-white/30"
+                className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-white/30 hover:shadow-lg hover:shadow-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <div className="relative aspect-square overflow-hidden">
                   <Image
@@ -272,15 +275,28 @@ export function ImageEffectsDetailContent({
                     fill
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/70" />
+                  <span className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-900 opacity-0 shadow-lg transition-opacity duration-300 group-hover:opacity-100">
+                    查看模板
+                  </span>
                 </div>
-                <div className="space-y-1 px-4 py-3">
-                  <h4 className="text-sm font-semibold">{item.title}</h4>
+                <div className="px-4 py-4">
+                  <p className="text-sm font-semibold text-white">{item.title}</p>
                   {item.category ? (
                     <p className="text-xs text-white/50">{item.category}</p>
                   ) : null}
                 </div>
               </Link>
             ))}
+          </div>
+          <div className="flex justify-center">
+            <Button
+              asChild
+              variant="secondary"
+              className="bg-white/10 text-white hover:bg-white/20"
+            >
+              <Link href="/image-effects">{moreEffectsLinkLabel}</Link>
+            </Button>
           </div>
         </section>
 
@@ -289,19 +305,19 @@ export function ImageEffectsDetailContent({
             <h3 className="text-2xl font-semibold md:text-3xl text-center">
               {faqHeading}
             </h3>
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               {faqItems.map((faq) => (
-                <details
+                <article
                   key={faq.question}
-                  className="group rounded-2xl border border-white/10 bg-white/5 px-6 py-4"
+                  className="rounded-2xl border border-white/10 bg-black/40 p-5"
                 >
-                  <summary className="cursor-pointer text-sm font-medium text-white">
+                  <p className="text-sm font-semibold text-white">
                     {faq.question}
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-white/70">
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/70">
                     {faq.answer}
                   </p>
-                </details>
+                </article>
               ))}
             </div>
           </section>
