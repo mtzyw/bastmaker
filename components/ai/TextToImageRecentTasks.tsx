@@ -1704,8 +1704,8 @@ export default function TextToImageRecentTasks({
       fallbackMediaUrl ||
       "https://cdn.bestmaker.ai/static/placeholders/video-effect-preview.mp4";
     content = (
-      <div className="relative flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-black/20 p-4">
-        <div className="h-full w-full max-h-[780px] max-w-[780px]">
+      <div className="relative flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-black/20 p-4 overflow-hidden">
+        <div className="h-full w-full max-h-[780px] max-w-[780px] md:max-h-full md:max-w-full">
           <img
             src={mediaUrl}
             alt="预览图"

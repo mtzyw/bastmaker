@@ -18,6 +18,14 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Camera,
 };
 
+function extractAnchorId(href?: string | null) {
+  if (!href || !href.startsWith("#")) {
+    return null;
+  }
+  const id = href.slice(1).trim();
+  return id.length > 0 ? id : null;
+}
+
 function getSuggestedEffects(
   currentSlug: string,
   allEffects: ImageEffectTemplate[]
@@ -195,11 +203,15 @@ export function ImageEffectsDetailContent({
           <section className="space-y-14">
             {featureItems.map((feature, index) => {
               const isReverse = index % 2 !== 0;
+              const anchorId = extractAnchorId(feature.ctaHref);
+              const safeAnchorId =
+                anchorId && anchorId !== "editor" ? anchorId : null;
               return (
                 <div
                   key={feature.title}
+                  id={safeAnchorId ?? undefined}
                   className={cn(
-                    "grid items-center gap-10",
+                    "grid items-center gap-10 scroll-mt-24",
                     "lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]",
                     isReverse &&
                       "lg:[&>*:first-child]:col-start-2 lg:[&>*:last-child]:col-start-1 lg:[&>*]:row-start-1"

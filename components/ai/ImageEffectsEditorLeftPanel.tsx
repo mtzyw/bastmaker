@@ -347,7 +347,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const previewImage = effect.previewImageUrl ?? DEFAULT_PREVIEW_IMAGE;
 
   return (
-    <div className="flex h-full min-h-0 flex-col text-white">
+    <div id="editor" className="flex h-full min-h-0 flex-col text-white">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
           <p className="text-sm uppercase tracking-[0.3em] text-white/40">

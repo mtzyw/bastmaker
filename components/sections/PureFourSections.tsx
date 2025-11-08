@@ -52,11 +52,11 @@ export default function PureFourSections({
 }) {
   const [s1, s2, s3, s4] = sections;
   const section2HeightClass = lockSection2Height
-    ? "h-[calc(100vh-4rem)]"
+    ? "min-h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)]"
     : "min-h-[calc(100vh-4rem)]";
-  const section2GridHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
-  const section2ColumnHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
-  const section2ColumnInnerHeightClass = lockSection2Height ? "h-full min-h-0" : undefined;
+  const section2GridHeightClass = lockSection2Height ? "md:h-full md:min-h-0" : undefined;
+  const section2ColumnHeightClass = lockSection2Height ? "md:h-full md:min-h-0" : undefined;
+  const section2ColumnInnerHeightClass = lockSection2Height ? "md:h-full md:min-h-0" : undefined;
   return (
     <div className="relative w-full">
       {/* Desktop fixed left column (never moves) - only when embedded */}
@@ -108,7 +108,7 @@ export default function PureFourSections({
               </div>
             </div>
             <div
-              className={cn(section2ColumnHeightClass, "flex items-center header-bg text-white")}
+              className={cn(section2ColumnHeightClass, "flex items-start header-bg text-white")}
             >
               <div className={cn(
                 "container mx-auto px-4 md:px-8 w-full flex flex-col",
