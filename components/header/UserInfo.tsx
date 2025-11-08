@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { useRouter } from "@/i18n/routing";
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -165,15 +166,12 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
 
         <Button
           variant="outline"
-          className="mt-2 w-full justify-center bg-white/5 text-white hover:bg-white/10"
-          disabled={!inviteLink}
-          onClick={handleCopyInviteLink}
+          className="mt-2 w-full justify-center rounded-2xl bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] text-white shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
+          asChild
         >
-          {copyState === "copied"
-            ? "邀请链接已复制"
-            : copyState === "error"
-              ? "复制失败，请重试"
-              : "推荐好友"}
+          <Link href="/dashboard/subscription">
+            升级会员
+          </Link>
         </Button>
       </div>
 

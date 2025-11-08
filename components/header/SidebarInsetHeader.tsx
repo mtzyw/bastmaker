@@ -1,7 +1,6 @@
 "use client";
 
 import LocaleSwitcher from "@/components/LocaleSwitcher";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import HeaderLinks from "@/components/header/HeaderLinks";
 import MobileMenu from "@/components/header/MobileMenu";
 import { UserAvatar } from "@/components/header/UserAvatar";
@@ -26,7 +25,6 @@ export default function SidebarInsetHeader() {
           {/* PC */}
           <div className="hidden lg:flex items-center gap-x-2">
             <LocaleSwitcher />
-            <ThemeToggle />
             <UserAvatar />
           </div>
 

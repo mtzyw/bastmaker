@@ -103,7 +103,7 @@ export default async function SubscriptionPage() {
             </p>
             <Button
               asChild
-              className="h-11 px-6 font-medium button-gradient-bg"
+              className="h-11 px-6 font-medium text-white shadow-lg shadow-[#f64f59]/30 bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] hover:opacity-90"
             >
               <I18nLink
                 href={process.env.NEXT_PUBLIC_PRICING_PATH!}

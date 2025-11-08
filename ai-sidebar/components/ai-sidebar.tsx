@@ -275,29 +275,15 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
       </ScrollArea>
       {/* Fixed bottom login */}
       <div className="p-4 border-t border-white/10">
-        {user ? (
-          <Button
-            className="w-full h-11 text-base bg-gradient-to-r from-[#ff4d8d] to-[#7b61ff] text-white hover:opacity-90"
-            disabled={!inviteLink}
-            onClick={handleCopyInviteLink}
-          >
-            {copyState === "copied"
-              ? "邀请链接已复制"
-              : copyState === "error"
-                ? "复制失败，请重试"
-                : "推荐好友"}
-          </Button>
-        ) : (
-          <Button
-            className="w-full h-11 text-base bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => {
-              router.push("/sign-up");
-              onNavigate && onNavigate();
-            }}
-          >
-            登录
-          </Button>
-        )}
+        <Button
+          className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
+          onClick={() => {
+            router.push("/dashboard/subscription");
+            onNavigate && onNavigate();
+          }}
+        >
+          升级会员
+        </Button>
       </div>
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { pacifico } from "@/app/fonts";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
   DropdownMenu,
@@ -49,7 +48,6 @@ export default function MobileMenu({ hideHrefs, hideIds }: MobileMenuProps) {
   return (
     <div className="flex items-center">
       <LocaleSwitcher />
-      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger className="p-2">
           <Menu className="h-5 w-5" />

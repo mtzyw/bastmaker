@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { pacifico } from "@/app/fonts";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserAvatar } from "@/components/header/UserAvatar";
 import { Link as I18nLink } from "@/i18n/routing";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -55,7 +54,6 @@ export function ViewerHeader({ job: _job, shareUrl: _shareUrl, generateUrl }: Vi
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
           {user ? (
             <UserAvatar />
           ) : (

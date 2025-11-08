@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { AISidebar } from "@/ai-sidebar/components/ai-sidebar";
 import { useState } from "react";
+import { CreditsBadge } from "@/components/header/CreditsBadge";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 interface HeaderProps {
   hideHeaderHrefs?: string[];
@@ -23,6 +25,7 @@ interface HeaderProps {
 const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDialog }: HeaderProps) => {
   const t = useTranslations("Home");
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="py-4 px-6 backdrop-blur-md sticky top-0 z-50 header-bg border-b border-white/10">
@@ -71,6 +74,7 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
           {/* PC */}
           <div className="hidden lg:flex items-center gap-x-3">
             <LocaleSwitcher />
+            {user ? <CreditsBadge /> : null}
             <UserAvatar openAuthDialog={openAuthDialog} />
           </div>
 
