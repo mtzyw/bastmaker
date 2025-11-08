@@ -2,7 +2,6 @@
 import { pacifico } from "@/app/fonts";
 import HeaderLinks from "@/components/header/HeaderLinks";
 import MobileMenu from "@/components/header/MobileMenu";
-import { CreditsBadge } from "@/components/header/CreditsBadge";
 import { UserAvatar } from "@/components/header/UserAvatar";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import { Link as I18nLink } from "@/i18n/routing";
@@ -72,7 +71,6 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
           {/* PC */}
           <div className="hidden lg:flex items-center gap-x-3">
             <LocaleSwitcher />
-            <CreditsBadge />
             <UserAvatar openAuthDialog={openAuthDialog} />
           </div>
 

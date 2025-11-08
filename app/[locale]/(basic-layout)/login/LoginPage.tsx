@@ -262,7 +262,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-3xl">
         <div className="relative z-10 mx-auto -mb-8 w-full max-w-lg rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]">
           <p className="text-sm font-semibold leading-relaxed">
-            新手注册立享欢迎积分与好友奖励
+            新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
           </p>
           <p className="text-xs font-medium text-white/85">
             输入邮箱即可获取验证码，5 分钟内完成注册。
