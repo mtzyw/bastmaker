@@ -210,7 +210,7 @@ export function ImageEffectsDetailContent({
                       src={galleryImageUrls[index] ?? PLACEHOLDER_IMAGE}
                       alt={feature.title}
                       fill
-                      className="object-cover"
+                      className="object-cover scale-125"
                     />
                     <div className="pointer-events-none absolute inset-0 border border-white/10" />
                   </div>

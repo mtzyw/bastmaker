@@ -141,11 +141,18 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
     })
   );
 
+  const previewMediaUrl =
+    resolvedTemplate.metadata?.pageContent?.previewImageUrl ||
+    resolvedTemplate.metadata?.pageContent?.detailImageUrls?.[0] ||
+    resolvedTemplate.previewImageUrl ||
+    "https://cdn.bestmaker.ai/static/placeholders/image-effect-detail.jpg";
+
   const rightSection = (
     <TextToImageRecentTasks
       initialCategory="图片"
       categories={["图片", "特效", "全部"]}
       hideEffectBadge
+      fallbackMediaUrl={previewMediaUrl}
     />
   );
 

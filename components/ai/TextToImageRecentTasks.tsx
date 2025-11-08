@@ -190,6 +190,7 @@ type TextToImageRecentTasksProps = {
   initialCategory?: CategoryFilter;
   categories?: readonly CategoryFilter[];
   hideEffectBadge?: boolean;
+  fallbackMediaUrl?: string;
 };
 
 type TrackedGenerationStatus = "processing" | "completed";
@@ -465,6 +466,7 @@ export default function TextToImageRecentTasks({
   initialCategory = "全部",
   categories = DEFAULT_CATEGORY_ORDER,
   hideEffectBadge = false,
+  fallbackMediaUrl,
 }: TextToImageRecentTasksProps = {}) {
   const normalizedCategories = useMemo(() => {
     const unique = Array.from(new Set(categories));
@@ -1698,9 +1700,18 @@ export default function TextToImageRecentTasks({
       </div>
     );
   } else if (isUnauthorized) {
+    const mediaUrl =
+      fallbackMediaUrl ||
+      "https://cdn.bestmaker.ai/static/placeholders/video-effect-preview.mp4";
     content = (
-      <div className="flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-white/5 p-10 text-white/70">
-        请登录后查看生成记录。
+      <div className="relative flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-black/20 p-4">
+        <div className="h-full w-full max-h-[780px] max-w-[780px]">
+          <img
+            src={mediaUrl}
+            alt="预览图"
+            className="h-full w-full rounded-lg object-contain"
+          />
+        </div>
       </div>
     );
   } else if (error) {
@@ -2062,24 +2073,7 @@ export default function TextToImageRecentTasks({
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col text-white">
-      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <Select
-          value={activeCategory}
-          onValueChange={(value) => setActiveCategory(value as CategoryFilter)}
-        >
-          <SelectTrigger className="w-[160px] bg-white/5 border border-white/10 text-white/80 focus:ring-0 focus:ring-offset-0">
-            <SelectValue placeholder={normalizedCategories[0] ?? "全部"} />
-          </SelectTrigger>
-          <SelectContent className="bg-[#1c1c1a] text-white border border-white/10">
-            {CATEGORY_OPTIONS.filter((option) => normalizedCategories.includes(option.key)).map((option) => (
-              <SelectItem key={option.key} value={option.key}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex items-center text-sm text-white/70" />
-      </div>
+      <div className="mt-2 mb-4" />
       {content}
       <Dialog
         open={Boolean(previewTask)}
