@@ -1,19 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { useTranslations } from "next-intl";
+
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/routing";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
-export default function SignInPage() {
+type SignInPageVariant = "page" | "dialog";
+
+type SignInPageProps = {
+  variant?: SignInPageVariant;
+};
+
+export default function SignInPage({ variant = "page" }: SignInPageProps = {}) {
   const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
@@ -70,7 +77,13 @@ export default function SignInPage() {
 
   if (user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div
+        className={
+          variant === "dialog"
+            ? "flex w-full items-center justify-center py-10"
+            : "flex min-h-screen items-center justify-center"
+        }
+      >
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
     );
@@ -79,21 +92,34 @@ export default function SignInPage() {
   const inputClass =
     "h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none";
 
-  return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white">
-      <div className="relative w-full max-w-3xl">
-        <div className="relative z-10 mx-auto -mb-8 w-full max-w-lg rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]">
-          <p className="text-sm font-semibold leading-relaxed">欢迎回来</p>
-          <p className="text-xs font-medium text-white/85">使用邮箱或社交账号登录，继续创作。</p>
+  const wrapperClass =
+    variant === "dialog"
+      ? "flex w-full justify-center px-2 py-4 text-white"
+      : "flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white";
+  const shellWidth = variant === "dialog" ? "max-w-2xl" : "max-w-3xl";
+  const gradientWidth = variant === "dialog" ? "max-w-xl -mb-6" : "max-w-lg -mb-8";
+  const cardPadding = variant === "dialog" ? "px-6 pb-8 pt-20" : "px-8 pb-12 pt-24";
+  const headingSize = variant === "dialog" ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl";
+  const descriptionSize = variant === "dialog" ? "text-sm" : "text-sm md:text-base";
+  const badgeSize = variant === "dialog" ? "text-xs" : "text-sm";
+  const subBadgeSize = variant === "dialog" ? "text-[11px]" : "text-xs";
+
+  const content = (
+      <div className="relative w-full">
+        <div
+          className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
+        >
+          <p className={`${badgeSize} font-semibold leading-relaxed`}>欢迎回来</p>
+          <p className={`${subBadgeSize} font-medium text-white/85`}>使用邮箱或社交账号登录，继续创作。</p>
         </div>
 
-        <div className="relative rounded-[32px] border border-white/10 bg-[#161616] px-8 pb-12 pt-24 shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur">
+        <div
+          className={`relative rounded-[32px] border border-white/10 bg-[#161616] ${cardPadding} shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur`}
+        >
           <div className="flex flex-col items-center gap-8 text-center">
             <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">登录 Bestmaker</h1>
-              <p className="text-sm text-white/70 md:text-base">
-                与你的作品再会，继续探索最新的 AI 功能。
-              </p>
+              <h1 className={`${headingSize} font-semibold tracking-tight`}>登录 Bestmaker</h1>
+              <p className={`${descriptionSize} text-white/70`}>与你的作品再会，继续探索最新的 AI 功能。</p>
             </div>
 
             <div className="w-full max-w-lg space-y-8 text-left text-white/85">
@@ -186,6 +212,19 @@ export default function SignInPage() {
           </div>
         </div>
       </div>
+    );
+
+  if (variant === "dialog") {
+    return (
+      <div className={wrapperClass}>
+        <div className={`relative w-full ${shellWidth}`}>{content}</div>
+      </div>
+    );
+  }
+
+  return (
+    <main className={wrapperClass}>
+      <div className={`relative w-full ${shellWidth}`}>{content}</div>
     </main>
   );
 }

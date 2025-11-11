@@ -1,23 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Loader2, Mail } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { useTranslations } from "next-intl";
+
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { Loader2, Mail } from "lucide-react";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type SignupStep = "email" | "verify" | "details";
 type PendingAction = "send-code" | null;
+type LoginPageVariant = "page" | "dialog";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  variant?: LoginPageVariant;
+};
+
+export default function LoginPage({ variant = "page" }: LoginPageProps = {}) {
   const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
 
@@ -209,7 +215,7 @@ export default function LoginPage() {
 
   const handleResendCode = () => {
     if (isSending || resendSeconds > 0) return;
-    handleSendCode();
+    void handleSendCode();
   };
 
   const handleGoogleLogin = async () => {
@@ -243,7 +249,13 @@ export default function LoginPage() {
 
   if (user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div
+        className={
+          variant === "dialog"
+            ? "flex w-full items-center justify-center py-10"
+            : "flex min-h-screen items-center justify-center"
+        }
+      >
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
     );
@@ -257,183 +269,206 @@ export default function LoginPage() {
   const inputClass =
     "h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none";
 
-  return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white">
-      <div className="relative w-full max-w-3xl">
-        <div className="relative z-10 mx-auto -mb-8 w-full max-w-lg rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]">
-          <p className="text-sm font-semibold leading-relaxed">
-            新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
-          </p>
-          <p className="text-xs font-medium text-white/85">
-            输入邮箱即可获取验证码，5 分钟内完成注册。
-          </p>
-        </div>
+  const wrapperClass =
+    variant === "dialog"
+      ? "flex w-full justify-center px-2 py-4 text-white"
+      : "flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white";
+  const shellWidth = variant === "dialog" ? "max-w-2xl" : "max-w-3xl";
+  const gradientWidth = variant === "dialog" ? "max-w-xl -mb-6" : "max-w-lg -mb-8";
+  const cardPadding = variant === "dialog" ? "px-6 pb-8 pt-20" : "px-8 pb-12 pt-24";
+  const headingSize = variant === "dialog" ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl";
+  const subTextSize = variant === "dialog" ? "text-sm" : "text-sm md:text-base";
+  const badgeSize = variant === "dialog" ? "text-xs" : "text-sm";
+  const subBadgeSize = variant === "dialog" ? "text-[11px]" : "text-xs";
 
-        <div className="relative rounded-[32px] border border-white/10 bg-[#161616] px-8 pb-12 pt-24 shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur">
-          <div className="flex flex-col items-center gap-8 text-center">
-            <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{headline}</h1>
-              <p className="text-sm text-white/70 md:text-base">{subHeadline}</p>
-            </div>
+  const content = (
+    <div className="relative w-full">
+      <div
+        className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
+      >
+        <p className={`${badgeSize} font-semibold leading-relaxed`}>
+          新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
+        </p>
+        <p className={`${subBadgeSize} font-medium text-white/85`}>输入邮箱即可获取验证码，5 分钟内完成注册。</p>
+      </div>
 
-            <div className="w-full max-w-lg space-y-8 text-left text-white/85">
-              {step === "email" && (
-                <>
-                  <div className="flex justify-center">
-                    <Button
-                      onClick={handleGoogleLogin}
-                      className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] font-semibold text-white hover:bg-white/15"
-                    >
-                      <GoogleIcon className="mr-2 h-4 w-4" />
-                      {t("signInMethods.signInWithGoogle")}
-                    </Button>
-                  </div>
+      <div
+        className={`relative rounded-[32px] border border-white/10 bg-[#161616] ${cardPadding} shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur`}
+      >
+        <div className="flex flex-col items-center gap-8 text-center">
+          <div className="space-y-3">
+            <h1 className={`${headingSize} font-semibold tracking-tight`}>{headline}</h1>
+            <p className={`${subTextSize} text-white/70`}>{subHeadline}</p>
+          </div>
 
-                  <div className="flex items-center gap-4 text-xs text-white/40">
-                    <span className="h-px flex-1 bg-white/10" />
-                    <span>{t("signInMethods.or")}</span>
-                    <span className="h-px flex-1 bg-white/10" />
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                        邮箱地址
-                      </label>
-                      <Input
-                        type="email"
-                        placeholder="name@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    {renderTurnstile()}
-
-                    <Button
-                      onClick={handleSendCode}
-                      disabled={isSending}
-                      className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
-                    >
-                      发送验证码{" "}
-                      {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
-                    </Button>
-
-                    <p className="text-center text-xs text-white/50">
-                      已有账号？
-                      <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
-                        直接登录
-                      </Link>
-                    </p>
-                  </div>
-                </>
-              )}
-
-              {step === "verify" && (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      <span>验证码已发送到</span>
-                    </div>
-                    <p className="mt-1 break-all font-semibold text-white">{email}</p>
-                  </div>
-
-                  <Input
-                    placeholder="输入 6 位验证码"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className={inputClass}
-                  />
-
+          <div className="w-full max-w-lg space-y-8 text-left text-white/85">
+            {step === "email" && (
+              <>
+                <div className="flex justify-center">
                   <Button
-                    onClick={handleVerify}
-                    disabled={isVerifying}
-                    className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                    onClick={handleGoogleLogin}
+                    className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] font-semibold text-white hover:bg-white/15"
                   >
-                    验证邮箱{" "}
-                    {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                    <GoogleIcon className="mr-2 h-4 w-4" />
+                    {t("signInMethods.signInWithGoogle")}
                   </Button>
+                </div>
+
+                <div className="flex items-center gap-4 text-xs text-white/40">
+                  <span className="h-px flex-1 bg-white/10" />
+                  <span>{t("signInMethods.or")}</span>
+                  <span className="h-px flex-1 bg-white/10" />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                      邮箱地址
+                    </label>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
 
                   {renderTurnstile()}
 
-                  <div className="flex items-center justify-between text-xs text-white/60">
-                    <button
-                      className="underline underline-offset-4 hover:text-white"
-                      onClick={handleUseDifferentEmail}
-                    >
-                      换一个邮箱
-                    </button>
-                    <button
-                      className="font-semibold text-[#dc2e5a]"
-                      onClick={handleResendCode}
-                      disabled={isSending || resendSeconds > 0}
-                      title={resendSeconds > 0 ? `请等待 ${resendSeconds}s` : undefined}
-                    >
-                      {resendSeconds > 0 ? `重新发送 (${resendSeconds}s)` : "重新发送"}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {step === "details" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                      用户名
-                    </label>
-                    <Input
-                      placeholder="给自己取一个名字"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                      密码
-                    </label>
-                    <Input
-                      type="password"
-                      placeholder="设置登录密码（至少 8 位）"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className={`${inputClass} mt-1`}
-                    />
-                  </div>
                   <Button
-                    onClick={handleCompleteSignup}
-                    disabled={isCompleting}
+                    onClick={handleSendCode}
+                    disabled={isSending}
                     className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
                   >
-                    完成注册{" "}
-                    {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                    发送验证码 {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
                   </Button>
-                </div>
-              )}
-            </div>
 
-            <p className="text-center text-[11px] text-white/30">
-              注册即表示同意我们的{" "}
-              <Link
-                className="text-white/50 underline underline-offset-4 hover:text-white"
-                href="/terms-of-service"
-              >
-                使用条款
-              </Link>{" "}
-              与{" "}
-              <Link
-                className="text-white/50 underline underline-offset-4 hover:text-white"
-                href="/privacy-policy"
-              >
-                隐私政策
-              </Link>
-              。
-            </p>
+                  <p className="text-center text-xs text-white/50">
+                    已有账号？
+                    <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
+                      直接登录
+                    </Link>
+                  </p>
+                </div>
+              </>
+            )}
+
+            {step === "verify" && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>验证码已发送到</span>
+                  </div>
+                  <p className="mt-1 break-all font-semibold text-white">{email}</p>
+                </div>
+
+                <Input
+                  placeholder="输入 6 位验证码"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className={inputClass}
+                />
+
+                <Button
+                  onClick={handleVerify}
+                  disabled={isVerifying}
+                  className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                >
+                  验证邮箱 {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                </Button>
+
+                {renderTurnstile()}
+
+                <div className="flex items-center justify-between text-xs text-white/60">
+                  <button
+                    className="underline underline-offset-4 hover:text-white"
+                    onClick={handleUseDifferentEmail}
+                  >
+                    换一个邮箱
+                  </button>
+                  <button
+                    className="font-semibold text-[#dc2e5a]"
+                    onClick={handleResendCode}
+                    disabled={isSending || resendSeconds > 0}
+                    title={resendSeconds > 0 ? `请等待 ${resendSeconds}s` : undefined}
+                  >
+                    {resendSeconds > 0 ? `重新发送 (${resendSeconds}s)` : "重新发送"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === "details" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                    用户名
+                  </label>
+                  <Input
+                    placeholder="给自己取一个名字"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                    密码
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="设置登录密码（至少 8 位）"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`${inputClass} mt-1`}
+                  />
+                </div>
+                <Button
+                  onClick={handleCompleteSignup}
+                  disabled={isCompleting}
+                  className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                >
+                  完成注册 {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                </Button>
+              </div>
+            )}
           </div>
+
+          <p className="text-center text-[11px] text-white/30">
+            注册即表示同意我们的{" "}
+            <Link
+              className="text-white/50 underline underline-offset-4 hover:text-white"
+              href="/terms-of-service"
+            >
+              使用条款
+            </Link>{" "}
+            与{" "}
+            <Link
+              className="text-white/50 underline underline-offset-4 hover:text-white"
+              href="/privacy-policy"
+            >
+              隐私政策
+            </Link>
+            。
+          </p>
         </div>
       </div>
+    </div>
+  );
+
+  if (variant === "dialog") {
+    return (
+      <div className={wrapperClass}>
+        <div className={`relative w-full ${shellWidth}`}>{content}</div>
+      </div>
+    );
+  }
+
+  return (
+    <main className={wrapperClass}>
+      <div className={`relative w-full ${shellWidth}`}>{content}</div>
     </main>
   );
 }

@@ -52,6 +52,7 @@ export default async function ImageToVideoPage() {
           initialCategory="视频"
           categories={["视频", "全部", "图片", "音效"]}
           hideEffectBadge
+          fallbackMediaUrl="https://cdn.imgenhancer.ai/image.png"
         />
       }
       hideMergedSection={isAuthenticated}

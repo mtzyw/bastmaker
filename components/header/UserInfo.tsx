@@ -16,7 +16,7 @@ import { useRouter } from "@/i18n/routing";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
@@ -252,26 +252,42 @@ function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
           {t("Button.signIn")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t("Button.signIn")}</DialogTitle>
-        </DialogHeader>
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="signin">{t("Button.signIn")}</TabsTrigger>
-            <TabsTrigger value="signup">{t("Button.signUp")}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="mt-4">
-            <div className="max-h-[60vh] overflow-y-auto">
-              <SignInPage />
-            </div>
-          </TabsContent>
-          <TabsContent value="signup" className="mt-4">
-            <div className="max-h-[60vh] overflow-y-auto">
-              <LoginPage />
-            </div>
-          </TabsContent>
-        </Tabs>
+      <DialogContent className="max-w-4xl border-none bg-transparent p-0 text-white shadow-none">
+        <div className="rounded-[40px] border border-white/10 bg-[#050505]/95 p-4 sm:p-6 md:p-8">
+          <div className="space-y-2 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Bestmaker</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+              {t("Button.signIn")} / {t("Button.signUp")}
+            </h2>
+            <p className="text-sm text-white/70">登录查看创作记录，注册即可领取新人积分。</p>
+          </div>
+          <Tabs defaultValue="signin" className="mt-6 w-full text-white">
+            <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-white/5 p-1">
+              <TabsTrigger
+                value="signin"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg"
+              >
+                {t("Button.signIn")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="signup"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg"
+              >
+                {t("Button.signUp")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="mt-6 focus-visible:outline-none">
+              <div className="max-h-[70vh] overflow-y-auto pr-1">
+                <SignInPage variant="dialog" />
+              </div>
+            </TabsContent>
+            <TabsContent value="signup" className="mt-6 focus-visible:outline-none">
+              <div className="max-h-[70vh] overflow-y-auto pr-1">
+                <LoginPage variant="dialog" />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );
