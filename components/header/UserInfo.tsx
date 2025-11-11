@@ -252,26 +252,26 @@ function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
           {t("Button.signIn")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl border-none bg-transparent p-0 text-white shadow-none">
-        <div className="rounded-[40px] border border-white/10 bg-[#050505]/95 p-4 sm:p-6 md:p-8">
-          <div className="space-y-2 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Bestmaker</p>
-            <h2 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+      <DialogContent className="max-w-2xl border-none bg-transparent p-0 text-white shadow-none md:max-h-[90vh]">
+        <div className="rounded-[28px] border border-white/10 bg-[#050505]/95 p-4 sm:p-4.5 md:p-5">
+          <div className="space-y-1 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">Bestmaker</p>
+            <h2 className="text-lg font-semibold tracking-tight text-white md:text-xl">
               {t("Button.signIn")} / {t("Button.signUp")}
             </h2>
-            <p className="text-sm text-white/70">登录查看创作记录，注册即可领取新人积分。</p>
+            <p className="text-xs text-white/65">登录查看创作记录，注册即可领取新人积分。</p>
           </div>
-          <Tabs defaultValue="signin" className="mt-6 w-full text-white">
+          <Tabs defaultValue="signin" className="mt-5 w-full text-white">
             <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-white/5 p-1">
               <TabsTrigger
                 value="signin"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
               >
                 {t("Button.signIn")}
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
               >
                 {t("Button.signUp")}
               </TabsTrigger>

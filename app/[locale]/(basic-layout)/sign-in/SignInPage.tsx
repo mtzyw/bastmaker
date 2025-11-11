@@ -89,25 +89,31 @@ export default function SignInPage({ variant = "page" }: SignInPageProps = {}) {
     );
   }
 
-  const inputClass =
-    "h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none";
+  const controlHeight = variant === "dialog" ? "h-11" : "h-12";
+  const inputClass = `${controlHeight} w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none`;
 
   const wrapperClass =
     variant === "dialog"
-      ? "flex w-full justify-center px-2 py-4 text-white"
+      ? "flex w-full justify-center px-2 py-2 text-white"
       : "flex min-h-screen w-full items-center justify-center bg-[#1c1c1a] px-4 py-16 text-white";
-  const shellWidth = variant === "dialog" ? "max-w-2xl" : "max-w-3xl";
-  const gradientWidth = variant === "dialog" ? "max-w-xl -mb-6" : "max-w-lg -mb-8";
-  const cardPadding = variant === "dialog" ? "px-6 pb-8 pt-20" : "px-8 pb-12 pt-24";
-  const headingSize = variant === "dialog" ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl";
-  const descriptionSize = variant === "dialog" ? "text-sm" : "text-sm md:text-base";
-  const badgeSize = variant === "dialog" ? "text-xs" : "text-sm";
-  const subBadgeSize = variant === "dialog" ? "text-[11px]" : "text-xs";
+  const shellWidth = variant === "dialog" ? "max-w-md" : "max-w-3xl";
+  const gradientWidth = variant === "dialog" ? "max-w-sm -mb-2" : "max-w-lg -mb-8";
+  const cardPadding = variant === "dialog" ? "px-4 pb-4 pt-10" : "px-8 pb-12 pt-24";
+  const headingSize = variant === "dialog" ? "text-base md:text-lg" : "text-3xl md:text-4xl";
+  const descriptionSize = variant === "dialog" ? "text-xs" : "text-sm md:text-base";
+  const badgeSize = variant === "dialog" ? "text-[9px]" : "text-sm";
+  const subBadgeSize = variant === "dialog" ? "text-[9px]" : "text-xs";
+  const innerMaxWidth = variant === "dialog" ? "max-w-xs" : "max-w-lg";
+  const sectionGap = variant === "dialog" ? "gap-3" : "gap-8";
+  const titleSpacing = variant === "dialog" ? "space-y-1.5" : "space-y-3";
+  const ctaPadding = variant === "dialog" ? "px-4 py-2" : "px-8 py-4";
+  const contentStackSpacing = variant === "dialog" ? "space-y-4" : "space-y-8";
+  const fieldStackSpacing = variant === "dialog" ? "space-y-2.5" : "space-y-4";
 
   const content = (
       <div className="relative w-full">
         <div
-          className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] px-8 py-4 text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
+          className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] ${ctaPadding} text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
         >
           <p className={`${badgeSize} font-semibold leading-relaxed`}>欢迎回来</p>
           <p className={`${subBadgeSize} font-medium text-white/85`}>使用邮箱或社交账号登录，继续创作。</p>
@@ -116,17 +122,17 @@ export default function SignInPage({ variant = "page" }: SignInPageProps = {}) {
         <div
           className={`relative rounded-[32px] border border-white/10 bg-[#161616] ${cardPadding} shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur`}
         >
-          <div className="flex flex-col items-center gap-8 text-center">
-            <div className="space-y-3">
+          <div className={`flex flex-col items-center ${sectionGap} text-center`}>
+            <div className={`${titleSpacing}`}>
               <h1 className={`${headingSize} font-semibold tracking-tight`}>登录 Bestmaker</h1>
               <p className={`${descriptionSize} text-white/70`}>与你的作品再会，继续探索最新的 AI 功能。</p>
             </div>
 
-            <div className="w-full max-w-lg space-y-8 text-left text-white/85">
+            <div className={`w-full ${innerMaxWidth} ${contentStackSpacing} text-left text-white/85`}>
               <div className="flex justify-center">
                 <Button
                   onClick={handleGoogleLogin}
-                  className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] font-semibold text-white hover:bg-white/15"
+                  className={`${controlHeight} w-full rounded-xl border border-white/15 bg-white/[0.08] font-semibold text-white hover:bg-white/15`}
                 >
                   <GoogleIcon className="mr-2 h-4 w-4" />
                   {t("signInMethods.signInWithGoogle")}
@@ -139,7 +145,7 @@ export default function SignInPage({ variant = "page" }: SignInPageProps = {}) {
                 <span className="h-px flex-1 bg-white/10" />
               </div>
 
-              <div className="space-y-4">
+              <div className={fieldStackSpacing}>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
                     邮箱地址
@@ -178,7 +184,7 @@ export default function SignInPage({ variant = "page" }: SignInPageProps = {}) {
                 <Button
                   onClick={handlePasswordLogin}
                   disabled={isLoggingIn}
-                  className="h-12 w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90"
+                  className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
                 >
                   登录 {isLoggingIn && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
                 </Button>
