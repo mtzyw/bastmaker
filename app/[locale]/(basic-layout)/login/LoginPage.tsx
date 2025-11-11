@@ -18,12 +18,16 @@ import { toast } from "sonner";
 type SignupStep = "email" | "verify" | "details";
 type PendingAction = "send-code" | null;
 type LoginPageVariant = "page" | "dialog";
+type LoginPageMode = "signup" | "signin";
+type SwitchHandler = (mode: "signin" | "signup") => void;
 
 type LoginPageProps = {
   variant?: LoginPageVariant;
+  mode?: LoginPageMode;
+  onRequestSwitchMode?: SwitchHandler;
 };
 
-export default function LoginPage({ variant = "page" }: LoginPageProps = {}) {
+export default function LoginPage({ variant = "page", mode = "signup", onRequestSwitchMode }: LoginPageProps = {}) {
   const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
 
@@ -261,11 +265,21 @@ export default function LoginPage({ variant = "page" }: LoginPageProps = {}) {
     );
   }
 
-  const headline = step === "details" ? "设置账号信息" : "注册你的 Bestmaker 账号";
-  const subHeadline =
-    step === "details"
-      ? "为通过验证的邮箱设置用户名与密码，完成最后一步。"
-      : "使用邮箱或社交账号创建账户，解锁更多 AI 工具与积分奖励。";
+  const isSignupMode = mode === "signup";
+  const headline = (() => {
+    if (isSignupMode) {
+      return step === "details" ? "设置账号信息" : "注册你的 Bestmaker 账号";
+    }
+    return "登录你的 Bestmaker 账号";
+  })();
+  const subHeadline = (() => {
+    if (isSignupMode) {
+      return step === "details"
+        ? "为通过验证的邮箱设置用户名与密码，完成最后一步。"
+        : "使用邮箱或社交账号创建账户，解锁更多 AI 工具与积分奖励。";
+    }
+    return "输入邮箱并验证后即可快速登录，继续创作。";
+  })();
   const controlHeight = variant === "dialog" ? "h-11" : "h-12";
   const inputClass = `${controlHeight} w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none`;
 
@@ -290,14 +304,16 @@ export default function LoginPage({ variant = "page" }: LoginPageProps = {}) {
 
   const content = (
     <div className="relative w-full">
-      <div
-        className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] ${ctaPadding} text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
-      >
-        <p className={`${badgeSize} font-semibold leading-relaxed`}>
-          新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
-        </p>
-        <p className={`${subBadgeSize} font-medium text-white/85`}>输入邮箱即可获取验证码，5 分钟内完成注册。</p>
-      </div>
+      {isSignupMode && (
+        <div
+          className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] ${ctaPadding} text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
+        >
+          <p className={`${badgeSize} font-semibold leading-relaxed`}>
+            新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
+          </p>
+          <p className={`${subBadgeSize} font-medium text-white/85`}>输入邮箱即可获取验证码，5 分钟内完成注册。</p>
+        </div>
+      )}
 
       <div
         className={`relative rounded-[32px] border border-white/10 bg-[#161616] ${cardPadding} shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur`}
@@ -351,12 +367,27 @@ export default function LoginPage({ variant = "page" }: LoginPageProps = {}) {
                     发送验证码 {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
                   </Button>
 
-                  <p className="text-center text-xs text-white/50">
-                    已有账号？
-                    <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
-                      直接登录
-                    </Link>
-                  </p>
+                  {isSignupMode ? (
+                    onRequestSwitchMode ? (
+                      <div className="text-center text-xs text-white/50">
+                        已有账号？
+                        <button
+                          type="button"
+                          onClick={() => onRequestSwitchMode("signin")}
+                          className="ml-1 font-semibold text-[#dc2e5a] underline-offset-4 hover:underline"
+                        >
+                          直接登录
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-center text-xs text-white/50">
+                        已有账号？
+                        <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
+                          直接登录
+                        </Link>
+                      </p>
+                    )
+                  ) : null}
                 </div>
               </>
             )}

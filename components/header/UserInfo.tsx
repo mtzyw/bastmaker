@@ -16,7 +16,7 @@ import { useRouter } from "@/i18n/routing";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
@@ -240,6 +240,7 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
 }
 function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
   const t = useTranslations("Login");
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -253,6 +254,7 @@ function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl border-none bg-transparent p-0 text-white shadow-none md:max-h-[90vh]">
+        <DialogTitle className="sr-only">Authentication Dialog</DialogTitle>
         <div className="rounded-[28px] border border-white/10 bg-[#050505]/95 p-4 sm:p-4.5 md:p-5">
           <div className="space-y-1 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">Bestmaker</p>
@@ -261,29 +263,31 @@ function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
             </h2>
             <p className="text-xs text-white/65">登录查看创作记录，注册即可领取新人积分。</p>
           </div>
-          <Tabs defaultValue="signin" className="mt-5 w-full text-white">
-            <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-white/5 p-1">
-              <TabsTrigger
-                value="signin"
-                className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
-              >
-                {t("Button.signIn")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="signup"
-                className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white/60 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
-              >
-                {t("Button.signUp")}
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="mt-5 w-full text-white">
+            <div className="flex w-full justify-center">
+              <TabsList className="flex w-full max-w-[380px] items-center justify-center gap-2 rounded-2xl bg-white/5 p-1 text-white">
+                <TabsTrigger
+                  value="signin"
+                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/70 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
+                >
+                  {t("Button.signIn")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signup"
+                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/70 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
+                >
+                  {t("Button.signUp")}
+                </TabsTrigger>
+              </TabsList>
+            </div>
             <TabsContent value="signin" className="mt-6 focus-visible:outline-none">
               <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <SignInPage variant="dialog" />
+                <SignInPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signup")} />
               </div>
             </TabsContent>
             <TabsContent value="signup" className="mt-6 focus-visible:outline-none">
               <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <LoginPage variant="dialog" />
+                <LoginPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signin")} />
               </div>
             </TabsContent>
           </Tabs>
