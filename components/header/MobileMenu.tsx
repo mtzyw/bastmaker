@@ -54,7 +54,7 @@ export default function MobileMenu({ hideHrefs, hideIds }: MobileMenuProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-64 header-bg border border-white/10 text-white shadow-[0_20px_60px_rgba(3,8,23,0.45)]"
+          className="w-64 border border-white/10 bg-[#1c1c1a] text-white shadow-[0_20px_60px_rgba(3,8,23,0.45)]"
         >
           <DropdownMenuLabel>
             <I18nLink

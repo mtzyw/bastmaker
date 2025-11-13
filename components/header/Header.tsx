@@ -37,7 +37,7 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
                 <SheetTrigger className="p-2 rounded-md hover:bg-accent-foreground/10 focus:outline-none focus:ring-2 focus:ring-ring">
                   <Menu className="h-5 w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-64 sm:w-64 overflow-hidden bg-gray-900 text-white border-r border-white/10" hideClose>
+                <SheetContent side="left" className="p-0 w-64 sm:w-64 overflow-hidden bg-[#1c1c1a] text-white border-r border-white/10" hideClose>
                   <AISidebar className="bg-transparent" onNavigate={() => setOpen(false)} />
                 </SheetContent>
               </Sheet>
