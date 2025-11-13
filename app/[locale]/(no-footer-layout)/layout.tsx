@@ -10,7 +10,7 @@ export default function NoFooterGroupLayout({
   return (
     <div className="min-h-screen w-full">
       {/* Global header */}
-      <Header hideHeaderHrefs={["/#features", "/#pricing", "/flux-kontext-pro", "/multi-image-kontext-pro"]} hideHeaderIds={["pricing"]} enableSidebarSheet openAuthDialog />
+      <Header hideHeaderHrefs={["/#features", "/flux-kontext-pro", "/multi-image-kontext-pro"]} enableSidebarSheet openAuthDialog />
 
       {/* Mobile: sidebar hidden; use Header menu to open floating sheet */}
 

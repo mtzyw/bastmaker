@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
+import { AuthDialogTrigger } from "@/components/header/UserInfo";
 import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -275,15 +276,26 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
       </ScrollArea>
       {/* Fixed bottom login */}
       <div className="p-4 border-t border-white/10">
-        <Button
-          className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
-          onClick={() => {
-            router.push("/dashboard/subscription");
-            onNavigate && onNavigate();
-          }}
-        >
-          升级会员
-        </Button>
+        {user ? (
+          <Button
+            className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
+            onClick={() => {
+              router.push("/dashboard/subscription");
+              onNavigate && onNavigate();
+            }}
+          >
+            升级会员
+          </Button>
+        ) : (
+          <AuthDialogTrigger
+            initialTab="signup"
+            triggerElement={
+              <Button className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90">
+                注册账号
+              </Button>
+            }
+          />
+        )}
       </div>
     </div>
   );

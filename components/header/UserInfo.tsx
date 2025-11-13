@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 type Menu = {
   name: string;
@@ -238,20 +238,42 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
 
   return userInfoContent;
 }
-function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
+type AuthDialogTriggerProps = {
+  mobile?: boolean;
+  initialTab?: "signin" | "signup";
+  triggerElement?: ReactNode;
+};
+
+export function AuthDialogTrigger({
+  mobile = false,
+  initialTab = "signin",
+  triggerElement,
+}: AuthDialogTriggerProps) {
   const t = useTranslations("Login");
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">(initialTab);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setActiveTab(initialTab);
+    }
+  }, [open, initialTab]);
+
+  const defaultTrigger = (
+    <Button
+      variant="outline"
+      className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
+        mobile ? "w-full" : ""
+      }`}
+    >
+      {t("Button.signIn")}
+    </Button>
+  );
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
-            mobile ? "w-full" : ""
-          }`}
-        >
-          {t("Button.signIn")}
-        </Button>
+        {triggerElement ?? defaultTrigger}
       </DialogTrigger>
       <DialogContent className="max-w-2xl border-none bg-transparent p-0 text-white shadow-none md:max-h-[90vh]">
         <DialogTitle className="sr-only">Authentication Dialog</DialogTitle>
@@ -268,13 +290,13 @@ function AuthDialogTrigger({ mobile }: { mobile: boolean }) {
               <TabsList className="flex w-full max-w-[380px] items-center justify-center gap-2 rounded-2xl bg-white/5 p-1 text-white">
                 <TabsTrigger
                   value="signin"
-                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/70 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
+                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/80 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
                 >
                   {t("Button.signIn")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="signup"
-                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/70 transition data-[state=active]:bg-[#151515] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
+                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/80 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
                 >
                   {t("Button.signUp")}
                 </TabsTrigger>

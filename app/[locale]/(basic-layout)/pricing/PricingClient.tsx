@@ -27,11 +27,7 @@ export default function PricingClient({
     planType: "monthly" | "annual" | "one-time"
   ) => {
     return (
-      <div
-        className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${
-          plans.length > 0 ? `md:grid-cols-${plans.length}` : ""
-        }`}
-      >
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan, index) => {
           const localizedPlan =
             plan.lang_jsonb?.[locale] || plan.lang_jsonb?.[DEFAULT_LOCALE];
@@ -64,53 +60,53 @@ export default function PricingClient({
   };
 
   return (
-    <div className="w-full mx-auto">
-      <div className="mt-20">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold">
+    <div className="w-full mx-auto space-y-20">
+      <div className="mt-10">
+        <div className="text-center mb-10 space-y-4">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white">
             {t("SubscriptionTitle")}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-white/70 max-w-2xl mx-auto">
             {t("SubscriptionDescription")}
           </p>
         </div>
-        <Tabs defaultValue="annual" className="w-full mx-auto">
-          <TabsList className="grid w-fit mx-auto grid-cols-2 h-12 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <Tabs defaultValue="annual" className="w-full mx-auto max-w-4xl">
+          <TabsList className="mx-auto flex w-full max-w-md items-center justify-between rounded-full bg-white/10 p-1 backdrop-blur">
             <TabsTrigger
               value="monthly"
-              className="px-6 py-2 text-sm font-normal rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:text-gray-300 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white"
+              className="flex-1 rounded-full px-6 py-2 text-sm font-medium text-white/70 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg"
             >
               {t("monthly")}
             </TabsTrigger>
             <TabsTrigger
               value="annual"
-              className="px-6 py-2 text-sm font-normal rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:text-gray-300 data-[state=active]:text-gray-900 dark:data-[state=active]:text-white relative"
+              className="flex-1 rounded-full px-6 py-2 text-sm font-medium text-white/70 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg"
             >
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 {t("annual")}
-                <span className="inline-flex items-center gap-1 text-xs font-semibold">
-                  <Gift className="w-4 h-4 text-main" />
-                  <span className="gradient-text">{t("saveTip")}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-white">
+                  <Gift className="w-4 h-4 text-yellow-300" />
+                  <span className="uppercase tracking-wide">{t("saveTip")}</span>
                 </span>
               </span>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="monthly" className="mt-8">
+          <TabsContent value="monthly" className="mt-10">
             {renderPlans(monthlyPlans, "monthly")}
           </TabsContent>
-          <TabsContent value="annual" className="mt-8">
+          <TabsContent value="annual" className="mt-10">
             {renderPlans(annualPlans, "annual")}
           </TabsContent>
         </Tabs>
       </div>
 
       {oneTimePlans.length > 0 && (
-        <div className="mt-20">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold">
+        <div className="space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-semibold text-white">
               {t("oneTimeTitle")}
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-white/70 max-w-2xl mx-auto">
               {t("oneTimeDescription")}
             </p>
           </div>

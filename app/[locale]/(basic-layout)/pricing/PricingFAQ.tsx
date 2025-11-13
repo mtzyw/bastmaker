@@ -25,18 +25,18 @@ export default function PricingFAQ() {
 
   return (
     <section className="py-20">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
         <div className="text-center mb-16">
           <ThemeBadge
             icon="help-circle"
             text={t("faq.badge")}
-            iconClassName="h-4 w-4 text-indigo-600 dark:text-indigo-400 mr-2"
+            iconClassName="h-4 w-4 text-cyan-300 mr-2"
           />
 
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            <span className="gradient-text">{t("faq.title")}</span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="text-white">{t("faq.title")}</span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
             {t("faq.description")}
           </p>
         </div>
@@ -47,23 +47,23 @@ export default function PricingFAQ() {
           ))}
         </div>
 
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-8 border border-blue-200/50 dark:border-blue-800/50 text-center">
+        <div className="rounded-2xl p-8 border border-white/10 bg-white/5 backdrop-blur text-center">
           <div className="max-w-2xl mx-auto">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="w-16 h-16 bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <MessageCircle className="w-8 h-8 text-white" />
             </div>
 
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h3 className="text-2xl font-bold text-white mb-4">
               {t("faq.contact.title")}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+            <p className="text-white/70 mb-8 leading-relaxed">
               {t("faq.contact.description")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {discordInviteUrl ? (
                 <Button
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 rounded-xl font-semibold"
+                  className="bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] hover:opacity-90 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 rounded-xl font-semibold"
                   asChild
                 >
                   <a
@@ -79,7 +79,7 @@ export default function PricingFAQ() {
                 <>
                   {siteConfig.socialLinks?.email && (
                     <Button
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 rounded-xl font-semibold"
+                      className="bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] hover:opacity-90 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 rounded-xl font-semibold"
                       asChild
                     >
                       <a href={siteConfig.socialLinks.email}>

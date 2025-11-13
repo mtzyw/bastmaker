@@ -43,23 +43,15 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
               </Sheet>
             </div>
           )}
-          <I18nLink
-            href="/"
-            title={t("title")}
-            prefetch={true}
-            className="flex items-center space-x-2"
+          <span
+            className={cn(
+              "text-xl block text-right pr-2 bg-clip-text text-transparent",
+              "bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))]",
+              pacifico.className
+            )}
           >
-            <Image
-              alt={t("title")}
-              src="/logo.svg"
-              className="w-6 h-6"
-              width={32}
-              height={32}
-            />
-            <span className={cn("gradient-text", pacifico.className)}>
-              {t("title")}
-            </span>
-          </I18nLink>
+            BestMaker
+          </span>
 
           <HeaderLinks
             className="text-white"
@@ -71,16 +63,17 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
         </div>
 
         <div className="flex items-center gap-x-2 flex-1 justify-end">
-          {/* PC */}
-          <div className="hidden lg:flex items-center gap-x-3">
-            <LocaleSwitcher />
+          <div className="flex items-center gap-x-3">
+            <div className="hidden lg:block">
+              <LocaleSwitcher />
+            </div>
             {user ? <CreditsBadge /> : null}
-            <UserAvatar openAuthDialog={openAuthDialog} />
-          </div>
-
-          {/* Mobile */}
-          <div className="flex lg:hidden">
-            <MobileMenu hideHrefs={hideHeaderHrefs} hideIds={hideHeaderIds} />
+            <div className="lg:hidden">
+              <MobileMenu hideHrefs={hideHeaderHrefs} hideIds={hideHeaderIds} />
+            </div>
+            <div className="hidden sm:block">
+              <UserAvatar openAuthDialog={openAuthDialog} />
+            </div>
           </div>
         </div>
       </nav>
