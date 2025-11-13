@@ -220,6 +220,13 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     }
   };
 
+  const inviteButtonLabel = useMemo(() => {
+    if (!inviteLink) return "邀请链接加载中...";
+    if (copyState === "copied") return "邀请链接已复制";
+    if (copyState === "error") return "复制失败，请重试";
+    return "邀请好友";
+  }, [inviteLink, copyState]);
+
   return (
     <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
       {/* Scrollable menu content */}
@@ -277,15 +284,25 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
       {/* Fixed bottom login */}
       <div className="p-4 border-t border-white/10">
         {user ? (
-          <Button
-            className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
-            onClick={() => {
-              router.push("/dashboard/subscription");
-              onNavigate && onNavigate();
-            }}
-          >
-            升级会员
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              variant="outline"
+              className="w-full h-11 text-base text-white/90 border border-white/20 bg-white/5 hover:bg-white/10 hover:text-white"
+              disabled={!inviteLink}
+              onClick={handleCopyInviteLink}
+            >
+              {inviteButtonLabel}
+            </Button>
+            <Button
+              className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
+              onClick={() => {
+                router.push("/dashboard/subscription");
+                onNavigate && onNavigate();
+              }}
+            >
+              升级会员
+            </Button>
+          </div>
         ) : (
           <AuthDialogTrigger
             initialTab="signup"
