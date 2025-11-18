@@ -1,59 +1,59 @@
 {
   "Hero": {
-    "badge": "AI Image Generator",
-    "title": "Flux Kontext AI Image Generator & Editor",
-    "description": "Explore professional AI image editing that understands context. Edit single images or combine multiple photos with simple text prompts. No design skills needed - just describe what you want.",
+    "badge": "All-in-One AI Studio",
+    "title": "BestMaker AI: Generate Images, Video, Audio & Copy Together",
+    "description": "BestMaker AI unifies photoreal editors, storyboard-to-motion pipelines, script + voice drafting, and collaborative reviews. Compose prompts once, reuse them across modalities, and hand off production-ready files without tab fatigue.",
     "getStarted": "Start Creating",
     "getFreeTrial": "Free Trial (30 Cr)"
   },
   "Features": {
-    "title": "Professional AI Image Editing <highlight>Made Simple</highlight>",
-    "description": "Two powerful AI tools that understand context and deliver professional results. Transform your creative workflow with intelligent image processing.",
+    "title": "Professional multi-modal editing <highlight>in one canvas</highlight>",
+    "description": "Swap between photoreal retouching, multi-image staging, UI layouting, storyboard-to-motion, and voice-ready scripts while BestMaker AI keeps prompts, color science, and credits in sync.",
     "credits": "Credits",
     "tryNow": "Try Now"
   },
   "FAQ": {
     "title": "Frequently Asked Questions",
-    "description": "Everything you need to know about Nexty AI Image and our AI-powered editing platform.",
+    "description": "Everything you need to run BestMaker AI as your all-in-one generation studio.",
     "items": [
       {
-        "question": "What makes Nexty AI Image different from other AI image editors?",
-        "answer": "Nexty AI Image uses advanced context-aware AI that understands spatial relationships, lighting, and style consistency. This results in more natural, professional-looking edits compared to other platforms."
+        "question": "What makes BestMaker AI an all-in-one creator studio?",
+        "answer": "BestMaker AI routes image, video, audio, and copy tasks through one prompt graph. Shared context preserves style, camera cues, and tone so every output stays aligned."
       },
       {
-        "question": "How long does image processing take?",
-        "answer": "Most edits are completed in 10-30 seconds. Our optimized AI pipeline is up to 8x faster than competing platforms while maintaining superior quality."
+        "question": "Can I mix multiple models or engines per project?",
+        "answer": "Yes. Blend BestMaker-native engines with partner models, then assign them to specific layers or shots without losing continuity."
       },
       {
-        "question": "What file formats are supported?",
-        "answer": "We support JPG, PNG, and WEBP formats for input. You can export your results in PNG or JPG format. Maximum file size is 5MB per image."
+        "question": "How fast are generations and edits?",
+        "answer": "Most outputs finish in 10–30 seconds. Parallel pipelines let you preview storyboards, clips, and scripts simultaneously while variants continue to render in the background."
       },
       {
-        "question": "Is there a limit to how many edits I can make?",
-        "answer": "You can make unlimited edits as long as you have credits. Each single image edit costs 10 credits, and multi-image fusion also costs 10 credits."
+        "question": "Which formats can I import or export?",
+        "answer": "Upload JPG, PNG, WEBP, or layered references. Export PNG, JPG, MP4, GIF, WebM, MP3, WAV, and prompt JSON bundles ready for developer or marketing handoff."
       },
       {
-        "question": "Can I use the images for commercial purposes?",
-        "answer": "Yes! All images created with Nexty AI Image include full commercial usage rights. Perfect for businesses, marketing, and professional projects."
+        "question": "Is commercial usage included?",
+        "answer": "Every asset generated with BestMaker AI includes full commercial rights, making it safe for brand launches, ads, and internal documentation."
       },
       {
-        "question": "How secure are my uploaded images?",
-        "answer": "We prioritize your privacy and security. All images are processed securely and stored with enterprise-grade protection. Only you have access to your images."
+        "question": "How are my assets secured?",
+        "answer": "Uploads are encrypted at rest, processing happens in isolated workers, and you can choose regional storage plus fine-grained workspace permissions."
       }
     ]
   },
   "UseCases": {
-    "title": "Creative Insights",
-    "description": "Step into our world and see how our team brings ideas to life in inspiring workspaces"
+    "title": "Multi-Modal Launchpads",
+    "description": "See how teams spin hero art, walkthrough videos, product explainers, and newsletters from a single shared workspace."
   },
   "Testimonials": {
-    "title": "What Users Are Saying",
-    "description": "See how creators around the world are using Flux Kontext to transform their image editing workflow."
+    "title": "Loved by Multi-Format Teams",
+    "description": "Product, growth, and creative orgs rely on BestMaker AI to keep every format in sync."
   },
   "CTA": {
-    "badge": "Ready to Transform Your Workflow?",
-    "title": "Ready to <highlight>Transform Your Images</highlight>?",
-    "description": "Join thousands of creators using Flux Kontext AI Image Generator & Editor. Start with 30 free credits - no credit card required.",
+    "badge": "Build once, publish everywhere",
+    "title": "Run every workflow in <highlight>one AI studio</highlight>",
+    "description": "Join thousands of teams orchestrating images, clips, narration, and copy without hopping tools. Start with 30 free credits—no card needed.",
     "primaryButton": "Start Creating Free"
   }
 }

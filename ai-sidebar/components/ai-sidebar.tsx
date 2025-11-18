@@ -10,7 +10,6 @@ import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monit
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
 
 interface MenuItem {
   id: string
@@ -26,9 +25,6 @@ interface MenuSection {
 export function AISidebar({ className, onNavigate }: { className?: string, onNavigate?: () => void }) {
   const router = useRouter();
   const { user } = useAuth();
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
-  const supabase = useMemo(() => createClient(), []);
 
   const menuSections: MenuSection[] = [
     {
@@ -160,72 +156,6 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
     if (itemId === "assets") { router.push("/my-creations"); onNavigate && onNavigate(); }
   }
 
-  useEffect(() => {
-    if (!user) {
-      setInviteLink(null);
-      return;
-    }
-
-    let active = true;
-    supabase
-      .from("users")
-      .select("invite_code")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) {
-          console.error("[sidebar-invite] failed to fetch invite code", error);
-          setInviteLink(null);
-          return;
-        }
-        if (data?.invite_code) {
-          const origin =
-            typeof window !== "undefined"
-              ? window.location.origin
-              : process.env.NEXT_PUBLIC_SITE_URL ?? "";
-          setInviteLink(
-            origin
-              ? `${origin}/invitation-landing?invite_code=${data.invite_code}`
-              : `/invitation-landing?invite_code=${data.invite_code}`,
-          );
-        } else {
-          setInviteLink(null);
-        }
-      })
-      .catch((error) => {
-        console.error("[sidebar-invite] unexpected error", error);
-        setInviteLink(null);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [supabase, user]);
-
-  useEffect(() => {
-    if (copyState !== "copied") return;
-    const id = window.setTimeout(() => setCopyState("idle"), 2000);
-    return () => window.clearTimeout(id);
-  }, [copyState]);
-
-  const handleCopyInviteLink = async () => {
-    if (!inviteLink) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopyState("copied");
-    } catch (error) {
-      console.error("[sidebar-invite] copy failed", error);
-      setCopyState("error");
-    }
-  };
-
-  const inviteButtonLabel = useMemo(() => {
-    if (!inviteLink) return "邀请链接加载中...";
-    if (copyState === "copied") return "邀请链接已复制";
-    if (copyState === "error") return "复制失败，请重试";
-    return "邀请好友";
-  }, [inviteLink, copyState]);
 
   return (
     <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
@@ -288,10 +218,12 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
             <Button
               variant="outline"
               className="w-full h-11 text-base text-white/90 border border-white/20 bg-white/5 hover:bg-white/10 hover:text-white"
-              disabled={!inviteLink}
-              onClick={handleCopyInviteLink}
+              onClick={() => {
+                router.push("/reward");
+                onNavigate && onNavigate();
+              }}
             >
-              {inviteButtonLabel}
+              邀请好友
             </Button>
             <Button
               className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
