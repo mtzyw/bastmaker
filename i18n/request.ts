@@ -15,6 +15,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
     messages: {
       Landing: (await import(`./messages/${locale}/Landing.json`)).default,
       Pricing: (await import(`./messages/${locale}/Pricing.json`)).default,
+      CreationTools: (await import(`./messages/${locale}/CreationTools.json`)).default,
+      CreationNav: (await import(`./messages/${locale}/CreationNav.json`)).default,
+      CreationHistory: (await import(`./messages/${locale}/CreationHistory.json`)).default,
 
       GenImageShared: (await import(`./messages/${locale}/GenImageShared.json`)).default,
       FluxKontextPro: (await import(`./messages/${locale}/FluxKontextPro.json`)).default,

@@ -1,0 +1,175 @@
+{
+  "Common": {
+    "modelLabel": "模型",
+    "promptLabel": "提示词",
+    "promptPlaceholder": "你想要创作什么？",
+    "promptCounter": "{count} / {max}",
+    "exampleLabel": "示例：",
+    "aspectRatioLabel": "长宽比",
+    "aspectRatioDescription": "选择与场景更契合的输出比例。",
+    "publishLabel": "公开到个人主页",
+    "publishDescription": "关闭后仅自己可见。",
+    "creditsLabel": "所需积分",
+    "creditsValue": "{count} 积分",
+    "buttons": {
+      "create": "创建",
+      "creating": "创建中...",
+      "clear": "清空"
+    },
+    "notices": {
+      "uploadingReferences": "参考图上传中，请稍候..."
+    },
+    "errors": {
+      "submitFailed": "提交失败",
+      "submitFailedRetry": "提交失败，请稍后重试",
+      "uploadFailed": "图片上传失败",
+      "uploadResultInvalid": "图片上传结果异常",
+      "uploadRetry": "上传失败，请重新上传",
+      "uploadPending": "图片上传尚未完成",
+      "uploadProcessing": "参考图仍在处理中",
+      "uploadMissing": "请至少上传一张参考图",
+      "uploadAborted": "图片上传已取消",
+      "primaryImageRequired": "请上传参考图片",
+      "transitionImagesRequired": "请上传首尾参考图片"
+    }
+  },
+  "TextToImage": {
+    "title": "文字转图片",
+    "placeholder": "描述你想要的画面",
+    "example": "Wildflower Trail Dolphin Shadow Butterfly Closeup"
+  },
+  "ImageToImage": {
+    "title": "图片转图片",
+    "imagesLabel": "参考图片",
+    "placeholder": "描述希望如何修改这些参考图",
+    "uploadingNotice": "参考图上传中，请稍候...",
+    "imageUploader": {
+      "title": "参考图上传",
+      "uploading": "上传中...",
+      "addLabel": "+ 添加",
+      "addAriaLabel": "添加参考图片",
+      "imageAlt": "已上传的参考图",
+      "previewAlt": "参考图预览",
+      "closePreview": "关闭预览"
+    }
+  },
+  "TextToVideo": {
+    "title": "文字转视频",
+    "placeholder": "描述你想要的镜头与动作",
+    "resolutionLabel": "视频分辨率",
+    "lengthLabel": "视频时长",
+    "lengthOption": "{value} 秒",
+    "aspectRatioDescription": "选择最终视频的长宽比。"
+  },
+  "ImageToVideo": {
+    "title": "图转视频",
+    "referencesLabel": "参考图片",
+    "introLabel": "首图",
+    "introDescription": "用于视频开场",
+    "outroLabel": "尾图",
+    "outroDescription": "用于视频结尾",
+    "uploadPrompt": "点击上传{label}",
+    "uploading": "上传中...",
+    "uploadingShort": "上传中...",
+    "reupload": "重新选择",
+    "remove": "移除",
+    "selectImage": "选择图片",
+    "recrop": "重新裁剪",
+    "fileLabel": "文件：{name}",
+    "uploadingPrimary": "图片上传中，请稍候...",
+    "placeholder": "描述你希望视频呈现的风格与动作",
+    "resolutionLabel": "视频分辨率",
+    "lengthLabel": "视频时长",
+    "lengthOption": "{value} 秒",
+    "cropRequirement": "上传失败，图片的短边需大于 360 像素。"
+  },
+  "LipSync": {
+    "title": "对口型",
+    "videoSection": {
+      "title": "上传视频",
+      "description": "支持 mp4、mov、webm 等常见格式。",
+      "placeholder": "拖拽视频到此处或点击上传"
+    },
+    "audioSection": {
+      "title": "上传音频",
+      "description": "支持 mp3、wav、aac 等格式，系统会根据音频对口型。",
+      "placeholder": "拖拽音频到此处或点击上传"
+    },
+    "uploadHint": "点击上传",
+    "buttons": {
+      "submit": "开始对口型",
+      "submitting": "处理中..."
+    },
+    "messages": {
+      "uploading": "文件正在上传，请稍候。",
+      "uploadRequired": "请先上传视频与音频文件。",
+      "invalidFileType": "文件格式不支持，请选择正确的文件类型。"
+    },
+    "errors": {
+      "uploadFailed": "文件上传失败",
+      "invalidResult": "上传返回结果异常",
+      "uploadRetry": "文件上传失败，请稍后重试。",
+      "reuploadRequired": "文件上传失败，请重新上传后再试。",
+      "taskFailed": "对口型任务提交失败，请稍后重试。"
+    }
+  },
+  "SoundGeneration": {
+    "title": "文生音效",
+    "promptPlaceholder": "描述你想听到的音效...",
+    "durationLabel": "音效时长（秒）",
+    "durationValue": "{value} 秒",
+    "loopLabel": "循环播放",
+    "example": "柔和的海浪轻拍海岸，节奏平缓、令人放松，伴随轻柔的水花声与远处海鸥的鸣叫"
+  },
+  "RecentTasks": {
+    "title": "最近的生成记录",
+    "empty": "暂时还没有作品。",
+    "categories": {
+      "all": "全部",
+      "image": "图片",
+      "video": "视频",
+      "effect": "特效",
+      "audio": "音效"
+    },
+    "status": {
+      "failed": "失败",
+      "processing": "处理中",
+      "succeeded": "完成"
+    },
+    "actions": {
+      "retry": "重新生成",
+      "share": "分享",
+      "copyPrompt": "复制提示词",
+      "download": "下载"
+    },
+    "labels": {
+      "prompt": "提示词",
+      "model": "模型",
+      "createdAt": "创建时间"
+    },
+    "tooltips": {
+      "shareDisabled": "仅公开的任务可以分享。"
+    }
+  },
+  "PromptEnhancer": {
+    "triggerLabel": "AI提示词",
+    "title": "智能优化提示词",
+    "subtitle": "输入想法，自动优化成更适合生成的描述。",
+    "inputLabel": "输入你的想法",
+    "inputPlaceholder": "例如：一只猫在月光下跳舞",
+    "charCount": "{count} / {max}",
+    "generate": "生成优化提示词",
+    "generating": "生成中...",
+    "resultTitle": "优化结果",
+    "applyButton": "使用该提示词",
+    "errors": {
+      "fetchFailed": "查询提示词优化任务失败",
+      "notFound": "提示词优化任务不存在",
+      "improvementFailed": "提示词优化失败，请稍后重试",
+      "timeout": "提示词优化超时，请稍后重试",
+      "inputRequired": "请输入提示词内容",
+      "createFailed": "创建提示词优化任务失败，请稍后重试",
+      "unknown": "生成失败，请稍后重试"
+    }
+  }
+}

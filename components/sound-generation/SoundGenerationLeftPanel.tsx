@@ -14,6 +14,7 @@ import {
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
+import { useTranslations } from "next-intl";
 
 const MIN_DURATION = 0.5;
 const MAX_DURATION = 22;
@@ -22,11 +23,14 @@ type SoundGenerationLeftPanelProps = {
   title?: string;
 };
 
-export default function SoundGenerationLeftPanel({ title = "文生音效" }: SoundGenerationLeftPanelProps = {}) {
+export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftPanelProps = {}) {
   const upsertHistoryItem = useCreationHistoryStore((state) => state.upsertItem);
   const removeHistoryItem = useCreationHistoryStore((state) => state.removeItem);
   const repromptDraft = useRepromptStore((state) => state.draft);
   const clearRepromptDraft = useRepromptStore((state) => state.clearDraft);
+  const t = useTranslations("CreationTools.SoundGeneration");
+  const commonT = useTranslations("CreationTools.Common");
+  const panelTitle = title ?? t("title");
 
   const modelConfig = useMemo(
     () => getSoundEffectModelConfig(DEFAULT_SOUND_EFFECT_MODEL),
@@ -178,7 +182,11 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "提交失败";
+        const fallbackMessage = commonT("errors.submitFailed");
+        const message =
+          typeof result?.error === "string" && result.error.length > 0
+            ? result.error
+            : fallbackMessage;
         throw new Error(message);
       }
 
@@ -214,7 +222,8 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
       }
     } catch (error) {
       removeHistoryItem(tempJobId);
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message =
+        error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
       setErrorMessage(message);
       console.error("[sound-generation] submit error", error);
     } finally {
@@ -231,6 +240,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
     upsertHistoryItem,
     removeHistoryItem,
     isPublic,
+    commonT,
   ]);
 
   const handleDurationChange = (value: number) => {
@@ -242,16 +252,16 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
-          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">{title}</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">{panelTitle}</h1>
 
-          <div className="text-sm mt-3 mb-2">提示词</div>
+          <div className="text-sm mt-3 mb-2">{commonT("promptLabel")}</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="描述你想听到的音效..."
+                placeholder={t("promptPlaceholder")}
                 className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={2500}
               />
@@ -259,12 +269,13 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
             <div className="h-px bg-white/10 mx-3 mt-2" />
             <div className="flex items-center justify-end px-3 py-3">
               <div className="flex items-center gap-3 text-[11px] text-white/60">
-                <span>{prompt.length} / 2500</span>
+                <span>{commonT("promptCounter", { count: prompt.length, max: 2500 })}</span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 text-white/70 hover:text-white"
                   onClick={() => setPrompt("")}
+                  aria-label={commonT("buttons.clear")}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -275,8 +286,8 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
           <div className="mt-4 space-y-4">
             <div>
               <div className="flex items-center justify-between text-sm text-white/80 mb-2">
-                <span>音效时长（秒）</span>
-                <span>{durationSeconds.toFixed(1)}s</span>
+                <span>{t("durationLabel")}</span>
+                <span>{t("durationValue", { value: durationSeconds.toFixed(1) })}</span>
               </div>
               <input
                 type="range"
@@ -290,14 +301,13 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-white/80">循环播放</div>
+              <div className="text-sm text-white/80">{t("loopLabel")}</div>
               <Switch checked={loop} onCheckedChange={setLoop} />
             </div>
           </div>
 
           <div className="mt-4 text-sm text-white/70">
-            <span className="">示例：</span> The sound of gentle ocean waves crashing against the shore, rhythmic and
-            calming, with soft splashes and distant seagulls in the background
+            <span className="">{commonT("exampleLabel")}</span> {t("example")}
           </div>
         </div>
       </ScrollArea>
@@ -306,8 +316,8 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
@@ -315,9 +325,9 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
+                {commonT("creditsLabel")}:
               </div>
-              <div>{modelConfig.creditsCost} Credits</div>
+              <div>{commonT("creditsValue", { count: modelConfig.creditsCost })}</div>
             </div>
           </div>
           <Button
@@ -330,7 +340,7 @@ export default function SoundGenerationLeftPanel({ title = "文生音效" }: Sou
             disabled={!prompt.trim() || isSubmitting}
             onClick={() => void handleCreate()}
           >
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>

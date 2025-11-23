@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "all": "全部",
+    "video": "视频",
+    "image": "图片",
+    "effect": "特效",
+    "audio": "音效"
+  },
+  "status": {
+    "processing": "生成中",
+    "completed": "已完成",
+    "failed": "失败",
+    "cancelled": "已取消",
+    "unknown": "未知状态"
+  },
+  "actions": {
+    "viewAll": "查看全部",
+    "retry": "重新生成",
+    "more": "更多操作",
+    "imageToImage": "图转图",
+    "imageToVideo": "图转视频",
+    "copyLink": "复制链接",
+    "delete": "删除",
+    "share": "分享",
+    "usePrompt": "使用该提示词",
+    "downloadWatermark": "下载带水印",
+    "downloadClean": "下载无水印"
+  },
+  "messages": {
+    "empty": "暂无生成记录。",
+    "loading": "加载中...",
+    "loadMore": "继续下拉加载更多",
+    "noMore": "没有更多内容啦",
+    "generating": "重新生成中...",
+    "shareUnavailable": "暂未生成分享链接",
+    "shareOpened": "已打开系统分享",
+    "linkCopied": "链接已复制",
+    "linkCopyFailed": "复制失败，请手动复制",
+    "promptMissing": "未找到任务详情，无法重新编辑提示词",
+    "promptNotAllowed": "特效任务暂不支持重新编辑提示词",
+    "imageUnavailable": "未找到可用的输出",
+    "downloadUnavailableWatermark": "暂时没有带水印的资源",
+    "downloadUnavailableClean": "暂时没有无水印的资源",
+    "downloadFailed": "下载失败，请稍后重试",
+    "retryNotFound": "未找到任务详情，无法重新生成",
+    "retryInProgress": "任务仍在生成中，请稍后再试",
+    "retryFailed": "重新生成失败，请稍后重试",
+    "retrySubmitted": "已提交重新生成任务，请稍候查看历史记录",
+    "loadFailed": "加载失败，请稍后再试",
+    "copyPrompt": "复制链接",
+    "deleting": "删除中...",
+    "deleteConfirmTitle": "确认删除生成记录？",
+    "deleteConfirmDescription": "删除后将无法恢复该条生成记录及其输出。",
+    "deleteCancel": "取消",
+    "deleteConfirm": "确认删除",
+    "deleteSuccess": "删除成功",
+    "deleteFailed": "删除失败，请稍后重试"
+  },
+  "login": {
+    "title": "登录后即可查看你的创作",
+    "description": "请先登录账号，再返回此页面查看历史生成记录。",
+    "cta": "立即登录"
+  },
+  "emptyState": {
+    "title": "暂无作品",
+    "description": "开始创作后，你的生成记录将展示在这里。"
+  },
+  "labels": {
+    "prompt": "提示词",
+    "negative": "反向提示词",
+    "model": "模型",
+    "createdAt": "创建时间"
+  },
+  "viewer": {
+    "loading": "加载预览...",
+    "empty": "暂无预览内容",
+    "download": "下载作品",
+    "previewAlt": "预览图"
+  },
+  "scroller": {
+    "processingLabel": "生成中 {processing} ({completed}/{total})",
+    "completedLabel": "已完成 ({completed}/{total})",
+    "processingAria": "回到顶部，当前生成中 {count} 个任务",
+    "completedAria": "回到顶部，最近完成 {completed}/{total} 个任务",
+    "backToTop": "回到顶部"
+  }
+}

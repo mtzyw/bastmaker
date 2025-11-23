@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, ArrowUp, Check, Clapperboard, Copy, Crown, Download, Heart, ImageUp, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
@@ -53,17 +53,18 @@ import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
 import { downloadBase64File, downloadFile, downloadViaProxy } from "@/lib/downloadFile";
 
-const CATEGORY_OPTIONS = [
-  { key: "全部" as const, label: "全部" },
-  { key: "视频" as const, label: "视频" },
-  { key: "图片" as const, label: "图片" },
-  { key: "特效" as const, label: "特效" },
-  { key: "音效" as const, label: "音效" },
-];
+const CATEGORY_KEYS = ["全部", "视频", "图片", "特效", "音效"] as const;
+type CategoryFilter = typeof CATEGORY_KEYS[number];
+type CategoryKey = "all" | "video" | "image" | "effect" | "audio";
+const CATEGORY_KEY_MAP: Record<CategoryFilter, CategoryKey> = {
+  全部: "all",
+  视频: "video",
+  图片: "image",
+  特效: "effect",
+  音效: "audio",
+};
 
-type CategoryFilter = (typeof CATEGORY_OPTIONS)[number]["key"];
-
-const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = ["全部", "视频", "图片", "特效", "音效"];
+const DEFAULT_CATEGORY_ORDER: readonly CategoryFilter[] = CATEGORY_KEYS;
 
 type TaskStatus = "failed" | "succeeded" | "processing";
 
@@ -121,12 +122,12 @@ type DownloadTargets = {
   originalUrl: string | null;
 };
 
-const CATEGORY_MODALITY_MAP: Record<CategoryFilter, readonly string[] | undefined> = {
-  全部: undefined,
-  视频: ["t2v", "i2v"],
-  图片: ["t2i", "i2i"],
-  特效: undefined,
-  音效: ["t2a"],
+const CATEGORY_MODALITY_MAP: Record<CategoryKey, readonly string[] | undefined> = {
+  all: undefined,
+  video: ["t2v", "i2v"],
+  image: ["t2i", "i2i"],
+  effect: undefined,
+  audio: ["t2a"],
 };
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
@@ -203,10 +204,11 @@ function formatProviderName(code?: string | null) {
 }
 
 function matchesCategory(item: CreationItem, category: CategoryFilter) {
-  if (category === "全部") {
+  const categoryKey = CATEGORY_KEY_MAP[category];
+  if (categoryKey === "all") {
     return true;
   }
-  if (category === "特效") {
+  if (categoryKey === "effect") {
     const effectSlug =
       typeof item.metadata?.effect_slug === "string" && item.metadata.effect_slug.length > 0
         ? item.metadata.effect_slug
@@ -215,13 +217,13 @@ function matchesCategory(item: CreationItem, category: CategoryFilter) {
           : null;
     return Boolean(effectSlug);
   }
-  const allowed = CATEGORY_MODALITY_MAP[category];
+  const allowed = CATEGORY_MODALITY_MAP[categoryKey];
   if (!allowed || allowed.length === 0) {
     return true;
   }
   const modality = getModality(item);
   if (!modality) {
-    return category === "图片";
+    return categoryKey === "image";
   }
   return allowed.includes(modality);
 }
@@ -479,6 +481,33 @@ export default function TextToImageRecentTasks({
   }, [initialCategory, normalizedCategories]);
   const locale = useLocale();
   const router = useRouter();
+  const historyT = useTranslations("CreationHistory");
+  const promptLabel = historyT("labels.prompt");
+  const negativeLabel = historyT("labels.negative");
+  const effectBadgeLabel = historyT("categories.effect");
+  const downloadWatermarkLabel = historyT("actions.downloadWatermark");
+  const downloadCleanLabel = historyT("actions.downloadClean");
+  const downloadActionLabel = historyT("viewer.download");
+  const usePromptLabel = historyT("actions.usePrompt");
+  const retryLabel = historyT("actions.retry");
+  const imageToImageLabel = historyT("actions.imageToImage");
+  const imageToVideoLabel = historyT("actions.imageToVideo");
+  const moreActionsLabel = historyT("actions.more");
+  const generatingLabel = historyT("messages.generating");
+  const loadingLabel = historyT("messages.loading");
+  const loadMoreLabel = historyT("messages.loadMore");
+  const noMoreLabel = historyT("messages.noMore");
+  const emptyLabel = historyT("messages.empty");
+  const deleteConfirmTitle = historyT("messages.deleteConfirmTitle");
+  const deleteConfirmDescription = historyT("messages.deleteConfirmDescription");
+  const deleteCancelLabel = historyT("messages.deleteCancel");
+  const deleteConfirmLabel = historyT("messages.deleteConfirm");
+  const deletingLabel = historyT("messages.deleting");
+  const previewAlt = historyT("viewer.previewAlt");
+  const getCategoryLabel = useCallback(
+    (category: CategoryFilter) => historyT(`categories.${CATEGORY_KEY_MAP[category]}`),
+    [historyT]
+  );
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>(resolvedInitialCategory);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -654,11 +683,11 @@ export default function TextToImageRecentTasks({
     (jobId: string) => {
       const original = itemMap.get(jobId);
       if (!original) {
-        toast.error("未找到任务详情，无法重新编辑提示词");
+        toast.error(historyT("messages.promptMissing"));
         return;
       }
       if (original.metadata?.effect_slug) {
-        toast.error("特效任务暂不支持重新编辑提示词");
+        toast.error(historyT("messages.promptNotAllowed"));
         return;
       }
       try {
@@ -667,7 +696,7 @@ export default function TextToImageRecentTasks({
         const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
         router.push(`${localePrefix}${draft.route}`);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "无法重新编辑该任务";
+        const message = error instanceof Error ? error.message : historyT("messages.retryFailed");
         toast.error(message);
       }
     },
@@ -678,13 +707,13 @@ export default function TextToImageRecentTasks({
     (task: DisplayTask) => {
       const original = itemMap.get(task.id);
       if (!original) {
-        toast.error("未找到任务详情，无法使用该图片");
+        toast.error(historyT("messages.imageUnavailable"));
         return;
       }
 
       const imageUrl = resolvePrimaryImageUrl(task);
       if (!imageUrl) {
-        toast.error("未找到可用的图片输出");
+        toast.error(historyT("messages.imageUnavailable"));
         return;
       }
 
@@ -712,13 +741,13 @@ export default function TextToImageRecentTasks({
     (task: DisplayTask) => {
       const original = itemMap.get(task.id);
       if (!original) {
-        toast.error("未找到任务详情，无法使用该图片");
+        toast.error(historyT("messages.imageUnavailable"));
         return;
       }
 
       const imageUrl = resolvePrimaryImageUrl(task);
       if (!imageUrl) {
-        toast.error("未找到可用的图片输出");
+        toast.error(historyT("messages.imageUnavailable"));
         return;
       }
 
@@ -792,7 +821,11 @@ export default function TextToImageRecentTasks({
       const targets = resolveDownloadTargets(task);
       const targetUrl = variant === "watermark" ? targets.watermarkUrl : targets.originalUrl;
       if (!targetUrl) {
-        toast.error(variant === "watermark" ? "暂时没有带水印的资源" : "暂时没有无水印的资源");
+        toast.error(
+          variant === "watermark"
+            ? historyT("messages.downloadUnavailableWatermark")
+            : historyT("messages.downloadUnavailableClean")
+        );
         return;
       }
 
@@ -817,7 +850,7 @@ export default function TextToImageRecentTasks({
       if (variant === "watermark") {
         const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id });
         if (!proxied) {
-          toast.error("下载失败，请稍后重试");
+          toast.error(historyT("messages.downloadFailed"));
         }
         return;
       }
@@ -843,13 +876,13 @@ export default function TextToImageRecentTasks({
 
       const original = itemMap.get(jobId);
       if (!original) {
-        toast.error("未找到任务详情，无法重新生成");
+        toast.error(historyT("messages.retryNotFound"));
         return;
       }
 
       const normalizedStatus = mapStatus(original.latestStatus ?? original.status);
       if (normalizedStatus !== "succeeded") {
-        toast.info("任务仍在生成中，请稍后重试");
+        toast.info(historyT("messages.retryInProgress"));
         return;
       }
 
@@ -857,7 +890,7 @@ export default function TextToImageRecentTasks({
       try {
         plan = buildRegenerationPlan(original);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "无法重新生成该任务";
+        const message = error instanceof Error ? error.message : historyT("messages.retryFailed");
         toast.error(message);
         return;
       }
@@ -880,7 +913,7 @@ export default function TextToImageRecentTasks({
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok || !result?.success) {
-          const message = result?.error ?? response.statusText ?? "重新生成失败";
+          const message = result?.error ?? response.statusText ?? historyT("messages.retryFailed");
           throw new Error(message);
         }
 
@@ -897,12 +930,12 @@ export default function TextToImageRecentTasks({
           upsertItem(persistedItem);
           removeItem(optimistic.jobId);
         } else {
-          toast.info("已提交重新生成任务，请稍候在历史记录查看进度");
+          toast.info(historyT("messages.retrySubmitted"));
         }
 
       } catch (error) {
         removeItem(optimistic.jobId);
-        const message = error instanceof Error ? error.message : "重新生成失败，请稍后重试";
+        const message = error instanceof Error ? error.message : historyT("messages.retryFailed");
         toast.error(message);
       } finally {
         setRegeneratingIds((prev) => {
@@ -912,7 +945,7 @@ export default function TextToImageRecentTasks({
         });
       }
     },
-    [itemMap, isRegenerating, upsertItem, removeItem]
+    [itemMap, isRegenerating, upsertItem, removeItem, historyT]
   );
 
   const loadHistory = useCallback(
@@ -982,7 +1015,7 @@ export default function TextToImageRecentTasks({
         }
         console.error("[TextToImageRecentTasks] load failed", err);
         if (!appending) {
-          setError(err?.message ?? "加载失败，请稍后再试");
+          setError(err?.message ?? historyT("messages.loadFailed"));
         }
       } finally {
         if (!signal?.aborted && withSpinner) {
@@ -1239,11 +1272,11 @@ export default function TextToImageRecentTasks({
       .then(async (response) => {
         if (!response.ok) {
           const json = await response.json().catch(() => ({}));
-          throw new Error(json?.error ?? "加载失败");
+          throw new Error(json?.error ?? historyT("messages.loadFailed"));
         }
         const json = await response.json();
         if (!json?.success || !json?.data) {
-          throw new Error(json?.error ?? "加载失败");
+          throw new Error(json?.error ?? historyT("messages.loadFailed"));
         }
         const job = json.data as ViewerJob;
         prefetchedJobsRef.current.set(slug, job);
@@ -1310,11 +1343,11 @@ export default function TextToImageRecentTasks({
         .then(async (response) => {
           if (!response.ok) {
             const json = await response.json().catch(() => ({}));
-            throw new Error(json?.error ?? "加载失败");
+            throw new Error(json?.error ?? historyT("messages.loadFailed"));
           }
           const json = await response.json();
           if (!json?.success || !json?.data) {
-            throw new Error(json?.error ?? "加载失败");
+            throw new Error(json?.error ?? historyT("messages.loadFailed"));
           }
           const job = json.data as ViewerJob;
           prefetchedJobsRef.current.set(slug, job);
@@ -1324,7 +1357,7 @@ export default function TextToImageRecentTasks({
           if (controller.signal.aborted) {
             return;
           }
-          setViewerError(error?.message ?? "加载失败");
+          setViewerError(error?.message ?? historyT("messages.loadFailed"));
         })
         .finally(() => {
           if (viewerFetchRef.current === controller) {
@@ -1404,7 +1437,7 @@ export default function TextToImageRecentTasks({
         const thumbNode = (
           <Image
             src={task.media.thumbUrl}
-            alt="Video preview"
+            alt={previewAlt}
             width={720}
             height={405}
             className="w-full h-auto rounded-lg border border-white/10 object-cover"
@@ -1438,7 +1471,7 @@ export default function TextToImageRecentTasks({
     const imageNode = (
       <Image
         src={imageSrc}
-        alt="生成结果"
+        alt={previewAlt}
         width={512}
         height={512}
         className="w-full h-auto rounded-lg border border-white/10 object-cover"
@@ -1452,7 +1485,7 @@ export default function TextToImageRecentTasks({
   const handleShare = useCallback(
     async (task: DisplayTask) => {
       if (!task.shareSlug) {
-        toast.error("暂未生成分享链接");
+        toast.error(historyT("messages.shareUnavailable"));
         return;
       }
 
@@ -1462,7 +1495,7 @@ export default function TextToImageRecentTasks({
       if (navigator.share) {
         try {
           await navigator.share({ url: shareUrl });
-          toast.success("已打开系统分享");
+        toast.success(historyT("messages.shareOpened"));
         } catch (error) {
           console.warn("[history-share] native share cancelled", error);
         }
@@ -1472,15 +1505,15 @@ export default function TextToImageRecentTasks({
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
-          toast.success("链接已复制");
+        toast.success(historyT("messages.linkCopied"));
         } catch (error) {
           console.error("[history-share] copy failed", error);
-          toast.error("复制失败，请手动复制");
+        toast.error(historyT("messages.linkCopyFailed"));
         }
         return;
       }
 
-      window.prompt("复制链接", shareUrl);
+      window.prompt(historyT("messages.copyPrompt"), shareUrl);
     },
     [locale]
   );
@@ -1492,7 +1525,7 @@ export default function TextToImageRecentTasks({
       }
 
       if (!task.shareSlug) {
-        toast.error("暂未生成分享链接");
+        toast.error(historyT("messages.shareUnavailable"));
         return;
       }
 
@@ -1502,14 +1535,14 @@ export default function TextToImageRecentTasks({
       if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
-          toast.success("链接已复制");
+        toast.success(historyT("messages.linkCopied"));
           return;
         } catch (error) {
           console.error("[history-copy] clipboard failed", error);
         }
       }
 
-      window.prompt("复制链接", shareUrl);
+      window.prompt(historyT("messages.copyPrompt"), shareUrl);
     },
     [locale]
   );
@@ -1532,7 +1565,7 @@ export default function TextToImageRecentTasks({
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "删除失败";
+        const message = result?.error ?? response.statusText ?? historyT("messages.deleteFailed");
         throw new Error(message);
       }
 
@@ -1544,7 +1577,7 @@ export default function TextToImageRecentTasks({
 
       setTaskToDelete(null);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "删除失败，请稍后重试";
+      const message = error instanceof Error ? error.message : historyT("messages.deleteFailed");
       toast.error(message);
     } finally {
       setIsDeleting(false);
@@ -1665,20 +1698,31 @@ export default function TextToImageRecentTasks({
     }
 
     if (generationCounts.processing > 0) {
-      const text = `Generating ${generationCounts.processing} result${generationCounts.processing > 1 ? "s" : ""} (${generationCounts.completed}/${generationCounts.total})`;
       return {
-        text,
+        text: historyT("scroller.processingLabel", {
+          processing: generationCounts.processing,
+          completed: generationCounts.completed,
+          total: generationCounts.total,
+        }),
         showSpinner: true,
-        ariaLabel: `回到顶部，当前生成中 ${generationCounts.processing} 个任务`,
+        ariaLabel: historyT("scroller.processingAria", {
+          count: generationCounts.processing,
+        }),
       };
     }
 
     return {
-      text: `Generated(${generationCounts.completed}/${generationCounts.total})`,
+      text: historyT("scroller.completedLabel", {
+        completed: generationCounts.completed,
+        total: generationCounts.total,
+      }),
       showSpinner: false,
-      ariaLabel: `回到顶部，最近完成 ${generationCounts.completed}/${generationCounts.total} 个任务`,
+      ariaLabel: historyT("scroller.completedAria", {
+        completed: generationCounts.completed,
+        total: generationCounts.total,
+      }),
     };
-  }, [generationCounts]);
+  }, [generationCounts, historyT]);
 
   let content: ReactNode = null;
 
@@ -1708,7 +1752,7 @@ export default function TextToImageRecentTasks({
         <div className="h-full w-full max-h-[780px] max-w-[780px] md:max-h-full md:max-w-full">
           <img
             src={mediaUrl}
-            alt="预览图"
+            alt={previewAlt}
             className="h-full w-full rounded-lg object-contain"
           />
         </div>
@@ -1723,7 +1767,7 @@ export default function TextToImageRecentTasks({
   } else if (!displayTasks.length) {
     content = (
       <div className="flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-white/5 p-10 text-white/60">
-        暂无生成记录。
+        {emptyLabel}
       </div>
     );
   } else {
@@ -1766,7 +1810,7 @@ export default function TextToImageRecentTasks({
                       )}
                       {task.effectSlug && !hideEffectBadge ? (
                         <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200">
-                          特效 · {task.effectTitle ?? task.effectSlug}
+                          {effectBadgeLabel} · {task.effectTitle ?? task.effectSlug}
                         </Badge>
                       ) : null}
                     </div>
@@ -1797,7 +1841,7 @@ export default function TextToImageRecentTasks({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                        aria-label="更多操作"
+                        aria-label={moreActionsLabel}
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -1814,7 +1858,7 @@ export default function TextToImageRecentTasks({
                         }}
                       >
                         <Copy className="h-4 w-4" />
-                        <span>复制链接</span>
+                        <span>{historyT("actions.copyLink")}</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-white/10" />
                       <DropdownMenuItem
@@ -1824,7 +1868,7 @@ export default function TextToImageRecentTasks({
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span>删除</span>
+                        <span>{historyT("actions.delete")}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -1836,13 +1880,13 @@ export default function TextToImageRecentTasks({
                   <>
                       {task.prompt ? (
                         <p className="text-sm text-white/70 leading-relaxed">
-                          <span className="text-white">Prompt:</span>{" "}
+                          <span className="text-white">{promptLabel}:</span>{" "}
                           {task.prompt}
                         </p>
                       ) : null}
                       {task.negativePrompt ? (
                         <p className="text-xs text-white/50">
-                          <span className="text-white/70">Negative:</span>{" "}
+                          <span className="text-white/70">{negativeLabel}:</span>{" "}
                           {task.negativePrompt}
                         </p>
                       ) : null}
@@ -1875,13 +1919,13 @@ export default function TextToImageRecentTasks({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                        aria-label="重新编辑提示词"
+                        aria-label={usePromptLabel}
                         onClick={() => void handleReprompt(task.id)}
                       >
                         <PenSquare className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="top">Reprompt</TooltipContent>
+                    <TooltipContent side="top">{usePromptLabel}</TooltipContent>
                   </Tooltip>
                 ) : null}
                 <Tooltip>
@@ -1894,7 +1938,7 @@ export default function TextToImageRecentTasks({
                         isRegenerating(task.id) && "cursor-wait",
                         task.status !== "succeeded" && "cursor-not-allowed opacity-40 hover:text-white/60 hover:bg-transparent"
                       )}
-                      aria-label="重新生成新任务"
+                      aria-label={retryLabel}
                       disabled={isRegenerating(task.id) || task.status !== "succeeded"}
                       onClick={() => void handleRegenerate(task.id)}
                     >
@@ -1906,7 +1950,7 @@ export default function TextToImageRecentTasks({
                       />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">Regenerator</TooltipContent>
+                  <TooltipContent side="top">{retryLabel}</TooltipContent>
                 </Tooltip>
                 {task.status === "succeeded" && task.media?.kind === "image" ? (
                   <>
@@ -1916,13 +1960,13 @@ export default function TextToImageRecentTasks({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                          aria-label="图片转图片"
+                          aria-label={imageToImageLabel}
                           onClick={() => void handleStartImageToImage(task)}
                         >
                           <ImageUp className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">图转图</TooltipContent>
+                      <TooltipContent side="top">{imageToImageLabel}</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1930,13 +1974,13 @@ export default function TextToImageRecentTasks({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                          aria-label="图片转视频"
+                          aria-label={imageToVideoLabel}
                           onClick={() => void handleStartImageToVideo(task)}
                         >
                           <Clapperboard className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">图转视频</TooltipContent>
+                      <TooltipContent side="top">{imageToVideoLabel}</TooltipContent>
                     </Tooltip>
                   </>
                 ) : null}
@@ -1956,7 +2000,7 @@ export default function TextToImageRecentTasks({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                      aria-label="下载作品"
+                      aria-label={downloadActionLabel}
                       aria-haspopup="menu"
                       aria-expanded={downloadMenuOpen}
                       disabled={downloadDisabled}
@@ -1992,7 +2036,7 @@ export default function TextToImageRecentTasks({
                       )}
                     >
                       <Download className="h-4 w-4 text-inherit" />
-                      <span className="flex-1">下载带水印</span>
+                      <span className="flex-1">{downloadWatermarkLabel}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={!hasCleanTarget}
@@ -2006,7 +2050,7 @@ export default function TextToImageRecentTasks({
                       )}
                     >
                       <Download className="h-4 w-4 text-inherit" />
-                      <span className="flex-1">下载无水印</span>
+                      <span className="flex-1">{downloadCleanLabel}</span>
                       <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
                         <Crown className="h-3 w-3 text-[#ffba49]" />
                       </span>
@@ -2017,14 +2061,14 @@ export default function TextToImageRecentTasks({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                  aria-label="Share result"
+                  aria-label={historyT("actions.share")}
                   disabled={task.status !== "succeeded" || !task.shareSlug}
                   onClick={() => handleShare(task)}
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>
                 {isRegenerating(task.id) ? (
-                  <span className="ml-2 text-white/60">重新生成中...</span>
+                  <span className="ml-2 text-white/60">{generatingLabel}</span>
                 ) : null}
               </footer>
             </article>
@@ -2036,9 +2080,9 @@ export default function TextToImageRecentTasks({
           >
             {hasMore
               ? isLoadingMore
-                ? "加载中..."
-                : "继续下拉加载更多"
-              : "没有更多内容啦"}
+                ? loadingLabel
+                : loadMoreLabel
+              : noMoreLabel}
           </div>
           </div>
         </ScrollArea>
@@ -2047,7 +2091,7 @@ export default function TextToImageRecentTasks({
             variant="secondary"
             className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white hover:bg-white/25"
             onClick={scrollToTop}
-            aria-label={generationIndicator?.ariaLabel ?? "回到顶部"}
+            aria-label={generationIndicator?.ariaLabel ?? historyT("scroller.backToTop")}
           >
             {generationIndicator ? (
               <div className="flex items-center gap-2">
@@ -2090,7 +2134,7 @@ export default function TextToImageRecentTasks({
         <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
           {isViewerLoading ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
-              加载中...
+              {loadingLabel}
             </div>
           ) : viewerError ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
@@ -2105,7 +2149,7 @@ export default function TextToImageRecentTasks({
             />
           ) : (
             <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
-              暂无预览内容
+              {historyT("viewer.empty")}
             </div>
           )}
         </DialogContent>
@@ -2123,9 +2167,9 @@ export default function TextToImageRecentTasks({
       >
         <AlertDialogContent className="border border-white/10 bg-[#1c1c1a] text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除生成记录？</AlertDialogTitle>
+            <AlertDialogTitle>{deleteConfirmTitle}</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              删除后将无法恢复该条生成记录及其输出。
+              {deleteConfirmDescription}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2133,7 +2177,7 @@ export default function TextToImageRecentTasks({
               disabled={isDeleting}
               className="border-white/20 text-white hover:bg-white/10"
             >
-              取消
+              {deleteCancelLabel}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
@@ -2143,7 +2187,7 @@ export default function TextToImageRecentTasks({
               }}
               className="bg-[#dc2e5a] text-white hover:bg-[#f0446e]"
             >
-              {isDeleting ? "删除中..." : "确认删除"}
+              {isDeleting ? deletingLabel : deleteConfirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

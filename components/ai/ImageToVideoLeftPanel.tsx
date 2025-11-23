@@ -26,6 +26,7 @@ import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { Switch } from "@/components/ui/switch";
+import { useTranslations } from "next-intl";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
@@ -81,6 +82,8 @@ export default function ImageToVideoLeftPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const t = useTranslations("CreationTools.ImageToVideo");
+  const commonT = useTranslations("CreationTools.Common");
 
   const isTransitionModel = model === TRANSITION_MODEL;
   const videoModelConfig = useMemo(() => getVideoModelConfig(model), [model]);
@@ -98,24 +101,25 @@ export default function ImageToVideoLeftPanel() {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || !result?.success) {
-      const message = typeof result?.error === "string" ? result.error : "图片上传失败";
+      const message =
+        typeof result?.error === "string" ? result.error : commonT("errors.uploadFailed");
       throw new Error(message);
     }
 
     const remoteUrl = result?.data?.url;
     if (typeof remoteUrl !== "string" || remoteUrl.length === 0) {
-      throw new Error("图片上传结果异常");
+      throw new Error(commonT("errors.uploadResultInvalid"));
     }
 
     return remoteUrl;
-  }, []);
+  }, [commonT]);
 
   const resolveImageSource = useCallback(async (image: UploadedAsset | null | undefined) => {
     if (!image?.remoteUrl) {
-      throw new Error("图片上传尚未完成，请稍后重试");
+      throw new Error(commonT("errors.uploadPending"));
     }
     return image.remoteUrl;
-  }, []);
+  }, [commonT]);
 
   const resetImageSelection = useCallback(() => {
     if (uploadedBlobUrlRef.current) {
@@ -251,12 +255,12 @@ export default function ImageToVideoLeftPanel() {
 
       if (isImageMode) {
         if (!uploadedImage) {
-          throw new Error("请上传参考图片");
+          throw new Error(commonT("errors.primaryImageRequired"));
         }
         primaryImageUrl = await resolveImageSource(uploadedImage);
       } else {
         if (!introImage || !outroImage) {
-          throw new Error("请上传首尾图片");
+          throw new Error(commonT("errors.transitionImagesRequired"));
         }
         introImageUrl = await resolveImageSource(introImage);
         outroImageUrl = await resolveImageSource(outroImage);
@@ -399,7 +403,7 @@ export default function ImageToVideoLeftPanel() {
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "提交失败";
+        const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -440,7 +444,7 @@ export default function ImageToVideoLeftPanel() {
       if (tempJobId) {
         removeHistoryItem(tempJobId);
       }
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
       toast.error(message, { duration: 7000, position: "top-center" });
       console.error("[image-to-video] submit error", error);
     } finally {
@@ -514,7 +518,7 @@ export default function ImageToVideoLeftPanel() {
   }) => {
     const shortestSide = Math.min(width, height);
     if (!Number.isFinite(shortestSide) || shortestSide <= 360) {
-      const message = "Failed to upload the image. The shorter side should exceed 360 pixels.";
+      const message = t("cropRequirement");
       toast.error(message, { duration: 7000, position: "top-center" });
       setCropperOpen(false);
       if (cropSource?.src) URL.revokeObjectURL(cropSource.src);
@@ -554,7 +558,7 @@ export default function ImageToVideoLeftPanel() {
         !prev || prev.id !== assetId ? prev : { ...prev, remoteUrl }
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.uploadRetry");
       toast.error(message, { duration: 7000, position: "top-center" });
       setUploadedImage((prev) =>
         !prev || prev.id !== assetId ? prev : { ...prev, remoteUrl: null }
@@ -585,7 +589,7 @@ export default function ImageToVideoLeftPanel() {
       const remoteUrl = await uploadImageToR2(file, slot);
       setAsset((prev) => (!prev || prev.id !== assetId ? prev : { ...prev, remoteUrl }));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.uploadRetry");
       toast.error(message, { duration: 7000, position: "top-center" });
       setAsset((prev) => (!prev || prev.id !== assetId ? prev : { ...prev, remoteUrl: null }));
     } finally {
@@ -639,7 +643,7 @@ export default function ImageToVideoLeftPanel() {
     <div className="w-full h-full text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 pt-3 pb-6 md:pr-7">
-          <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">图转视频</h1>
+          <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">{t("title")}</h1>
 
           {/* Model label + select */}
           <div className="mb-2 text-sm">Model</div>
@@ -653,13 +657,13 @@ export default function ImageToVideoLeftPanel() {
 
           {/* Image upload */}
           <div className="mb-4">
-            <div className="text-sm mb-2">参考图片</div>
+            <div className="text-sm mb-2">{t("referencesLabel")}</div>
             {isTransitionModel ? (
               <div className="grid gap-3 md:grid-cols-2">
                 {(
                   [
-                    { key: "intro", label: "首图", description: "用于视频开场" },
-                    { key: "outro", label: "尾图", description: "用于视频结尾" },
+                    { key: "intro", label: t("introLabel"), description: t("introDescription") },
+                    { key: "outro", label: t("outroLabel"), description: t("outroDescription") },
                   ] as const
                 ).map(({ key, label, description }) => {
                   const selected = key === "intro" ? introImage : outroImage;
@@ -675,7 +679,7 @@ export default function ImageToVideoLeftPanel() {
                             className="text-white/60 hover:text-white"
                             onClick={() => clearTransitionImage(key)}
                           >
-                            移除
+                            {t("remove")}
                           </button>
                         ) : null}
                       </div>
@@ -691,11 +695,13 @@ export default function ImageToVideoLeftPanel() {
                             className="max-h-full max-w-full object-contain"
                           />
                         ) : (
-                          <div className="px-4 py-6 text-center text-xs text-white/60">点击上传{label}</div>
+                          <div className="px-4 py-6 text-center text-xs text-white/60">
+                            {t("uploadPrompt", { label })}
+                          </div>
                         )}
                         {isUploading ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
-                            上传中...
+                            {t("uploading")}
                           </div>
                         ) : null}
                       </button>
@@ -711,7 +717,9 @@ export default function ImageToVideoLeftPanel() {
                         }}
                       />
                       <p className="mt-2 text-[11px] text-white/50">{description}</p>
-                      {isUploading ? <p className="mt-1 text-[11px] text-white/60">正在上传，请稍候...</p> : null}
+                      {isUploading ? (
+                        <p className="mt-1 text-[11px] text-white/60">{t("uploadingShort")}</p>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -727,11 +735,13 @@ export default function ImageToVideoLeftPanel() {
                     {uploadedImage ? (
                       <img
                         src={uploadedImage.previewUrl}
-                        alt="已选择的参考图"
+                        alt={t("referencesLabel")}
                         className="max-h-full max-w-full object-contain"
                       />
                     ) : (
-                      <div className="px-4 py-8 text-center text-xs text-white/60">Click to upload an image</div>
+                      <div className="px-4 py-8 text-center text-xs text-white/60">
+                        {t("uploadPrompt", { label: t("referencesLabel") })}
+                      </div>
                     )}
 
                     {uploadedImage ? (
@@ -753,14 +763,14 @@ export default function ImageToVideoLeftPanel() {
                     ) : null}
                     {isUploadingPrimary ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
-                        上传中...
+                        {t("uploading")}
                       </div>
                     ) : null}
                   </button>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/60">
                   <button type="button" onClick={() => imageInputRef.current?.click()} className="hover:text-white">
-                    {uploadedImage ? "重新选择" : "选择图片"}
+                    {uploadedImage ? t("reupload") : t("selectImage")}
                   </button>
                   {uploadedImage?.file ? (
                     <button
@@ -773,10 +783,10 @@ export default function ImageToVideoLeftPanel() {
                       }}
                       className="hover:text-white"
                     >
-                      重新裁剪
+                      {t("recrop")}
                     </button>
                   ) : null}
-                  {imageName ? <span className="text-white/40">文件：{imageName}</span> : null}
+                  {imageName ? <span className="text-white/40">{t("fileLabel", { name: imageName })}</span> : null}
                 </div>
                 <input
                   ref={imageInputRef}
@@ -791,19 +801,21 @@ export default function ImageToVideoLeftPanel() {
                     event.target.value = "";
                   }}
                 />
-                {isUploadingPrimary ? <p className="mt-2 text-xs text-white/60">图片正在上传，请稍候...</p> : null}
+                {isUploadingPrimary ? (
+                  <p className="mt-2 text-xs text-white/60">{t("uploadingPrimary")}</p>
+                ) : null}
               </>
             )}
           </div>
 
           {/* Prompt */}
-          <div className="text-sm mt-3 mb-2">提示词</div>
+          <div className="text-sm mt-3 mb-2">{commonT("promptLabel")}</div>
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="你想要创建什么？"
+                placeholder={t("placeholder")}
                 className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={1000}
               />
@@ -815,7 +827,7 @@ export default function ImageToVideoLeftPanel() {
                 onApply={(value) => setPrompt(value)}
               />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
-                <span>{prompt.length} / 1000</span>
+                <span>{commonT("promptCounter", { count: prompt.length, max: 1000 })}</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -825,8 +837,8 @@ export default function ImageToVideoLeftPanel() {
 
           {resolutionOptions && resolutionOptions.length > 0 ? (
             <div className="mt-4">
-              <div className="text-sm mb-2">Video Resolution</div>
-              <div role="radiogroup" aria-label="Video Resolution" className="flex gap-2">
+              <div className="text-sm mb-2">{t("resolutionLabel")}</div>
+              <div role="radiogroup" aria-label={t("resolutionLabel")} className="flex gap-2">
                 {resolutionOptions.map((item) => {
                   const isActive = resolution === item;
                   return (
@@ -852,10 +864,10 @@ export default function ImageToVideoLeftPanel() {
           ) : null}
 
           <div className="mt-4">
-            <div className="text-sm mb-2">Video Length</div>
+            <div className="text-sm mb-2">{t("lengthLabel")}</div>
             <div
               role="radiogroup"
-              aria-label="Video Length"
+              aria-label={t("lengthLabel")}
               className={cn("flex gap-2", isSingleVideoLength && "justify-start")}
             >
               {allowedVideoLengths.map((length) => {
@@ -874,7 +886,7 @@ export default function ImageToVideoLeftPanel() {
                           : "bg-white/8 text-white/70 hover:bg-white/12"
                       )}
                     >
-                      {length} 秒
+                      {t("lengthOption", { value: length })}
                     </button>
                   </div>
                 );
@@ -892,8 +904,8 @@ export default function ImageToVideoLeftPanel() {
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
@@ -901,9 +913,9 @@ export default function ImageToVideoLeftPanel() {
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
+                {commonT("creditsLabel")}:
               </div>
-              <div>{creditsCost ? `${creditsCost} Credits` : "--"}</div>
+              <div>{creditsCost ? commonT("creditsValue", { count: creditsCost }) : "--"}</div>
             </div>
           </div>
           <Button
@@ -917,7 +929,7 @@ export default function ImageToVideoLeftPanel() {
             onClick={() => void handleCreate()}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
           {statusMessage ? null : null}
         </div>

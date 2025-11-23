@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,7 @@ import { DEFAULT_LOCALE } from "@/i18n/routing";
 
 type FilterKey = "all" | "video" | "image" | "sound";
 
-const FILTER_OPTIONS: ReadonlyArray<MyCreationsFilterOption> = [
-  { value: "all", label: "全部" },
-  { value: "video", label: "视频" },
-  { value: "image", label: "图片" },
-  { value: "sound", label: "音效" },
-];
+const FILTER_KEYS: ReadonlyArray<FilterKey> = ["all", "video", "image", "sound"];
 
 const FILTER_ENDPOINTS: Record<FilterKey, (page: number, pageSize: number) => string> = {
   all: (page, pageSize) => `/api/ai/my-creations?page=${page}&pageSize=${pageSize}`,
@@ -40,7 +35,7 @@ function buildEndpoint(filter: FilterKey, page: number, pageSize: number): strin
 }
 
 function isFilterKey(value: string): value is FilterKey {
-  return FILTER_OPTIONS.some((option) => option.value === value);
+  return FILTER_KEYS.includes(value as FilterKey);
 }
 
 type FilterState = {
@@ -79,7 +74,20 @@ export function MyCreationsContent({
 }: MyCreationsContentProps) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const locale = useLocale();
+  const historyT = useTranslations("CreationHistory");
   const localePrefix = useMemo(() => (locale === DEFAULT_LOCALE ? "" : `/${locale}`), [locale]);
+  const filterOptions: ReadonlyArray<MyCreationsFilterOption> = useMemo(() => {
+    const translationKeys: Record<FilterKey, "all" | "video" | "image" | "audio"> = {
+      all: "all",
+      video: "video",
+      image: "image",
+      sound: "audio",
+    };
+    return FILTER_KEYS.map((key) => ({
+      value: key,
+      label: historyT(`categories.${translationKeys[key]}`),
+    }));
+  }, [historyT]);
   const [previewItem, setPreviewItem] = useState<CreationItem | null>(null);
   const [viewerJob, setViewerJob] = useState<ViewerJob | null>(null);
   const [isViewerLoading, setIsViewerLoading] = useState(false);
@@ -175,7 +183,7 @@ export function MyCreationsContent({
         .then(async (response) => {
           const json = await response.json().catch(() => ({}));
           if (!response.ok || !json?.success || !json?.data) {
-            const message = json?.error ?? response.statusText ?? "加载失败";
+            const message = json?.error ?? response.statusText ?? historyT("messages.loadFailed");
             throw new Error(message);
           }
           return json.data as ViewerJob;
@@ -191,7 +199,7 @@ export function MyCreationsContent({
           if (controller.signal.aborted) {
             return;
           }
-          const message = error instanceof Error ? error.message : "加载失败";
+          const message = error instanceof Error ? error.message : historyT("messages.loadFailed");
           setViewerError(message);
         })
         .finally(() => {
@@ -203,7 +211,7 @@ export function MyCreationsContent({
           }
         });
     },
-    [localePrefix]
+    [historyT, localePrefix]
   );
 
   const handleDialogOpenChange = useCallback(
@@ -260,7 +268,7 @@ export function MyCreationsContent({
       const result = (await response.json()) as ApiResponse;
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error ?? response.statusText);
+        throw new Error(result.error ?? response.statusText ?? historyT("messages.loadFailed"));
       }
 
       const nextItems = result.data?.items ?? [];
@@ -277,7 +285,7 @@ export function MyCreationsContent({
       }));
     } catch (err: any) {
       console.error("[my-creations] fetch filter failed", err);
-      setError(err?.message ?? "加载失败，请稍后再试");
+      setError(err?.message ?? historyT("messages.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -318,7 +326,7 @@ export function MyCreationsContent({
       const result = (await response.json()) as ApiResponse;
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error ?? response.statusText);
+        throw new Error(result.error ?? response.statusText ?? historyT("messages.loadFailed"));
       }
 
       const nextItems = result.data?.items ?? [];
@@ -349,11 +357,11 @@ export function MyCreationsContent({
       });
     } catch (err: any) {
       console.error("[my-creations] load more failed", err);
-      setError(err?.message ?? "加载失败，请稍后再试");
+      setError(err?.message ?? historyT("messages.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, filterStates, loading, pageSize]);
+  }, [activeFilter, filterStates, historyT, loading, pageSize]);
 
   const refreshActiveFilter = useCallback(
     async (signal?: AbortSignal) => {
@@ -508,10 +516,10 @@ export function MyCreationsContent({
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center space-y-4">
-          <h3 className="text-xl font-semibold text-white">登录后即可查看你的创作</h3>
-          <p className="text-sm text-white/70">请先登录账号，再返回此页面查看历史生成记录。</p>
+          <h3 className="text-xl font-semibold text-white">{historyT("login.title")}</h3>
+          <p className="text-sm text-white/70">{historyT("login.description")}</p>
           <Button asChild variant="secondary">
-            <Link href="/login">立即登录</Link>
+            <Link href="/login">{historyT("login.cta")}</Link>
           </Button>
         </div>
       </div>
@@ -525,18 +533,19 @@ export function MyCreationsContent({
   return (
     <div className="w-full">
       <div className="mb-6">
-        <MyCreationsFilterTabs options={FILTER_OPTIONS} value={activeFilter} onChange={handleFilterChange} />
+        <MyCreationsFilterTabs options={filterOptions} value={activeFilter} onChange={handleFilterChange} />
         {error && items.length === 0 ? (
           <p className="mt-2 text-sm text-red-300">{error}</p>
         ) : null}
       </div>
 
       {showSkeletonGrid ? (
-        <div className="flex justify-center py-10 text-sm text-white/70">加载中...</div>
+        <div className="flex justify-center py-10 text-sm text-white/70">{historyT("messages.loading")}</div>
       ) : showEmptyState ? (
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="text-center space-y-3">
-            <h3 className="text-xl font-semibold text-white">暂无作品</h3>
+            <h3 className="text-xl font-semibold text-white">{historyT("emptyState.title")}</h3>
+            <p className="text-sm text-white/70">{historyT("emptyState.description")}</p>
           </div>
         </div>
       ) : (
@@ -558,7 +567,7 @@ export function MyCreationsContent({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex flex-col items-center gap-3 text-sm text-white/70">
                 <span className="block h-10 w-10 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                <span>加载中...</span>
+                <span>{historyT("messages.loading")}</span>
               </div>
             </div>
           ) : null}
@@ -571,7 +580,7 @@ export function MyCreationsContent({
           {hasMore ? (
             <div ref={loadMoreRef} className="h-6 w-full" />
           ) : (
-            <p className="text-sm text-white/50">没有更多内容啦</p>
+            <p className="text-sm text-white/50">{historyT("messages.noMore")}</p>
           )}
         </div>
       )}
@@ -579,7 +588,7 @@ export function MyCreationsContent({
       {loading && hasMore && items.length > 0 && (
         <div className="mt-6 flex items-center justify-center gap-3 text-sm text-white/70">
           <span className="block h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          <span>加载中...</span>
+          <span>{historyT("messages.loading")}</span>
         </div>
       )}
 
@@ -587,7 +596,7 @@ export function MyCreationsContent({
         <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
           {isViewerLoading ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
-              加载中...
+              {historyT("messages.loading")}
             </div>
           ) : viewerError ? (
             <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
@@ -600,7 +609,7 @@ export function MyCreationsContent({
             />
           ) : (
             <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
-              暂无预览内容
+              {historyT("viewer.empty")}
             </div>
           )}
         </DialogContent>

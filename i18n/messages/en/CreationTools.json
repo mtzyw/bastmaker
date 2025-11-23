@@ -1,0 +1,175 @@
+{
+  "Common": {
+    "modelLabel": "Model",
+    "promptLabel": "Prompt",
+    "promptPlaceholder": "What do you want to create?",
+    "promptCounter": "{count} / {max}",
+    "exampleLabel": "Example:",
+    "aspectRatioLabel": "Aspect Ratio",
+    "aspectRatioDescription": "Choose the output ratio that best fits your scene.",
+    "publishLabel": "Publish to profile",
+    "publishDescription": "Turn this off to keep the result private.",
+    "creditsLabel": "Credits required",
+    "creditsValue": "{count} Credits",
+    "buttons": {
+      "create": "Create",
+      "creating": "Creating...",
+      "clear": "Clear"
+    },
+    "notices": {
+      "uploadingReferences": "Uploading reference images..."
+    },
+    "errors": {
+      "submitFailed": "Submission failed",
+      "submitFailedRetry": "Submission failed, please try again later",
+      "uploadFailed": "Image upload failed",
+      "uploadResultInvalid": "Image upload result is invalid",
+      "uploadRetry": "Upload failed, please try again",
+      "uploadPending": "Image upload is still pending",
+      "uploadProcessing": "Images are still processing",
+      "uploadMissing": "Please upload at least one reference image",
+      "uploadAborted": "Image upload was cancelled",
+      "primaryImageRequired": "Please upload a reference image",
+      "transitionImagesRequired": "Please upload both intro and outro images"
+    }
+  },
+  "TextToImage": {
+    "title": "Text to Image",
+    "placeholder": "Describe the image you'd like to create",
+    "example": "Wildflower Trail Dolphin Shadow Butterfly Closeup"
+  },
+  "ImageToImage": {
+    "title": "Image to Image",
+    "imagesLabel": "Reference Images",
+    "placeholder": "Describe how you want to transform the references",
+    "uploadingNotice": "Uploading reference images, please wait...",
+    "imageUploader": {
+      "title": "Upload reference images",
+      "uploading": "Uploading...",
+      "addLabel": "+ Add",
+      "addAriaLabel": "Add reference images",
+      "imageAlt": "Uploaded reference image",
+      "previewAlt": "Reference preview",
+      "closePreview": "Close preview"
+    }
+  },
+  "TextToVideo": {
+    "title": "Text to Video",
+    "placeholder": "Describe the motion clip you need",
+    "resolutionLabel": "Video Resolution",
+    "lengthLabel": "Video Length",
+    "lengthOption": "{value}s",
+    "aspectRatioDescription": "Choose the aspect ratio for the final clip."
+  },
+  "ImageToVideo": {
+    "title": "Image to Video",
+    "referencesLabel": "Reference Images",
+    "introLabel": "Intro",
+    "introDescription": "Used at the beginning of the video",
+    "outroLabel": "Outro",
+    "outroDescription": "Used at the end of the video",
+    "uploadPrompt": "Click to upload {label}",
+    "uploading": "Uploading...",
+    "uploadingShort": "Uploading...",
+    "reupload": "Replace",
+    "remove": "Remove",
+    "selectImage": "Choose Image",
+    "recrop": "Crop again",
+    "fileLabel": "File: {name}",
+    "uploadingPrimary": "Uploading image, please wait...",
+    "placeholder": "Describe how the motion should look",
+    "resolutionLabel": "Video Resolution",
+    "lengthLabel": "Video Length",
+    "lengthOption": "{value}s",
+    "cropRequirement": "Failed to upload the image. The shorter side should exceed 360 pixels."
+  },
+  "LipSync": {
+    "title": "Lip Sync",
+    "videoSection": {
+      "title": "Upload Video",
+      "description": "Supports mp4, mov, webm, and other common formats.",
+      "placeholder": "Drag a video here or click to upload"
+    },
+    "audioSection": {
+      "title": "Upload Audio",
+      "description": "Supports mp3, wav, aac, etc. The system will sync to this audio.",
+      "placeholder": "Drag an audio file here or click to upload"
+    },
+    "uploadHint": "Click to upload",
+    "buttons": {
+      "submit": "Start lip sync",
+      "submitting": "Processing..."
+    },
+    "messages": {
+      "uploading": "Files are still uploading, please wait.",
+      "uploadRequired": "Please upload both the video and audio files first.",
+      "invalidFileType": "Unsupported file type. Please select a valid file."
+    },
+    "errors": {
+      "uploadFailed": "File upload failed",
+      "invalidResult": "Upload response is invalid",
+      "uploadRetry": "File upload failed. Please try again later.",
+      "reuploadRequired": "Upload failed. Please re-upload the files before trying again.",
+      "taskFailed": "Lip sync task submission failed. Please try again later."
+    }
+  },
+  "SoundGeneration": {
+    "title": "Sound Effects",
+    "promptPlaceholder": "Describe the sound effect you'd like to hear...",
+    "durationLabel": "Sound length (seconds)",
+    "durationValue": "{value}s",
+    "loopLabel": "Loop playback",
+    "example": "The sound of gentle ocean waves crashing against the shore, rhythmic and calming, with soft splashes and distant seagulls in the background"
+  },
+  "RecentTasks": {
+    "title": "Recent Generations",
+    "empty": "No generations yet.",
+    "categories": {
+      "all": "All",
+      "image": "Images",
+      "video": "Videos",
+      "effect": "Effects",
+      "audio": "Audio"
+    },
+    "status": {
+      "failed": "Failed",
+      "processing": "Processing",
+      "succeeded": "Completed"
+    },
+    "actions": {
+      "retry": "Retry",
+      "share": "Share",
+      "copyPrompt": "Copy prompt",
+      "download": "Download"
+    },
+    "labels": {
+      "prompt": "Prompt",
+      "model": "Model",
+      "createdAt": "Created at"
+    },
+    "tooltips": {
+      "shareDisabled": "Only public jobs can be shared."
+    }
+  },
+  "PromptEnhancer": {
+    "triggerLabel": "AI Prompt",
+    "title": "AI Prompt Booster",
+    "subtitle": "Turn any idea into a clearer prompt for better generations.",
+    "inputLabel": "Describe your idea",
+    "inputPlaceholder": "e.g., a cat dancing under moonlight",
+    "charCount": "{count} / {max}",
+    "generate": "Enhance prompt",
+    "generating": "Enhancing...",
+    "resultTitle": "Enhanced prompts",
+    "applyButton": "Use this prompt",
+    "errors": {
+      "fetchFailed": "Failed to query the prompt enhancement task.",
+      "notFound": "Prompt enhancement task does not exist.",
+      "improvementFailed": "Prompt enhancement failed. Please try again later.",
+      "timeout": "Prompt enhancement timed out. Please try again later.",
+      "inputRequired": "Please enter a prompt.",
+      "createFailed": "Failed to create prompt enhancement task. Please try again later.",
+      "unknown": "Failed to enhance the prompt. Please try again later."
+    }
+  }
+}

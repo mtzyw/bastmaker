@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "all": "All",
+    "video": "Video",
+    "image": "Images",
+    "effect": "Effects",
+    "audio": "Audio"
+  },
+  "status": {
+    "processing": "Processing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "unknown": "Unknown status"
+  },
+  "actions": {
+    "viewAll": "View all",
+    "retry": "Retry",
+    "more": "More actions",
+    "copyLink": "Copy link",
+    "delete": "Delete",
+    "share": "Share",
+    "usePrompt": "Reuse prompt",
+    "imageToImage": "Image to Image",
+    "imageToVideo": "Image to Video",
+    "downloadWatermark": "Download with watermark",
+    "downloadClean": "Download clean"
+  },
+  "messages": {
+    "empty": "No generations yet.",
+    "loading": "Loading...",
+    "loadMore": "Keep scrolling to load more",
+    "noMore": "No more results",
+    "generating": "Regenerating...",
+    "shareUnavailable": "Share link not ready yet",
+    "shareOpened": "Share sheet opened",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Failed to copy, please copy manually",
+    "promptMissing": "Unable to fetch prompt",
+    "promptNotAllowed": "Effects tasks cannot reuse prompts yet",
+    "imageUnavailable": "No usable outputs for this task",
+    "downloadUnavailableWatermark": "No version with watermark yet",
+    "downloadUnavailableClean": "No clean version available",
+    "downloadFailed": "Download failed, please try again",
+    "retryNotFound": "Task not found, cannot retry",
+    "retryInProgress": "Task still generating, please try later",
+    "retryFailed": "Failed to regenerate",
+    "retrySubmitted": "Regeneration submitted, check history soon",
+    "loadFailed": "Failed to load, please try again later",
+    "copyPrompt": "Copy the link manually",
+    "deleting": "Deleting...",
+    "deleteConfirmTitle": "Delete this record?",
+    "deleteConfirmDescription": "This action cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleteConfirm": "Delete",
+    "deleteSuccess": "Deleted successfully",
+    "deleteFailed": "Failed to delete, please try again"
+  },
+  "login": {
+    "title": "Sign in to view your creations",
+    "description": "Please sign in to sync and manage your generation history.",
+    "cta": "Sign in now"
+  },
+  "emptyState": {
+    "title": "No creations yet",
+    "description": "Start generating to see your work appear here."
+  },
+  "labels": {
+    "prompt": "Prompt",
+    "negative": "Negative",
+    "model": "Model",
+    "createdAt": "Created at"
+  },
+  "viewer": {
+    "loading": "Loading preview...",
+    "empty": "Nothing to preview",
+    "download": "Download output",
+    "previewAlt": "Preview"
+  },
+  "scroller": {
+    "processingLabel": "Generating {processing} ({completed}/{total})",
+    "completedLabel": "Generated ({completed}/{total})",
+    "processingAria": "Back to top, {count} tasks still processing",
+    "completedAria": "Back to top, {completed}/{total} tasks completed recently",
+    "backToTop": "Back to top"
+  }
+}

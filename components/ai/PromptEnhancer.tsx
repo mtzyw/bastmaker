@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2, Sparkles, Wand2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ export function PromptEnhancer({
   targetType = "video",
 }: PromptEnhancerProps) {
   const locale = useLocale();
+  const promptT = useTranslations("CreationTools.PromptEnhancer");
   const language = useMemo(() => {
     if (!locale) {
       return undefined;
@@ -113,18 +114,18 @@ export function PromptEnhancer({
 
       if (!response.ok || !json?.success) {
         const message =
-          json?.error ?? response.statusText ?? "查询提示词优化任务失败";
+          json?.error ?? response.statusText ?? promptT("errors.fetchFailed");
         throw new Error(message);
       }
 
       const improvement = json?.data?.improvement;
       if (!improvement) {
-        throw new Error("提示词优化任务不存在");
+        throw new Error(promptT("errors.notFound"));
       }
 
       if (improvement.status === "failed") {
         const message =
-          improvement.errorMessage ?? "提示词优化失败，请稍后重试。";
+          improvement.errorMessage ?? promptT("errors.improvementFailed");
         throw new Error(message);
       }
 
@@ -136,13 +137,13 @@ export function PromptEnhancer({
       }
     }
 
-    throw new Error("提示词优化超时，请稍后重试。");
-  }, []);
+    throw new Error(promptT("errors.timeout"));
+  }, [promptT]);
 
   const handleGenerate = async () => {
     const trimmed = inputValue.trim();
     if (!trimmed) {
-      setErrorMessage("请输入提示词内容");
+      setErrorMessage(promptT("errors.inputRequired"));
       return;
     }
     abortRef.current = false;
@@ -170,18 +171,19 @@ export function PromptEnhancer({
       }
 
       if (!response.ok || !json?.success) {
-        const message = json?.error ?? response.statusText ?? "生成失败，请稍后重试";
+        const message =
+          json?.error ?? response.statusText ?? promptT("errors.unknown");
         throw new Error(message);
       }
 
       const improvement = json?.data?.improvement;
       if (!improvement) {
-        throw new Error("创建提示词优化任务失败，请稍后重试");
+        throw new Error(promptT("errors.createFailed"));
       }
 
       if (improvement.status === "failed") {
         const message =
-          improvement.errorMessage ?? "提示词优化失败，请稍后重试。";
+          improvement.errorMessage ?? promptT("errors.improvementFailed");
         throw new Error(message);
       }
 
@@ -202,7 +204,7 @@ export function PromptEnhancer({
         return;
       }
       const message =
-        error instanceof Error ? error.message : "生成失败，请稍后重试";
+        error instanceof Error ? error.message : promptT("errors.unknown");
       setErrorMessage(message);
       setSelectedSuggestionIndex(null);
     } finally {
@@ -238,32 +240,32 @@ export function PromptEnhancer({
           )}
         >
           <Wand2 className="w-3.5 h-3.5 mr-2" />
-          AI提示词
+          {promptT("triggerLabel")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg bg-[#111]/95 text-white border border-white/10">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base font-medium">
             <Sparkles className="h-4 w-4 text-[#dc2e5a]" />
-            智能优化提示词
+            {promptT("title")}
           </DialogTitle>
           <DialogDescription className="text-sm text-white/60">
-            输入想法后自动优化为更适合生成的描述。
+            {promptT("subtitle")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-xs text-white/60">输入你的想法</div>
+            <div className="text-xs text-white/60">{promptT("inputLabel")}</div>
             <Textarea
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
-              placeholder="例如：一只猫在月光下跳舞"
+              placeholder={promptT("inputPlaceholder")}
               className="min-h-[120px] resize-y bg-white/5 text-white placeholder:text-white/40 border border-white/10 focus-visible:ring-0"
               maxLength={2500}
             />
           </div>
           <div className="flex items-center justify-between text-xs text-white/40">
-            <span>{inputValue.length} / 2500</span>
+            <span>{promptT("charCount", { count: inputValue.length, max: 2500 })}</span>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -274,10 +276,10 @@ export function PromptEnhancer({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  生成中...
+                  {promptT("generating")}
                 </>
               ) : (
-                "生成优化提示词"
+                promptT("generate")
               )}
             </Button>
           </div>
@@ -289,7 +291,7 @@ export function PromptEnhancer({
           {suggestions.length > 0 ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-white/60">
-                <span>优化结果</span>
+                <span>{promptT("resultTitle")}</span>
                 <Button
                   size="sm"
                   className="h-7 bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 text-xs px-3"
@@ -299,7 +301,7 @@ export function PromptEnhancer({
                     !suggestions[selectedSuggestionIndex]
                   }
                 >
-                  使用该提示词
+                  {promptT("applyButton")}
                 </Button>
               </div>
               <div className="max-h-56 overflow-y-auto rounded-lg border border-white/10 bg-white/5">

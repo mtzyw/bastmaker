@@ -3,6 +3,7 @@
 import { Loader2, Music2, Trash2, Video as VideoIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,6 +39,8 @@ export default function LipSyncLeftPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const t = useTranslations("CreationTools.LipSync");
+  const commonT = useTranslations("CreationTools.Common");
 
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const audioInputRef = useRef<HTMLInputElement | null>(null);
@@ -63,8 +66,9 @@ export default function LipSyncLeftPanel() {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || !result?.success) {
+      const fallbackMessage = t("errors.uploadFailed");
       const message =
-        typeof result?.error === "string" ? result.error : "文件上传失败";
+        typeof result?.error === "string" ? result.error : fallbackMessage;
       throw new Error(message);
     }
 
@@ -72,7 +76,7 @@ export default function LipSyncLeftPanel() {
     const key = result?.data?.key;
 
     if (typeof url !== "string" || url.length === 0) {
-      throw new Error("上传返回结果异常");
+      throw new Error(t("errors.invalidResult"));
     }
 
     return {
@@ -81,7 +85,7 @@ export default function LipSyncLeftPanel() {
       contentType: result?.data?.contentType ?? null,
       size: result?.data?.size ?? null,
     };
-  }, []);
+  }, [t]);
 
   const handleFileSelect = useCallback(
     async (file: File, kind: UploadKind) => {
@@ -138,7 +142,7 @@ export default function LipSyncLeftPanel() {
         }
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "文件上传失败，请稍后重试";
+          error instanceof Error ? error.message : t("errors.uploadRetry");
         toast.error(message);
         if (kind === "video") {
           setVideo((current) =>
@@ -155,7 +159,7 @@ export default function LipSyncLeftPanel() {
         }
       }
     },
-    [audio, uploadLipSyncFile, video],
+    [audio, t, uploadLipSyncFile, video],
   );
 
   const handleClear = useCallback((kind: UploadKind) => {
@@ -235,15 +239,15 @@ export default function LipSyncLeftPanel() {
     if (!video?.remoteUrl || !audio?.remoteUrl) {
       const pending = video?.uploading || audio?.uploading;
       if (pending) {
-        toast.info("文件正在上传，请稍候");
+        toast.info(t("messages.uploading"));
       } else {
-        toast.error("请先上传视频与音频文件");
+        toast.error(t("messages.uploadRequired"));
       }
       return;
     }
 
     if (video.error || audio.error) {
-      toast.error("文件上传失败，请重新上传后再试");
+      toast.error(t("errors.reuploadRequired"));
       return;
     }
 
@@ -278,10 +282,11 @@ export default function LipSyncLeftPanel() {
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
+        const fallback = t("errors.taskFailed");
         const message =
           typeof result?.error === "string"
             ? result.error
-            : "对口型任务提交失败，请稍后重试";
+            : fallback;
         throw new Error(message);
       }
 
@@ -313,12 +318,12 @@ export default function LipSyncLeftPanel() {
     } catch (error) {
       removeHistoryItem(tempJobId);
       const message =
-        error instanceof Error ? error.message : "对口型任务提交失败，请稍后重试";
+        error instanceof Error ? error.message : t("errors.taskFailed");
       toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
-  }, [audio, buildHistoryItem, removeHistoryItem, upsertHistoryItem, video, isPublic]);
+  }, [audio, buildHistoryItem, isPublic, removeHistoryItem, t, upsertHistoryItem, video]);
 
   useEffect(() => {
     return () => {
@@ -332,14 +337,14 @@ export default function LipSyncLeftPanel() {
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
           <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">
-            对口型
+            {t("title")}
           </h1>
 
           <div className="space-y-4">
             <UploadSection
-              title="上传视频"
-              description="支持 mp4、mov、webm 等常见格式。"
-              placeholder="拖拽视频到此处或点击上传"
+              title={t("videoSection.title")}
+              description={t("videoSection.description")}
+              placeholder={t("videoSection.placeholder")}
               kind="video"
               asset={video}
               icon={<VideoIcon className="w-6 h-6 text-white/70" />}
@@ -347,17 +352,21 @@ export default function LipSyncLeftPanel() {
               onPick={() => videoInputRef.current?.click()}
               onClear={() => handleClear("video")}
               onDropFile={handleFileSelect}
+              uploadHint={t("uploadHint")}
+              invalidFileMessage={t("messages.invalidFileType")}
             />
             <UploadSection
-              title="上传音频"
-              description="支持 mp3、wav、aac 等格式，系统将根据音频进行口型匹配。"
-              placeholder="拖拽音频到此处或点击上传"
+              title={t("audioSection.title")}
+              description={t("audioSection.description")}
+              placeholder={t("audioSection.placeholder")}
               kind="audio"
               asset={audio}
               icon={<Music2 className="w-6 h-6 text-white/70" />}
               onPick={() => audioInputRef.current?.click()}
               onClear={() => handleClear("audio")}
               onDropFile={handleFileSelect}
+              uploadHint={t("uploadHint")}
+              invalidFileMessage={t("messages.invalidFileType")}
             />
           </div>
 
@@ -391,8 +400,8 @@ export default function LipSyncLeftPanel() {
         <div className="px-4 md:px-6 space-y-3">
           <div className="flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
@@ -418,10 +427,10 @@ export default function LipSyncLeftPanel() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                处理中...
+                {t("buttons.submitting")}
               </>
             ) : (
-              "开始对口型"
+              t("buttons.submit")
             )}
           </Button>
           {statusMessage ? null : null}
@@ -443,6 +452,8 @@ type UploadSectionProps = {
   onClear: () => void;
   showPreview?: boolean;
   onDropFile: (file: File, kind: UploadKind) => void;
+  uploadHint: string;
+  invalidFileMessage: string;
 };
 
 function UploadSection({
@@ -456,6 +467,8 @@ function UploadSection({
   onClear,
   showPreview,
   onDropFile,
+  uploadHint,
+  invalidFileMessage,
 }: UploadSectionProps) {
   const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -480,7 +493,7 @@ function UploadSection({
           } else if (kind === "audio" && file.type.startsWith("audio/")) {
             void onDropFile(file, "audio");
           } else {
-            toast.error("文件格式不支持，请选择正确的文件类型");
+            toast.error(invalidFileMessage);
           }
         }
       }}
@@ -552,7 +565,7 @@ function UploadSection({
             </div>
           ) : (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 text-xs text-white/80 opacity-0 transition-opacity group-hover:opacity-100">
-              点击上传
+              {uploadHint}
             </div>
           )}
           {asset?.uploading ? (

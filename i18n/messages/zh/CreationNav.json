@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "video": "视频AI",
+    "image": "图片AI"
+  },
+  "items": {
+    "creationCenter": "创作中心",
+    "explore": "探索",
+    "textToVideo": "文字转视频",
+    "imageToVideo": "图转视频",
+    "lipSync": "对口型",
+    "soundGeneration": "音效生成",
+    "imageEffects": "AI图片特效",
+    "videoEffects": "AI视频特效",
+    "textToImage": "文字转图片",
+    "imageToImage": "图片转图片",
+    "assets": "我的作品"
+  },
+  "cta": {
+    "invite": "邀请好友",
+    "upgrade": "升级会员",
+    "signUp": "注册账号"
+  }
+}

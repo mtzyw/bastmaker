@@ -20,6 +20,7 @@ import { useRepromptStore } from "@/stores/repromptStore";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import { Switch } from "@/components/ui/switch";
+import { useTranslations } from "next-intl";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -55,7 +56,18 @@ export default function ImageToImageLeftPanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const t = useTranslations("CreationTools.ImageToImage");
+  const commonT = useTranslations("CreationTools.Common");
   const referenceImagesRef = useRef<ReferenceImage[]>([]);
+  const imageUploaderLabels = useMemo(() => ({
+    title: t("imageUploader.title"),
+    uploading: t("imageUploader.uploading"),
+    addLabel: t("imageUploader.addLabel"),
+    addAriaLabel: t("imageUploader.addAriaLabel"),
+    imageAlt: t("imageUploader.imageAlt"),
+    previewAlt: t("imageUploader.previewAlt"),
+    closePreview: t("imageUploader.closePreview"),
+  }), [t]);
 
   useEffect(() => {
     referenceImagesRef.current = referenceImages;
@@ -87,10 +99,11 @@ export default function ImageToImageLeftPanel({
   }, [availableOptions, model]);
 
   useEffect(() => {
-    if (referenceImages.length > 0 && errorMessage === "请至少上传一张参考图") {
+    const missingMessage = commonT("errors.uploadMissing");
+    if (referenceImages.length > 0 && errorMessage === missingMessage) {
       setErrorMessage(null);
     }
-  }, [referenceImages.length, errorMessage]);
+  }, [referenceImages.length, errorMessage, commonT]);
 
   useEffect(() => {
     if (!repromptDraft || repromptDraft.kind !== "image-to-image") {
@@ -160,13 +173,14 @@ export default function ImageToImageLeftPanel({
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
-        const message = typeof result?.error === "string" ? result.error : response.statusText ?? "图片上传失败";
+        const message =
+          typeof result?.error === "string" ? result.error : response.statusText ?? commonT("errors.uploadFailed");
         throw new Error(message);
       }
 
       const remoteUrl = result?.data?.url;
       if (typeof remoteUrl !== "string" || remoteUrl.length === 0) {
-        throw new Error("图片上传结果异常");
+        throw new Error(commonT("errors.uploadResultInvalid"));
       }
 
       setReferenceImages((prev) =>
@@ -175,7 +189,7 @@ export default function ImageToImageLeftPanel({
         )
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "图片上传失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.uploadRetry");
       setReferenceImages((prev) =>
         prev.map((item) =>
           item.id === imageId
@@ -185,7 +199,7 @@ export default function ImageToImageLeftPanel({
       );
       setErrorMessage(message);
     }
-  }, []);
+  }, [commonT]);
 
   const handleAddLocalFiles = useCallback(
     (files: File[]) => {
@@ -286,19 +300,19 @@ export default function ImageToImageLeftPanel({
     }
 
     if (referenceImages.length === 0) {
-      setErrorMessage("请至少上传一张参考图");
+      setErrorMessage(commonT("errors.uploadMissing"));
       return;
     }
 
     if (isUploading) {
-      setErrorMessage("图片上传中，请稍候");
+      setErrorMessage(commonT("errors.uploadPending"));
       return;
     }
 
     const unresolved = referenceImages.filter((item) => !item.remoteUrl);
     if (unresolved.length > 0) {
       const firstError = unresolved.find((item) => item.error)?.error;
-      setErrorMessage(firstError ?? "图片上传尚未完成，请重新上传");
+      setErrorMessage(firstError ?? commonT("errors.uploadProcessing"));
       return;
     }
 
@@ -315,7 +329,7 @@ export default function ImageToImageLeftPanel({
         .filter((url): url is string => typeof url === "string" && url.length > 0);
 
       if (referenceUrls.length === 0) {
-        throw new Error("参考图上传失败，请重新上传");
+        throw new Error(commonT("errors.uploadRetry"));
       }
 
       const referenceCount = referenceUrls.length;
@@ -417,7 +431,7 @@ export default function ImageToImageLeftPanel({
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "提交失败";
+        const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -458,7 +472,7 @@ export default function ImageToImageLeftPanel({
       if (tempJobId) {
         removeHistoryItem(tempJobId);
       }
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
       setErrorMessage(message);
       console.error("[image-to-image] submit error", error);
     } finally {
@@ -475,6 +489,7 @@ export default function ImageToImageLeftPanel({
     translatePrompt,
     upsertHistoryItem,
     isPublic,
+    commonT,
   ]);
 
   return (
@@ -482,10 +497,10 @@ export default function ImageToImageLeftPanel({
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
           {/* Title */}
-          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">Image to Image</h1>
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">{t("title")}</h1>
 
           {/* Model */}
-          <div className="mb-2 text-sm">Model</div>
+          <div className="mb-2 text-sm">{commonT("modelLabel")}</div>
           <div className="mb-6">
             <AIModelDropdown
               options={availableOptions}
@@ -496,7 +511,7 @@ export default function ImageToImageLeftPanel({
 
           {/* Images */}
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm">Images</div>
+            <div className="text-sm">{t("imagesLabel")}</div>
             <div className="text-xs text-white/60">{referenceImages.length}/{maxCount}</div>
           </div>
           <ImageGridUploader
@@ -505,16 +520,17 @@ export default function ImageToImageLeftPanel({
             items={gridItems}
             onAdd={handleAddLocalFiles}
             onRemove={handleRemoveImage}
+            labels={imageUploaderLabels}
           />
 
           {/* Prompt */}
-          <div className="text-sm mt-3 mb-2">Prompt</div>
+          <div className="text-sm mt-3 mb-2">{commonT("promptLabel")}</div>
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="What do you want to create?"
+                placeholder={t("placeholder")}
                 className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={2000}
               />
@@ -527,7 +543,7 @@ export default function ImageToImageLeftPanel({
                 targetType="image"
               />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
-                <span>{prompt.length} / 2000</span>
+                <span>{commonT("promptCounter", { count: prompt.length, max: 2000 })}</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -539,13 +555,13 @@ export default function ImageToImageLeftPanel({
         </div>
       </ScrollArea>
 
-      {/* 固定底部：Output + 创建按钮，与文字转图片保持一致 */}
+      {/* Fixed bottom region for publish + credits + create button */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
@@ -553,9 +569,13 @@ export default function ImageToImageLeftPanel({
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
+                {commonT("creditsLabel")}:
               </div>
-              <div>4 Credits</div>
+              <div>
+                {typeof modelConfig.creditsCost === "number"
+                  ? commonT("creditsValue", { count: modelConfig.creditsCost })
+                  : "--"}
+              </div>
             </div>
           </div>
           <Button
@@ -568,10 +588,10 @@ export default function ImageToImageLeftPanel({
             disabled={disableSubmit}
             onClick={() => void handleCreate()}
           >
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
           {isUploading ? (
-            <p className="mt-3 text-sm text-white/70">参考图上传中，请稍候...</p>
+            <p className="mt-3 text-sm text-white/70">{t("uploadingNotice")}</p>
           ) : null}
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>

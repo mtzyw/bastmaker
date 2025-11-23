@@ -26,6 +26,7 @@ import {
 } from "@/components/ai/video-models";
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
+import { useTranslations } from "next-intl";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -61,6 +62,8 @@ export default function TextToVideoLeftPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const t = useTranslations("CreationTools.TextToVideo");
+  const commonT = useTranslations("CreationTools.Common");
 
   const hasValidModel = useMemo(
     () => textToVideoOptions.some((option) => option.value === model),
@@ -294,7 +297,7 @@ export default function TextToVideoLeftPanel() {
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "提交失败";
+        const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -332,7 +335,7 @@ export default function TextToVideoLeftPanel() {
       if (tempJobId) {
         removeHistoryItem(tempJobId);
       }
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
       setErrorMessage(message);
       console.error("[text-to-video] submit error", error);
     } finally {
@@ -350,14 +353,15 @@ export default function TextToVideoLeftPanel() {
     videoLength,
     videoModelConfig,
     isPublic,
+    commonT,
   ]);
 
   return (
     <div className="w-full h-full text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pt-3 pb-6 pr-1 md:pr-7">
-          <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">文字转视频</h1>
-          <div className="mb-2 text-sm">Model</div>
+          <h1 className="text-2xl font-semibold mb-4 h-11 flex items-center">{t("title")}</h1>
+          <div className="mb-2 text-sm">{commonT("modelLabel")}</div>
           <div className="mb-4">
             <AIModelDropdown
               options={textToVideoOptions}
@@ -366,14 +370,14 @@ export default function TextToVideoLeftPanel() {
             />
           </div>
 
-          <div className="text-sm mt-3 mb-2">提示词</div>
+          <div className="text-sm mt-3 mb-2">{commonT("promptLabel")}</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="你想要创建什么？"
+                placeholder={t("placeholder")}
                 className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={1000}
               />
@@ -385,7 +389,7 @@ export default function TextToVideoLeftPanel() {
                 onApply={(value) => setPrompt(value)}
               />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
-                <span>{prompt.length} / 1000</span>
+                <span>{commonT("promptCounter", { count: prompt.length, max: 1000 })}</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -395,8 +399,8 @@ export default function TextToVideoLeftPanel() {
 
           {resolutionOptions && resolutionOptions.length > 0 ? (
             <div className="mt-4">
-              <div className="text-sm mb-2">Video Resolution</div>
-              <div role="radiogroup" aria-label="Video Resolution" className="flex gap-2">
+              <div className="text-sm mb-2">{t("resolutionLabel")}</div>
+              <div role="radiogroup" aria-label={t("resolutionLabel")} className="flex gap-2">
                 {resolutionOptions.map((item) => {
                   const isActive = resolution === item;
                   return (
@@ -422,10 +426,10 @@ export default function TextToVideoLeftPanel() {
           ) : null}
 
           <div className="mt-4">
-            <div className="text-sm mb-2">Video Length</div>
+            <div className="text-sm mb-2">{t("lengthLabel")}</div>
             <div
               role="radiogroup"
-              aria-label="Video Length"
+              aria-label={t("lengthLabel")}
               className={cn("flex gap-2", isSingleVideoLength && "justify-start")}
             >
               {allowedVideoLengths.map((length) => {
@@ -444,7 +448,7 @@ export default function TextToVideoLeftPanel() {
                           : "bg-white/8 text-white/70 hover:bg-white/12"
                       )}
                     >
-                      {length} 秒
+                      {t("lengthOption", { value: length })}
                     </button>
                   </div>
                 );
@@ -460,22 +464,22 @@ export default function TextToVideoLeftPanel() {
             value={aspectRatio}
             options={aspectOptions}
             onChange={setAspectRatio}
-            label="Aspect Ratio"
-            description="Choose the appropriate aspect ratio."
+            label={commonT("aspectRatioLabel")}
+            description={t("aspectRatioDescription")}
           />
 
-          {/* 示例已移除，保持简洁 */}
-          {/* 保留与 text-to-image 一致的结构，不含输出格式 */}
+          {/* No example block to keep layout simple */}
+          {/* Mirrors text-to-image structure without output format selector */}
         </div>
       </ScrollArea>
 
-      {/* 固定底部：Output + Create，与 text-to-image 一致 */}
+      {/* Fixed bottom action area matching text-to-image */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
@@ -483,9 +487,13 @@ export default function TextToVideoLeftPanel() {
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
+                {commonT("creditsLabel")}:
               </div>
-              <div>{creditsCost ? `${creditsCost} Credits` : "--"}</div>
+              <div>
+                {creditsCost
+                  ? commonT("creditsValue", { count: creditsCost })
+                  : "--"}
+              </div>
             </div>
           </div>
           <Button
@@ -498,7 +506,7 @@ export default function TextToVideoLeftPanel() {
             disabled={!hasPrompt || isSubmitting}
             onClick={() => void handleCreate()}
           >
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>

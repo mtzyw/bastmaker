@@ -10,6 +10,7 @@ import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monit
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useTranslations } from "next-intl";
 
 interface MenuItem {
   id: string
@@ -20,73 +21,77 @@ interface MenuItem {
 interface MenuSection {
   title?: string
   items: MenuItem[]
+  variant?: "dense" | "default"
 }
 
 export function AISidebar({ className, onNavigate }: { className?: string, onNavigate?: () => void }) {
   const router = useRouter();
   const { user } = useAuth();
+  const t = useTranslations("CreationNav");
 
-  const menuSections: MenuSection[] = [
+  const menuSections: MenuSection[] = useMemo(() => [
     {
       items: [
         {
           id: "creation-center",
-          label: "创作中心",
+          label: t("items.creationCenter"),
           icon: <FileText className="w-5 h-5" />,
         },
         {
           id: "explore",
-          label: "探索",
+          label: t("items.explore"),
           icon: <Search className="w-5 h-5" />,
         },
       ],
     },
     {
-      title: "视频AI",
+      title: t("sections.video"),
+      variant: "dense",
       items: [
         {
           id: "text-to-video",
-          label: "文字转视频",
+          label: t("items.textToVideo"),
           icon: <Type className="w-5 h-5" />,
         },
         {
           id: "image-to-video",
-          label: "图片转视频",
+          label: t("items.imageToVideo"),
           icon: <ImageIcon className="w-5 h-5" />,
         },
         {
           id: "lip-sync",
-          label: "对口型",
+          label: t("items.lipSync"),
           icon: <MessageCircle className="w-5 h-5" />,
         },
         {
           id: "sound-generation",
-          label: "音效生成",
+          label: t("items.soundGeneration"),
           icon: <Volume2 className="w-5 h-5" />,
         },
         {
           id: "image-effects",
-          label: "AI图片特效",
+          label: t("items.imageEffects"),
           icon: <ImageIcon className="w-5 h-5" />,
         },
         {
           id: "ai-video-effects",
-          label: "AI视频特效",
+          label: t("items.videoEffects"),
           icon: <Monitor className="w-5 h-5" />,
         },
       ],
     },
     {
-      title: "图片AI",
+      title: t("sections.image"),
+      variant: "dense",
       items: [
         {
           id: "text-to-image",
-          label: "文字转图片",
+          label: t("items.textToImage"),
           icon: <Type className="w-5 h-5" />,
         },
         {
           id: "image-to-image",
-          label: "图片转图片",
+          label: t("items.imageToImage"),
           icon: <ImageIcon className="w-5 h-5" />,
         },
       ],
@@ -95,12 +100,12 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
       items: [
         {
           id: "assets",
-          label: "资产",
+          label: t("items.assets"),
           icon: <Folder className="w-5 h-5" />,
         },
       ],
     },
-  ]
+  ], [t])
 
   // Determine initial active item: prefer the first item with isActive, else the first item overall
   const fallbackActiveId = (() => {
@@ -171,7 +176,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
               sectionIndex === 0 && "mt-6"
             )}
           >
-            {/* Top divider before first titled section (e.g., 视频AI) */}
+            {/* Top divider before first titled section (e.g., video AI) */}
             {section.title && sectionIndex > 0 && !menuSections[sectionIndex - 1].title && (
               <div className="mx-6 mb-5 border-t border-white/10" />
             )}
@@ -180,11 +185,11 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
                 <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{section.title}</h3>
               </div>
             )}
-            <nav className={cn(
-              section.title === "图片AI" || section.title === "视频AI"
-                ? "space-y-1"
-                : "space-y-2"
-            )}>
+            <nav
+              className={cn(
+                section.variant === "dense" ? "space-y-1" : "space-y-2"
+              )}
+            >
               {section.items.map((item) => (
                 <button
                   key={item.id}
@@ -223,7 +228,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
                 onNavigate && onNavigate();
               }}
             >
-              邀请好友
+              {t("cta.invite")}
             </Button>
             <Button
               className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
@@ -232,7 +237,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
                 onNavigate && onNavigate();
               }}
             >
-              升级会员
+              {t("cta.upgrade")}
             </Button>
           </div>
         ) : (
@@ -240,7 +245,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
             initialTab="signup"
             triggerElement={
               <Button className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90">
-                注册账号
+                {t("cta.signUp")}
               </Button>
             }
           />

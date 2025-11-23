@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "video": "Video AI",
+    "image": "Image AI"
+  },
+  "items": {
+    "creationCenter": "Creation Hub",
+    "explore": "Explore",
+    "textToVideo": "Text to Video",
+    "imageToVideo": "Image to Video",
+    "lipSync": "Lip Sync",
+    "soundGeneration": "Sound Generation",
+    "imageEffects": "Image Effects",
+    "videoEffects": "Video Effects",
+    "textToImage": "Text to Image",
+    "imageToImage": "Image to Image",
+    "assets": "My Creations"
+  },
+  "cta": {
+    "invite": "Invite Friends",
+    "upgrade": "Upgrade Plan",
+    "signUp": "Create Account"
+  }
+}

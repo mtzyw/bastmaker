@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "video": "動画AI",
+    "image": "画像AI"
+  },
+  "items": {
+    "creationCenter": "クリエイションハブ",
+    "explore": "探索",
+    "textToVideo": "テキストから動画",
+    "imageToVideo": "画像から動画",
+    "lipSync": "リップシンク",
+    "soundGeneration": "効果音生成",
+    "imageEffects": "画像エフェクト",
+    "videoEffects": "動画エフェクト",
+    "textToImage": "テキストから画像",
+    "imageToImage": "画像から画像",
+    "assets": "マイ作品"
+  },
+  "cta": {
+    "invite": "友達を招待",
+    "upgrade": "プランをアップグレード",
+    "signUp": "アカウント登録"
+  }
+}

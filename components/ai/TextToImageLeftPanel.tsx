@@ -20,6 +20,7 @@ import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
+import { useTranslations } from "next-intl";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -42,6 +43,8 @@ export default function TextToImageLeftPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const t = useTranslations("CreationTools.TextToImage");
+  const commonT = useTranslations("CreationTools.Common");
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -217,7 +220,7 @@ export default function TextToImageLeftPanel({
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        const message = result?.error ?? response.statusText ?? "提交失败";
+        const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -252,7 +255,7 @@ export default function TextToImageLeftPanel({
       }
     } catch (error) {
       removeHistoryItem(tempJobId);
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
       setErrorMessage(message);
       console.error("[text-to-image] submit error", error);
     } finally {
@@ -267,16 +270,17 @@ export default function TextToImageLeftPanel({
     translatePrompt,
     upsertHistoryItem,
     removeHistoryItem,
+    commonT,
   ]);
 
   return (
     <div className="w-full h-full min-h-0 text-white flex flex-col">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
-          {/* 标题 */}
-          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">文字转图片</h1>
-          {/* Model 标签 + 选择 */}
-          <div className="mb-2 text-sm">Model</div>
+          {/* Header */}
+          <h1 className="text-2xl font-semibold mt-2 mb-4 h-11 flex items-center">{t("title")}</h1>
+          {/* Model selector */}
+          <div className="mb-2 text-sm">{commonT("modelLabel")}</div>
           {hideModelSelect ? (
             <div className="text-sm text-white/80 px-3 py-2 rounded bg-white/5 border border-white/10 mb-4">
               {model}
@@ -291,14 +295,14 @@ export default function TextToImageLeftPanel({
             </div>
           )}
 
-          <div className="text-sm mt-3 mb-2">提示词</div>
+          <div className="text-sm mt-3 mb-2">{commonT("promptLabel")}</div>
 
           <div className="rounded-xl bg-white/8 border border-white/10">
             <div className="px-3 pt-3">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="你想要创建什么？"
+                placeholder={t("placeholder")}
                 className="min-h-[140px] max-h-[320px] resize-y overflow-auto textarea-scrollbar bg-transparent text-white placeholder:text-white/60 border-0 focus-visible:ring-0 focus-visible:outline-none"
                 maxLength={1000}
               />
@@ -311,7 +315,7 @@ export default function TextToImageLeftPanel({
                 targetType="image"
               />
               <div className="flex items-center gap-3 text-[11px] text-white/60">
-                <span>{prompt.length} / 1000</span>
+                <span>{commonT("promptCounter", { count: prompt.length, max: 1000 })}</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-white/70 hover:text-white" onClick={() => setPrompt("")}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -319,9 +323,9 @@ export default function TextToImageLeftPanel({
             </div>
           </div>
 
-          {/* 示例 */}
+          {/* Example */}
           <div className="mt-2 text-sm text-white/70">
-            <span className="">示例：</span> Wildflower Trail Dolphin Shadow Butterfly Closeup
+            <span>{commonT("exampleLabel")}</span> {t("example")}
           </div>
 
           <AspectRatioInlineSelector
@@ -329,32 +333,36 @@ export default function TextToImageLeftPanel({
             value={aspectRatio}
             options={aspectOptions}
             onChange={setAspectRatio}
-            label="长宽比"
-            description="选择图像输出比例"
+            label={commonT("aspectRatioLabel")}
+            description={commonT("aspectRatioDescription")}
           />
 
-          {/* 输出格式已移除 */}
+          {/* Output format removed */}
         </div>
       </ScrollArea>
 
-      {/* 固定底部按钮；上方内容单独滚动 */}
+      {/* Fixed bottom action bar */}
       <div className="pt-2 pb-0 shrink-0 border-t border-white/10 -mx-4 md:-mx-6">
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{commonT("publishLabel")}</span>
+              <span className="text-xs text-white/50">{commonT("publishDescription")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
-          {/* 固定区域：Output + credits */}
+          {/* Credits summary */}
           <div className="mb-3">
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="w-4 h-4 text-pink-400" />
-                Credits required:
+                {commonT("creditsLabel")}:
               </div>
-              <div>4 Credits</div>
+              <div>
+                {typeof modelConfig.creditsCost === "number"
+                  ? commonT("creditsValue", { count: modelConfig.creditsCost })
+                  : "--"}
+              </div>
             </div>
           </div>
           <Button
@@ -367,7 +375,7 @@ export default function TextToImageLeftPanel({
             disabled={!prompt.trim() || isSubmitting}
             onClick={() => void handleCreate()}
           >
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>

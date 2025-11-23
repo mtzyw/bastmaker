@@ -1,0 +1,175 @@
+{
+  "Common": {
+    "modelLabel": "モデル",
+    "promptLabel": "プロンプト",
+    "promptPlaceholder": "どのようなコンテンツを生成しますか？",
+    "promptCounter": "{count} / {max}",
+    "exampleLabel": "例：",
+    "aspectRatioLabel": "アスペクト比",
+    "aspectRatioDescription": "シーンに最適な出力比率を選択してください。",
+    "publishLabel": "プロフィールに公開",
+    "publishDescription": "オフにすると自分のみが閲覧できます。",
+    "creditsLabel": "必要クレジット",
+    "creditsValue": "{count} クレジット",
+    "buttons": {
+      "create": "生成する",
+      "creating": "生成中...",
+      "clear": "クリア"
+    },
+    "notices": {
+      "uploadingReferences": "参考画像をアップロード中です..."
+    },
+    "errors": {
+      "submitFailed": "送信に失敗しました",
+      "submitFailedRetry": "送信に失敗しました。しばらくしてから再試行してください。",
+      "uploadFailed": "画像のアップロードに失敗しました",
+      "uploadResultInvalid": "画像アップロードの結果が不正です",
+      "uploadRetry": "アップロードに失敗しました。再度お試しください。",
+      "uploadPending": "画像のアップロードがまだ完了していません",
+      "uploadProcessing": "参考画像を処理中です",
+      "uploadMissing": "少なくとも1枚の参考画像をアップロードしてください",
+      "uploadAborted": "画像アップロードがキャンセルされました",
+      "primaryImageRequired": "参考画像をアップロードしてください",
+      "transitionImagesRequired": "冒頭と末尾の画像をアップロードしてください"
+    }
+  },
+  "TextToImage": {
+    "title": "テキストから画像",
+    "placeholder": "生成したいイメージを記述してください",
+    "example": "Wildflower Trail Dolphin Shadow Butterfly Closeup"
+  },
+  "ImageToImage": {
+    "title": "画像から画像",
+    "imagesLabel": "参考画像",
+    "placeholder": "参考画像をどのように変換したいか記述してください",
+    "uploadingNotice": "参考画像をアップロード中です...",
+    "imageUploader": {
+      "title": "参考画像をアップロード",
+      "uploading": "アップロード中...",
+      "addLabel": "+ 追加",
+      "addAriaLabel": "参考画像を追加",
+      "imageAlt": "アップロード済みの参考画像",
+      "previewAlt": "参考画像のプレビュー",
+      "closePreview": "プレビューを閉じる"
+    }
+  },
+  "TextToVideo": {
+    "title": "テキストから動画",
+    "placeholder": "必要なシーンやモーションを記述してください",
+    "resolutionLabel": "動画解像度",
+    "lengthLabel": "動画の長さ",
+    "lengthOption": "{value} 秒",
+    "aspectRatioDescription": "完成動画のアスペクト比を選択してください。"
+  },
+  "ImageToVideo": {
+    "title": "画像から動画",
+    "referencesLabel": "参考画像",
+    "introLabel": "冒頭",
+    "introDescription": "動画の冒頭で使用",
+    "outroLabel": "締め",
+    "outroDescription": "動画の最後で使用",
+    "uploadPrompt": "{label} をアップロード",
+    "uploading": "アップロード中...",
+    "uploadingShort": "アップロード中...",
+    "reupload": "再選択",
+    "remove": "削除",
+    "selectImage": "画像を選択",
+    "recrop": "再トリミング",
+    "fileLabel": "ファイル：{name}",
+    "uploadingPrimary": "画像をアップロードしています...",
+    "placeholder": "希望する映像表現や動きを記述してください",
+    "resolutionLabel": "動画解像度",
+    "lengthLabel": "動画の長さ",
+    "lengthOption": "{value} 秒",
+    "cropRequirement": "アップロードに失敗しました。画像の短辺は360ピクセルを超える必要があります。"
+  },
+  "LipSync": {
+    "title": "リップシンク",
+    "videoSection": {
+      "title": "動画をアップロード",
+      "description": "mp4・mov・webm など一般的な形式に対応しています。",
+      "placeholder": "ここに動画をドラッグするか、クリックしてアップロード"
+    },
+    "audioSection": {
+      "title": "音声をアップロード",
+      "description": "mp3・wav・aac などに対応し、この音声に合わせて口パクを生成します。",
+      "placeholder": "ここに音声ファイルをドラッグするか、クリックしてアップロード"
+    },
+    "uploadHint": "クリックしてアップロード",
+    "buttons": {
+      "submit": "リップシンクを開始",
+      "submitting": "処理中..."
+    },
+    "messages": {
+      "uploading": "ファイルをアップロード中です。しばらくお待ちください。",
+      "uploadRequired": "先に動画と音声の両方をアップロードしてください。",
+      "invalidFileType": "サポートしていないファイル形式です。正しいファイルを選択してください。"
+    },
+    "errors": {
+      "uploadFailed": "ファイルのアップロードに失敗しました",
+      "invalidResult": "アップロード結果が不正です",
+      "uploadRetry": "ファイルのアップロードに失敗しました。時間をおいて再試行してください。",
+      "reuploadRequired": "アップロードに失敗しました。再アップロードしてからやり直してください。",
+      "taskFailed": "リップシンクのタスク送信に失敗しました。時間をおいて再試行してください。"
+    }
+  },
+  "SoundGeneration": {
+    "title": "サウンド生成",
+    "promptPlaceholder": "聴きたい効果音を説明してください...",
+    "durationLabel": "サウンドの長さ（秒）",
+    "durationValue": "{value} 秒",
+    "loopLabel": "ループ再生",
+    "example": "穏やかな海の波が岸辺に寄せる音。規則的で癒やしのリズムに、柔らかな水しぶきと遠くのカモメの鳴き声が混ざり合う。"
+  },
+  "RecentTasks": {
+    "title": "最近の生成",
+    "empty": "まだ生成結果はありません。",
+    "categories": {
+      "all": "すべて",
+      "image": "画像",
+      "video": "動画",
+      "effect": "エフェクト",
+      "audio": "音声"
+    },
+    "status": {
+      "failed": "失敗",
+      "processing": "処理中",
+      "succeeded": "完了"
+    },
+    "actions": {
+      "retry": "再生成",
+      "share": "共有",
+      "copyPrompt": "プロンプトをコピー",
+      "download": "ダウンロード"
+    },
+    "labels": {
+      "prompt": "プロンプト",
+      "model": "モデル",
+      "createdAt": "作成日時"
+    },
+    "tooltips": {
+      "shareDisabled": "公開タスクのみ共有できます。"
+    }
+  },
+  "PromptEnhancer": {
+    "triggerLabel": "AIプロンプト",
+    "title": "プロンプト最適化",
+    "subtitle": "アイデアを入力すると、より適切な表現に整えます。",
+    "inputLabel": "アイデアを入力",
+    "inputPlaceholder": "例：月明かりの下で踊る猫",
+    "charCount": "{count} / {max}",
+    "generate": "プロンプトを最適化",
+    "generating": "生成中...",
+    "resultTitle": "最適化結果",
+    "applyButton": "このプロンプトを使う",
+    "errors": {
+      "fetchFailed": "プロンプト最適化タスクの取得に失敗しました。",
+      "notFound": "プロンプト最適化タスクが存在しません。",
+      "improvementFailed": "プロンプト最適化に失敗しました。時間を置いて再試行してください。",
+      "timeout": "プロンプト最適化がタイムアウトしました。時間を置いて再試行してください。",
+      "inputRequired": "プロンプトを入力してください。",
+      "createFailed": "プロンプト最適化タスクの作成に失敗しました。時間を置いて再試行してください。",
+      "unknown": "生成に失敗しました。時間を置いて再試行してください。"
+    }
+  }
+}
