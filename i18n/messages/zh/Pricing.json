@@ -81,6 +81,7 @@
   ,
   "freePlan": {
     "badge": "立即体验",
+    "ctaLoggedIn": "当前订阅",
     "title": "免费方案",
     "description": "适合初次体验",
     "price": "¥0",

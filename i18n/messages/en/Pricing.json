@@ -81,6 +81,7 @@
   ,
   "freePlan": {
     "badge": "Start now",
+    "ctaLoggedIn": "Current subscription",
     "title": "Free Plan",
     "description": "Perfect for getting started",
     "price": "$0",

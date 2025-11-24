@@ -1,10 +1,12 @@
 "use client";
 
 import { PricingCardDisplay } from "@/components/pricing/PricingCardDisplay";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { PricingPlan } from "@/types/pricing";
-import { Check, Gift, X } from "lucide-react";
+import { Check, Gift } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 interface PricingClientProps {
@@ -21,6 +23,7 @@ export default function PricingClient({
   locale,
 }: PricingClientProps) {
   const t = useTranslations("Pricing");
+  const { user } = useAuth();
 
   const renderPlans = (
     plans: PricingPlan[],
@@ -28,7 +31,7 @@ export default function PricingClient({
   ) => {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 max-w-[1400px] mx-auto">
-        <FreePlanCard t={t} />
+        <FreePlanCard t={t} isLoggedIn={!!user} />
         {plans.map((plan, index) => {
           const localizedPlan =
             plan.lang_jsonb?.[locale] || plan.lang_jsonb?.[DEFAULT_LOCALE];
@@ -62,9 +65,14 @@ export default function PricingClient({
 
 type TranslationFunction = ReturnType<typeof useTranslations>;
 
-function FreePlanCard({ t }: { t: TranslationFunction }) {
+function FreePlanCard({
+  t,
+  isLoggedIn,
+}: {
+  t: TranslationFunction;
+  isLoggedIn: boolean;
+}) {
   const includedFeatureKeys = [
-    "credits",
     "textToImage",
     "imageToImage",
     "editingTools",
@@ -92,33 +100,91 @@ function FreePlanCard({ t }: { t: TranslationFunction }) {
     })),
   ];
 
+  const priceSuffix = t("freePlan.priceSuffix").replace(/^\//, "");
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-[#04070d] px-8 py-8 backdrop-blur text-white shadow-[0_20px_60px_rgba(3,8,23,0.45)]">
-      <div className="absolute top-3 right-3 rounded-full border border-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/80">
+    <div className="relative w-full rounded-[20px] border border-white/10 bg-[#1e1e22] px-8 py-8 text-white shadow-[0_18px_45px_rgba(0,0,0,0.5)]">
+      <div className="absolute right-6 top-6 rounded-xl bg-[#2a2a2f] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/80">
         {t("freePlan.badge")}
       </div>
-      <h3 className="text-2xl font-semibold mb-2">{t("freePlan.title")}</h3>
-      <p className="text-white/70 mb-6">{t("freePlan.description")}</p>
-      <div className="text-4xl font-bold mb-6">
-        {t("freePlan.price")}{" "}
-        <span className="text-lg font-normal text-white/60">
-          {t("freePlan.priceSuffix")}
-        </span>
-      </div>
-      <ul className="space-y-3 mb-8">
-        {features.map((feature) => (
-          <li key={feature.label} className={`flex items-start ${feature.included ? "text-white/85" : "text-white/40"}`}>
-            {feature.included ? (
-              <Check className="text-emerald-400 h-5 w-5 mt-1 mr-3 flex-shrink-0" />
-            ) : (
-              <X className="text-rose-400 h-5 w-5 mt-1 mr-3 flex-shrink-0 opacity-60" />
-            )}
-            <span className={feature.included ? undefined : "line-through decoration-dashed decoration-white/60"}>
-              {feature.label}
+
+      <div className="space-y-3">
+        <h3 className="text-xl font-semibold text-[#c7d2ff]">
+          {t("freePlan.title")}
+        </h3>
+
+        <div className="flex flex-wrap items-baseline gap-2">
+          <span className="text-5xl font-extrabold leading-none">
+            {t("freePlan.price")}
+          </span>
+          {priceSuffix ? (
+            <span className="text-base font-medium uppercase tracking-wide text-white/60">
+              /{priceSuffix}
             </span>
-          </li>
+          ) : null}
+        </div>
+
+        <div className="h-px w-full bg-[#2b2b30]" />
+
+        {isLoggedIn ? (
+          <div className="block rounded-xl bg-[linear-gradient(90deg,#E9B9FF,#9CC4FF)] px-6 py-3 text-center text-base font-semibold text-black shadow-[0_12px_30px_rgba(0,0,0,0.4)] select-none cursor-default">
+            {(() => {
+              const loggedInLabel = t("freePlan.ctaLoggedIn");
+              return loggedInLabel === "Pricing.freePlan.ctaLoggedIn"
+                ? t("freePlan.badge")
+                : loggedInLabel;
+            })()}
+          </div>
+        ) : (
+          <Link
+            href="/sign-up"
+            className="block rounded-xl bg-[linear-gradient(90deg,#E9B9FF,#9CC4FF)] px-6 py-3 text-center text-base font-semibold text-black shadow-[0_12px_30px_rgba(0,0,0,0.4)] transition-all duration-150 hover:-translate-y-0.5 hover:brightness-105"
+          >
+            {t("freePlan.badge")}
+          </Link>
+        )}
+      </div>
+
+      <div className="mt-6 rounded-[14px] border border-white/10 bg-[#1b1b1f] p-5">
+        <div className="text-base font-semibold">
+          {t("freePlan.features.credits")}
+        </div>
+
+        <div className="mt-3 flex gap-2 text-xl">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <span
+              key={index}
+              className={
+                index === 0
+                  ? "text-[#e4c8ff] brightness-125"
+                  : "text-white/30 opacity-70"
+              }
+              aria-hidden="true"
+            >
+              ✨
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {features.map((feature) => (
+          <div
+            key={feature.label}
+            className={`flex items-center gap-3 text-[15px] ${
+              feature.included
+                ? "text-white/85"
+                : "text-white/40 line-through decoration-white/30"
+            }`}
+          >
+            <Check
+              className={`h-5 w-5 flex-shrink-0 ${
+                feature.included ? "text-[#9acbff]" : "text-white/30"
+              }`}
+            />
+            <span>{feature.label}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

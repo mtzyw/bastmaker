@@ -91,6 +91,7 @@
   },
   "freePlan": {
     "badge": "今すぐ体験",
+    "ctaLoggedIn": "現在のサブスクリプション",
     "title": "無料プラン",
     "description": "まずは気軽に試したい方向け",
     "price": "¥0",
