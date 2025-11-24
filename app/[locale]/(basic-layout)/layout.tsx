@@ -9,7 +9,7 @@ export default function BasicLayout({
   return (
     <>
       <Header />
-      <main className="flex-1 flex flex-col items-center">{children}</main>
+      <main className="flex-1 flex flex-col items-center w-full">{children}</main>
       <Footer />
     </>
   );

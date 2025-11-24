@@ -80,7 +80,7 @@ export default async function LocaleLayout({
       </head>
       <body
         className={cn(
-          "min-h-screen bg-background flex flex-col",
+          "min-h-screen bg-[#0a0a0b] flex flex-col",
           GeistSans.variable,
           GeistMono.variable
         )}
