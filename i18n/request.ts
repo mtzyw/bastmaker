@@ -24,6 +24,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
       MultiImageKontextPro: (await import(`./messages/${locale}/MultiImageKontextPro.json`)).default,
       MyCreations: (await import(`./messages/${locale}/MyCreations.json`)).default,
       Viewer: (await import(`./messages/${locale}/Viewer.json`)).default,
+      TextToVideoPage: (await import(`./messages/${locale}/TextToVideoPage.json`)).default,
+      ImageToVideoPage: (await import(`./messages/${locale}/ImageToVideoPage.json`)).default,
+      LipSyncPage: (await import(`./messages/${locale}/LipSyncPage.json`)).default,
+      SoundGenerationPage: (await import(`./messages/${locale}/SoundGenerationPage.json`)).default,
+      TextToImagePage: (await import(`./messages/${locale}/TextToImagePage.json`)).default,
+      ImageToImagePage: (await import(`./messages/${locale}/ImageToImagePage.json`)).default,
 
       // Dashboard - User
       CreditHistory: (await import(`./messages/${locale}/Dashboard/User/CreditHistory.json`)).default,

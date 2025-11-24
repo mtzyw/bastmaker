@@ -1,0 +1,33 @@
+{
+  "metaTitle": "AI Image to Image Studio",
+  "metaDescription": "Remix reference art into new variations while keeping composition locked. bestmaker ai lets you upload intro/outro frames, blend transitions, and preserve brand DNA.",
+  "sections": {
+    "overview": {
+      "title": "Bring moodboards to life with controlled edits",
+      "body": "Upload reference shots, describe the transformation you want, and bestmaker ai handles image uploads, retries, and job tracking. Perfect for refining characters, packaging, and UI states without repainting from scratch.",
+      "points": [
+        {
+          "title": "Multi-reference aware",
+          "description": "Use up to eight frames to guide lighting, composition, and color palettes."
+        },
+        {
+          "title": "Upload resilience",
+          "description": "Automatic retries and status feedback ensure every reference lands before you submit."
+        },
+        {
+          "title": "Private iterations",
+          "description": "Keep repaints internal or publish public case studies with a single switch."
+        }
+      ]
+    },
+    "seo": {
+      "title": "bestmaker ai for brand refreshes and rapid prototyping",
+      "body": "Creative, product, and packaging teams rely on bestmaker ai to align exploration with stakeholder feedback. Library-friendly exports and multilingual prompts help you reuse assets across global launches.",
+      "highlights": [
+        "Reference grid uploader with preview/removal controls.",
+        "Track credits, history, and share status per job for governance.",
+        "Fresh variations boost SEO through unique imagery and increased engagement."
+      ]
+    }
+  }
+}

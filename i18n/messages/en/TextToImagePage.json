@@ -1,0 +1,33 @@
+{
+  "metaTitle": "AI Text to Image Workspace",
+  "metaDescription": "Sketch entire campaigns from a single prompt. bestmaker ai translates creative direction into high-fidelity stills, moodboards, and shot studies that stay on-brand.",
+  "sections": {
+    "overview": {
+      "title": "Describe the scene, get pixel-perfect visuals",
+      "body": "Control prompts, aspect ratios, and model presets without leaving the panel. Use bestmaker ai to brainstorm hero art, packaging explorations, and storyline beats before committing to production.",
+      "points": [
+        {
+          "title": "Consistent styling",
+          "description": "Share prompts across teams to keep campaigns aligned on tone, lighting, and characters."
+        },
+        {
+          "title": "High-res ready",
+          "description": "Upscale outputs for print, web hero sections, or presentation decks in seconds."
+        },
+        {
+          "title": "Private or publish",
+          "description": "Keep experiments internal or showcase your work publicly with one toggle."
+        }
+      ]
+    },
+    "seo": {
+      "title": "bestmaker ai empowers brand, product, and content teams",
+      "body": "From rapid concept art to thumbnail testing, bestmaker ai speeds up review cycles and keeps stakeholders aligned. Reuse prompts for multilingual campaigns, and build an asset library that improves SEO performance with fresh visuals.",
+      "highlights": [
+        "Supports prompt enhancer workflows for clearer creative briefs.",
+        "Inline history and credit tracking ensure transparency and governance.",
+        "Fresh imagery increases on-page engagement and search visibility."
+      ]
+    }
+  }
+}

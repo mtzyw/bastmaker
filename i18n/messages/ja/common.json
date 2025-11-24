@@ -95,9 +95,9 @@
     }
   },
   "Home": {
-    "title": "Nexty AI Image",
-    "tagLine": "Flux Kontext Pro搭載のAI画像編集ツール",
-    "description": "Photoshopの代替となるFlux AI画像編集ツール。テキスト入力だけで写真編集が可能 - 文字消去、背景変更、モックアップ作成。Flux.1 Pro搭載で高品質。"
+    "title": "BestMaker AI",
+    "tagLine": "BestMaker AI 搭載の次世代画像編集ツール",
+    "description": "BestMaker AI を使えば、テキスト指示だけでオブジェクト除去や背景変更、モックアップ生成まで完了。マスク作業は不要です。"
   },
   "Login": {
     "title": "おかえりなさい",

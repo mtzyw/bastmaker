@@ -78,4 +78,28 @@
       "email": "Contact Support Team"
     }
   }
+  ,
+  "freePlan": {
+    "badge": "Start now",
+    "title": "Free Plan",
+    "description": "Perfect for getting started",
+    "price": "$0",
+    "priceSuffix": "/Month",
+    "features": {
+      "credits": "30 credits/month",
+      "textToImage": "Text-to-image generation",
+      "imageToImage": "Image-to-image generation",
+      "editingTools": "20+ Advanced AI editing tools",
+      "artEffects": "40+ AI art effects and filters",
+      "pngDownloads": "High-quality PNG downloads",
+      "storage": "7-days storage",
+      "emailSupport": "Email support"
+    },
+    "limited": {
+      "privateGeneration": "Private image generation",
+      "priority": "Priority processing",
+      "commercial": "Commercial use rights",
+      "adFree": "Ad-free experience"
+    }
+  }
 }

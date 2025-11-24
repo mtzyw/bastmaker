@@ -95,9 +95,9 @@
     }
   },
   "Home": {
-    "title": "Nexty AI Image",
-    "tagLine": "AI Image Editor Powered by Flux Kontext Pro",
-    "description": "Flux AI image editor that alternates Photoshop. Edit photos using text - remove text, change backgrounds, create mockups. Powered by Flux.1 Pro."
+    "title": "BestMaker AI",
+    "tagLine": "AI Image Editor Built by BestMaker AI",
+    "description": "BestMaker AI gives you a Photoshop-level editor powered by natural language. Remove elements, change backgrounds, and build mockups with precise prompts—no manual masking required."
   },
   "Login": {
     "title": "Welcome back",

@@ -1,0 +1,33 @@
+{
+  "metaTitle": "AI Sound Effects Generator",
+  "metaDescription": "Convert written briefs into loop-ready effects. bestmaker ai crafts cinematic ambiences, product sounds, and UI cues with precise duration control.",
+  "sections": {
+    "overview": {
+      "title": "Describe the sound, get an instant render",
+      "body": "Feed bestmaker ai a prompt, choose duration, loop preferences, and prompt influence, then download polished audio stems. Ideal for teams that need audio branding without searching endless libraries.",
+      "points": [
+        {
+          "title": "Duration precision",
+          "description": "Generate 0.5s blips or 22s atmospheres with exact timing for transitions, reels, and onboarding."
+        },
+        {
+          "title": "Loop-friendly output",
+          "description": "Enable seamless looping for ambient beds, background soundscapes, or bite-sized UI cues."
+        },
+        {
+          "title": "Prompt intelligence",
+          "description": "Blend prompt influence with model defaults to keep creative control while benefiting from bestmaker ai’s polish."
+        }
+      ]
+    },
+    "seo": {
+      "title": "Audio building blocks for product, marketing, and media teams",
+      "body": "bestmaker ai keeps launches on schedule by generating net-new effects, refreshing campaign soundtracks, and powering sonic identities. Store prompts privately or publish to your portfolio to build trust with clients.",
+      "highlights": [
+        "Supports multilingual prompts so global campaigns maintain consistent tone.",
+        "Exports high-quality WAV suitable for mastering plus lightweight MP3 for previews.",
+        "Reusable assets that boost SEO through richer multimedia and longer dwell time."
+      ]
+    }
+  }
+}

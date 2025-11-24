@@ -5,10 +5,10 @@ export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://flux-kontex
 const TWITTER_EN = 'https://x.com/judewei_dev'
 const TWITTER_ZH = 'https://x.com/weijunext'
 const BSKY_URL = 'https://bsky.app/profile/judewei.bsky.social'
-const EMAIL_URL = 'mailto:hi@nexty.dev'
+const EMAIL_URL = 'mailto:hi@bestmaker.ai'
 
 export const siteConfig: SiteConfig = {
-  name: 'Nexty AI Image',
+  name: 'BestMaker AI',
   url: BASE_URL,
   authors: [
     {

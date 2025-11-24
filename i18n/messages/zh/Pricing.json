@@ -78,4 +78,28 @@
       "email": "联系客服团队"
     }
   }
+  ,
+  "freePlan": {
+    "badge": "立即体验",
+    "title": "免费方案",
+    "description": "适合初次体验",
+    "price": "¥0",
+    "priceSuffix": "/月",
+    "features": {
+      "credits": "每月 30 积分",
+      "textToImage": "文字生成图片",
+      "imageToImage": "图片生成图片",
+      "editingTools": "20+ 高级 AI 修图工具",
+      "artEffects": "40+ AI 艺术特效与滤镜",
+      "pngDownloads": "高质量 PNG 下载",
+      "storage": "7 天云端存储",
+      "emailSupport": "邮箱支持"
+    },
+    "limited": {
+      "privateGeneration": "私密生成",
+      "priority": "优先处理",
+      "commercial": "商业使用授权",
+      "adFree": "无广告体验"
+    }
+  }
 }

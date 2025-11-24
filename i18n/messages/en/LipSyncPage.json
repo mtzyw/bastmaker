@@ -1,0 +1,33 @@
+{
+  "metaTitle": "AI Lip Sync Generator",
+  "metaDescription": "Match any video with studio-quality voiceovers. bestmaker ai auto-aligns mouth movement, blends intros/outros, and keeps creative control in your hands.",
+  "sections": {
+    "overview": {
+      "title": "Sync footage to any script in minutes",
+      "body": "Upload your talking-head or hero shot, drop in polished audio, and bestmaker ai handles alignment, frame timing, and publishing presets. Keep source files private while generating marketing-ready takes for every locale.",
+      "points": [
+        {
+          "title": "Frame-accurate alignment",
+          "description": "Automatic phoneme mapping keeps lip flaps tight to every syllable, even on fast-paced voiceovers."
+        },
+        {
+          "title": "Multiple takes, one upload",
+          "description": "Swap different narrations or languages without re-editing your video timeline."
+        },
+        {
+          "title": "Publishing ready",
+          "description": "Download compressed MP4 files or keep them private for QA before sharing with clients."
+        }
+      ]
+    },
+    "seo": {
+      "title": "bestmaker ai for marketing, localization, and creators",
+      "body": "Global teams rely on bestmaker ai to localize campaign spots, dub product walkthroughs, and refresh community updates without expensive reshoots. Built-in privacy controls and fast turnaround help you keep launches on schedule.",
+      "highlights": [
+        "Supports MP4, MOV, WEBM input plus WAV, MP3, AAC audio tracks.",
+        "Ideal for product demos, training content, community announcements, and influencer collabs.",
+        "Regenerate safely with private/public toggles and detailed job history."
+      ]
+    }
+  }
+}

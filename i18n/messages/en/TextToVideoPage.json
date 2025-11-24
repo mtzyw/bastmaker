@@ -1,0 +1,33 @@
+{
+  "metaTitle": "AI Text to Video Generator",
+  "metaDescription": "Transform any prompt into cinematic motion clips in seconds. bestmaker ai’s text to video workspace handles storyboards, pacing, and export-ready formats for every social network.",
+  "sections": {
+    "overview": {
+      "title": "Turn scripts into cinematic shots",
+      "body": "Describe the motion, mood, or camera direction you need and bestmaker ai animates it into stylized clips. Switch between models, aspect ratios, and durations without rewriting your idea, so a single prompt can supply b-roll, hero shots, or looping teasers.",
+      "points": [
+        {
+          "title": "Shot-ready motion",
+          "description": "Generate 24 fps clips with natural motion blur, depth, and lighting that feel designed for storyboards, ads, and explainers."
+        },
+        {
+          "title": "Camera & pacing controls",
+          "description": "Dial in length, framing, and resolution presets that match vertical, square, or landscape placements in just one click."
+        },
+        {
+          "title": "Brand-safe output",
+          "description": "Keep prompts private, toggle public sharing, and export downloadable MP4 files optimized for every platform."
+        }
+      ]
+    },
+    "seo": {
+      "title": "Built for marketers, creators, and product teams",
+      "body": "Use bestmaker ai’s text to video generator to prototype campaigns faster, localize product launches, or supply background loops for landing pages. Accurate multilingual prompts help teams keep messaging consistent across markets.",
+      "highlights": [
+        "Supports 480p, 720p, and 1080p video presets with 16:9, 9:16, and 1:1 aspect ratios.",
+        "Optimized for storytelling, ads, educational explainers, and showcase reels.",
+        "Outputs reusable assets that improve on-page SEO and increase time on site."
+      ]
+    }
+  }
+}

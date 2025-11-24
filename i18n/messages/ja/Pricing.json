@@ -88,5 +88,28 @@
     "ctaButton": "今すぐ50%オフで購入",
     "urgencyText": "なくなる前にこの取引を手に入れよう！",
     "noCode": "クーポン不要 - チェックアウト時に割引適用"
+  },
+  "freePlan": {
+    "badge": "今すぐ体験",
+    "title": "無料プラン",
+    "description": "まずは気軽に試したい方向け",
+    "price": "¥0",
+    "priceSuffix": "/月",
+    "features": {
+      "credits": "1か月30クレジット",
+      "textToImage": "テキストから画像の生成",
+      "imageToImage": "画像から画像の生成",
+      "editingTools": "20種類以上の高度なAI編集ツール",
+      "artEffects": "40種類以上のAIアート効果とフィルター",
+      "pngDownloads": "高品質PNGダウンロード",
+      "storage": "7日間のストレージ",
+      "emailSupport": "メールサポート"
+    },
+    "limited": {
+      "privateGeneration": "プライベート生成",
+      "priority": "優先処理",
+      "commercial": "商用利用権",
+      "adFree": "広告なし体験"
+    }
   }
 }

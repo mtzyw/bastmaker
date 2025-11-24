@@ -1,13 +1,9 @@
-import BuiltWithButton from "@/components/BuiltWithButton";
 import { Newsletter } from "@/components/footer/Newsletter";
-import { TwitterX } from "@/components/social-icons/icons";
 import { siteConfig } from "@/config/site";
 import { Link as I18nLink } from "@/i18n/routing";
 import { FooterLink } from "@/types/common";
-import { GithubIcon, MailIcon } from "lucide-react";
 import { getMessages, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { SiBluesky } from "react-icons/si";
 
 export default async function Footer() {
   const messages = await getMessages();
@@ -38,62 +34,7 @@ export default async function Footer() {
 
                 <p className="text-sm p4-4 md:pr-12">{t("tagLine")}</p>
 
-                <div className="flex items-center gap-2">
-                  {siteConfig.socialLinks?.github && (
-                    <Link
-                      href={siteConfig.socialLinks.github}
-                      prefetch={false}
-                      target="_blank"
-                      rel="noreferrer nofollow noopener"
-                      aria-label="GitHub"
-                      title="View on GitHub"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <GithubIcon className="size-4" aria-hidden="true" />
-                    </Link>
-                  )}
-                  {siteConfig.socialLinks?.bluesky && (
-                    <Link
-                      href={siteConfig.socialLinks.bluesky}
-                      prefetch={false}
-                      target="_blank"
-                      rel="noreferrer nofollow noopener"
-                      aria-label="Blue Sky"
-                      title="View on Bluesky"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <SiBluesky className="w-4 h-4" aria-hidden="true" />
-                    </Link>
-                  )}
-                  {siteConfig.socialLinks?.twitter && (
-                    <Link
-                      href={siteConfig.socialLinks.twitter}
-                      prefetch={false}
-                      target="_blank"
-                      rel="noreferrer nofollow noopener"
-                      aria-label="Twitter"
-                      title="View on Twitter"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <TwitterX className="w-4 h-4" aria-hidden="true" />
-                    </Link>
-                  )}
-                  {siteConfig.socialLinks?.email && (
-                    <Link
-                      href={`mailto:${siteConfig.socialLinks.email}`}
-                      prefetch={false}
-                      target="_blank"
-                      rel="noreferrer nofollow noopener"
-                      aria-label="Email"
-                      title="Email"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <MailIcon className="w-4 h-4" />
-                    </Link>
-                  )}
-                </div>
-
-                <BuiltWithButton />
+                <div className="h-2" />
               </div>
             </div>
 
