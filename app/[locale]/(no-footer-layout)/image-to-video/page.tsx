@@ -1,6 +1,7 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import ImageToVideoLeftPanel from "@/components/ai/ImageToVideoLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import ImageToVideoGuestPreview from "@/components/ai/ImageToVideoGuestPreview";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
@@ -66,12 +67,18 @@ export default async function ImageToVideoPage() {
       withSidebar={false}
       section2Left={<ImageToVideoLeftPanel />}
       section2Right={
-        <TextToImageRecentTasks
-          initialCategory="视频"
-          categories={["视频", "全部", "图片", "音效"]}
-          hideEffectBadge
-          fallbackMediaUrl="https://static.bestmaker.ai/imgae/imagetoimage.png"
-        />
+        isAuthenticated ? (
+          <TextToImageRecentTasks
+            initialCategory="视频"
+            categories={["视频", "全部", "图片", "音效"]}
+            hideEffectBadge
+            fallbackMediaUrl="https://static.bestmaker.ai/imgae/imagetoimage.png"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <ImageToVideoGuestPreview />
+          </div>
+        )
       }
       mergedSectionContent={
         <ImageToVideoSeoContent

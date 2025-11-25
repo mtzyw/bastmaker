@@ -1,5 +1,4 @@
 "use client";
-import { pacifico } from "@/app/fonts";
 import HeaderLinks from "@/components/header/HeaderLinks";
 import MobileMenu from "@/components/header/MobileMenu";
 import { UserAvatar } from "@/components/header/UserAvatar";
@@ -43,16 +42,6 @@ const Header = ({ hideHeaderHrefs, hideHeaderIds, enableSidebarSheet, openAuthDi
               </Sheet>
             </div>
           )}
-          <span
-            className={cn(
-              "text-xl block text-right pr-2 bg-clip-text text-transparent",
-              "bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))]",
-              pacifico.className
-            )}
-          >
-            BestMaker
-          </span>
-
           <HeaderLinks
             className="text-white"
             linkClassName="hover:bg-accent-foreground/10 hover:text-white"

@@ -1,6 +1,7 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import TextToVideoLeftPanel from "@/components/ai/TextToVideoLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import TextToVideoGuestPreview from "@/components/ai/TextToVideoGuestPreview";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
@@ -66,11 +67,17 @@ export default async function TextToVideoPage() {
       withSidebar={false}
       section2Left={<TextToVideoLeftPanel />}
       section2Right={
-        <TextToImageRecentTasks
-          initialCategory="视频"
-          categories={["视频", "全部", "图片", "音效"]}
-          hideEffectBadge
-        />
+        isAuthenticated ? (
+          <TextToImageRecentTasks
+            initialCategory="视频"
+            categories={["视频", "全部", "图片", "音效"]}
+            hideEffectBadge
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <TextToVideoGuestPreview />
+          </div>
+        )
       }
       mergedSectionContent={
         <TextToVideoSeoContent
