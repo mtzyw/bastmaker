@@ -69,7 +69,8 @@
     "prompt": "提示词",
     "negative": "反向提示词",
     "model": "模型",
-    "createdAt": "创建时间"
+    "createdAt": "创建时间",
+    "categoryFilter": "筛选创作类型"
   },
   "viewer": {
     "loading": "加载预览...",

@@ -484,6 +484,7 @@ export default function TextToImageRecentTasks({
   const historyT = useTranslations("CreationHistory");
   const promptLabel = historyT("labels.prompt");
   const negativeLabel = historyT("labels.negative");
+  const categoryFilterLabel = historyT("labels.categoryFilter");
   const effectBadgeLabel = historyT("categories.effect");
   const downloadWatermarkLabel = historyT("actions.downloadWatermark");
   const downloadCleanLabel = historyT("actions.downloadClean");
@@ -542,6 +543,7 @@ export default function TextToImageRecentTasks({
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
   const [downloadMenuTaskId, setDownloadMenuTaskId] = useState<string | null>(null);
   const downloadMenuCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shouldShowCategoryFilter = normalizedCategories.length > 1;
 
   const fetchInFlightRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -551,6 +553,15 @@ export default function TextToImageRecentTasks({
   const isRegenerating = useCallback(
     (jobId: string) => regeneratingIds.has(jobId),
     [regeneratingIds]
+  );
+  const handleCategoryChange = useCallback(
+    (category: CategoryFilter) => {
+      if (category === activeCategory) {
+        return;
+      }
+      setActiveCategory(category);
+    },
+    [activeCategory, setActiveCategory]
   );
 
   const resolvePrimaryImageUrl = useCallback(
@@ -2114,84 +2125,140 @@ export default function TextToImageRecentTasks({
     );
   }
 
+  const categorySelector = shouldShowCategoryFilter ? (
+    <div className="mb-4 flex flex-col gap-3 text-xs">
+      <div
+        className="hidden flex-wrap gap-2 md:flex"
+        role="tablist"
+        aria-label={categoryFilterLabel}
+      >
+        {normalizedCategories.map((category) => {
+          const isActive = category === activeCategory;
+          return (
+            <button
+              key={category}
+              type="button"
+              className={cn(
+                "rounded-full border px-3 py-1 font-medium transition-colors",
+                isActive
+                  ? "border-white bg-white text-black shadow-sm"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/15"
+              )}
+              aria-pressed={isActive}
+              onClick={() => handleCategoryChange(category)}
+            >
+              {getCategoryLabel(category)}
+            </button>
+          );
+        })}
+      </div>
+      <div className="md:hidden">
+        <Select
+          value={activeCategory}
+          onValueChange={(value) => handleCategoryChange(value as CategoryFilter)}
+        >
+          <SelectTrigger
+            aria-label={categoryFilterLabel}
+            className="w-full rounded-full border border-white/15 bg-white/5 text-left font-medium text-white focus:ring-0 focus:ring-offset-0"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-2xl border border-white/10 bg-[#1c1c1a] text-xs text-white shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+            {normalizedCategories.map((category) => (
+              <SelectItem
+                key={category}
+                value={category}
+                className="text-white/70 focus:text-white data-[state=checked]:text-white"
+              >
+                {getCategoryLabel(category)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  ) : (
+    <div className="mt-2 mb-4" />
+  );
+
   return (
     <TooltipProvider>
-      <div className="h-full flex flex-col text-white">
-      <div className="mt-2 mb-4" />
-      {content}
-      <Dialog
-        open={Boolean(previewTask)}
-        onOpenChange={(open) => {
-          if (!open && previewTask) {
-            if (typeof window !== "undefined") {
-              window.history.back();
-            } else {
-              closePreview();
+      <div className="flex h-full flex-col text-white">
+        {categorySelector}
+        {content}
+        <Dialog
+          open={Boolean(previewTask)}
+          onOpenChange={(open) => {
+            if (!open && previewTask) {
+              if (typeof window !== "undefined") {
+                window.history.back();
+              } else {
+                closePreview();
+              }
             }
-          }
-        }}
-      >
-        <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
-          {isViewerLoading ? (
-            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
-              {loadingLabel}
-            </div>
-          ) : viewerError ? (
-            <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
-              {viewerError}
-            </div>
-          ) : viewerJob ? (
-            <ViewerBoard
-              job={viewerJob}
-              shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${
-                locale === DEFAULT_LOCALE ? "" : `/${locale}`
-              }/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
-            />
-          ) : (
-            <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
-              {historyT("viewer.empty")}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-      <AlertDialog
-        open={Boolean(taskToDelete)}
-        onOpenChange={(open) => {
-          if (!open) {
-            if (isDeleting) {
-              return;
+          }}
+        >
+          <DialogContent className="max-w-[calc(100vw-2rem)] border border-white/10 bg-[#1c1c1a] text-white sm:max-w-[68rem]">
+            {isViewerLoading ? (
+              <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+                {loadingLabel}
+              </div>
+            ) : viewerError ? (
+              <div className="flex h-[60vh] w-full items-center justify-center text-white/60">
+                {viewerError}
+              </div>
+            ) : viewerJob ? (
+              <ViewerBoard
+                job={viewerJob}
+                shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${
+                  locale === DEFAULT_LOCALE ? "" : `/${locale}`
+                }/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
+              />
+            ) : (
+              <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
+                {historyT("viewer.empty")}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+        <AlertDialog
+          open={Boolean(taskToDelete)}
+          onOpenChange={(open) => {
+            if (!open) {
+              if (isDeleting) {
+                return;
+              }
+              setTaskToDelete(null);
             }
-            setTaskToDelete(null);
-          }
-        }}
-      >
-        <AlertDialogContent className="border border-white/10 bg-[#1c1c1a] text-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle>{deleteConfirmTitle}</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
-              {deleteConfirmDescription}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              disabled={isDeleting}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              {deleteCancelLabel}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeleting}
-              onClick={(event) => {
-                event.preventDefault();
-                void handleConfirmDelete();
-              }}
-              className="bg-[#dc2e5a] text-white hover:bg-[#f0446e]"
-            >
-              {isDeleting ? deletingLabel : deleteConfirmLabel}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          }}
+        >
+          <AlertDialogContent className="border border-white/10 bg-[#1c1c1a] text-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>{deleteConfirmTitle}</AlertDialogTitle>
+              <AlertDialogDescription className="text-white/60">
+                {deleteConfirmDescription}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                disabled={isDeleting}
+                className="border-white/20 text-black hover:bg-white/10"
+              >
+                {deleteCancelLabel}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={isDeleting}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleConfirmDelete();
+                }}
+                className="bg-[#dc2e5a] text-white hover:bg-[#f0446e]"
+              >
+                {isDeleting ? deletingLabel : deleteConfirmLabel}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

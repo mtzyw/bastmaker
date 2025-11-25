@@ -69,7 +69,8 @@
     "prompt": "Prompt",
     "negative": "Negative",
     "model": "Model",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "categoryFilter": "Filter creations"
   },
   "viewer": {
     "loading": "Loading preview...",

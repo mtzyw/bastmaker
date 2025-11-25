@@ -69,7 +69,8 @@
     "prompt": "プロンプト",
     "negative": "ネガティブ",
     "model": "モデル",
-    "createdAt": "作成日時"
+    "createdAt": "作成日時",
+    "categoryFilter": "生成タイプを絞り込む"
   },
   "viewer": {
     "loading": "プレビューを読み込み中...",
