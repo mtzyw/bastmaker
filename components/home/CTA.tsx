@@ -41,9 +41,7 @@ export default function CTA() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-            <I18nLink
-              href={process.env.NEXT_PUBLIC_DEFAULT_FEATURE_PAGE || "/"}
-            >
+            <I18nLink href="/text-to-video">
               <Button className="bg-white text-indigo-600 hover:bg-gray-100 shadow-2xl hover:shadow-3xl transition-all duration-200 px-10 py-6 rounded-2xl font-bold text-lg group transform hover:scale-105">
                 <Sparkles className="w-6 h-6 mr-3 text-purple-600" />
                 {t("primaryButton")}

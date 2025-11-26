@@ -65,10 +65,7 @@ export default function Hero() {
             }}
             className="group relative w-fit rounded-full bg-gray-950/10 px-4 py-2 text-gray-50 transition-colors hover:bg-gray-950/50"
           >
-            <I18nLink
-              href={process.env.NEXT_PUBLIC_DEFAULT_FEATURE_PAGE || "/"}
-              className="flex items-center gap-1.5"
-            >
+            <I18nLink href="/text-to-video" className="flex items-center gap-1.5">
               {t("getStarted")}
               <FiArrowRight className="transition-transform group-hover:-rotate-45 group-active:-rotate-12" />
             </I18nLink>
