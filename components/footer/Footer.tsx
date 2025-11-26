@@ -82,14 +82,23 @@ export default async function Footer() {
             )}
           </div>
 
-          <div className="border-t border-gray-800 py-6 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              {tFooter("Copyright", {
-                year: new Date().getFullYear(),
-                name: siteConfig.name,
-              })}
-            </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="border-t border-gray-800 py-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center text-sm text-gray-400">
+            <div>
+              <p>
+                {tFooter("Copyright", {
+                  year: new Date().getFullYear(),
+                  name: siteConfig.name,
+                })}
+              </p>
+              <p className="mt-1">GUIMIN LLC</p>
+              <a
+                href="mailto:hi@bestmaker.ai"
+                className="mt-1 block text-gray-300 hover:text-white transition-colors"
+              >
+                hi@bestmaker.ai
+              </a>
+            </div>
+            <div className="flex space-x-6">
               <I18nLink
                 href="/privacy-policy"
                 title={tFooter("PrivacyPolicy")}
