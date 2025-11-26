@@ -91,7 +91,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
               <ThemeProvider
                 attribute="class"
                 defaultTheme={siteConfig.defaultNextTheme}
-                enableSystem
+                forcedTheme={siteConfig.defaultNextTheme}
               >
                 {messages.LanguageDetection && <LanguageDetectionAlert />}
 
