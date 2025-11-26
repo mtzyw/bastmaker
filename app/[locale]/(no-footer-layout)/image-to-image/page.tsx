@@ -1,5 +1,6 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import ImageToImageLeftPanel from "@/components/ai/ImageToImageLeftPanel";
+import ImageToImageGuestPreview from "@/components/ai/ImageToImageGuestPreview";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
@@ -72,11 +73,17 @@ export default async function ImageToImagePage() {
         />
       }
       section2Right={
-        <TextToImageRecentTasks
-          initialCategory="图片"
-          categories={["图片", "全部", "视频", "音效"]}
-          hideEffectBadge
-        />
+        isAuthenticated ? (
+          <TextToImageRecentTasks
+            initialCategory="图片"
+            categories={["图片", "全部", "视频", "音效"]}
+            hideEffectBadge
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <ImageToImageGuestPreview />
+          </div>
+        )
       }
       mergedSectionContent={
         <ImageToImageSeoContent

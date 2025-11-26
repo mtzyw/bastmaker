@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -20,9 +21,14 @@ type SwitchHandler = (mode: "signin" | "signup") => void;
 type SignInPageProps = {
   variant?: SignInPageVariant;
   onRequestSwitchMode?: SwitchHandler;
+  redirectPath?: string;
 };
 
-export default function SignInPage({ variant = "page", onRequestSwitchMode }: SignInPageProps = {}) {
+export default function SignInPage({
+  variant = "page",
+  onRequestSwitchMode,
+  redirectPath,
+}: SignInPageProps = {}) {
   const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState("");
@@ -32,12 +38,14 @@ export default function SignInPage({ variant = "page", onRequestSwitchMode }: Si
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const t = useTranslations("Login");
+  const searchParams = useSearchParams();
+  const next = redirectPath ?? searchParams?.get("next") ?? undefined;
 
   useEffect(() => {
     if (user) {
-      router.replace("/");
+      router.replace(next || "/");
     }
-  }, [user, router]);
+  }, [user, router, next]);
 
   const handlePasswordLogin = async () => {
     if (!email || !password) {
@@ -58,7 +66,7 @@ export default function SignInPage({ variant = "page", onRequestSwitchMode }: Si
       });
       if (error) throw error;
       toast.success("登录成功");
-      router.replace("/");
+      router.replace(next || "/");
     } catch (e: any) {
       toast.error("登录失败", { description: e?.message });
     } finally {
@@ -68,7 +76,7 @@ export default function SignInPage({ variant = "page", onRequestSwitchMode }: Si
 
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await signInWithGoogle("");
+      const { error } = await signInWithGoogle(next || "");
       if (error) throw error;
     } catch (error) {
       toast.error(t("Toast.Google.errorTitle"), {

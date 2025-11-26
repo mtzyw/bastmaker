@@ -4,7 +4,7 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useState } 
 import { AuthDialog, type AuthDialogTab } from "@/components/auth/AuthDialog";
 
 type AuthDialogContextValue = {
-  openAuthDialog: (tab?: AuthDialogTab) => void;
+  openAuthDialog: (tab?: AuthDialogTab, redirectPath?: string) => void;
   closeAuthDialog: () => void;
   isAuthDialogOpen: boolean;
 };
@@ -14,11 +14,23 @@ const AuthDialogContext = createContext<AuthDialogContextValue | null>(null);
 export function AuthDialogProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [initialTab, setInitialTab] = useState<AuthDialogTab>("signin");
+  const [redirectPath, setRedirectPath] = useState<string | undefined>(undefined);
 
-  const openAuthDialog = useCallback((tab: AuthDialogTab = "signin") => {
-    setInitialTab(tab);
-    setOpen(true);
-  }, []);
+  const openAuthDialog = useCallback(
+    (tab: AuthDialogTab = "signin", newRedirectPath?: string) => {
+      setInitialTab(tab);
+      if (newRedirectPath) {
+        setRedirectPath(newRedirectPath);
+      } else if (typeof window !== "undefined") {
+        const path = window.location.pathname + window.location.search;
+        setRedirectPath(path);
+      } else {
+        setRedirectPath(undefined);
+      }
+      setOpen(true);
+    },
+    []
+  );
 
   const closeAuthDialog = useCallback(() => setOpen(false), []);
 
@@ -34,7 +46,12 @@ export function AuthDialogProvider({ children }: { children: ReactNode }) {
   return (
     <AuthDialogContext.Provider value={value}>
       {children}
-      <AuthDialog open={open} onOpenChange={setOpen} initialTab={initialTab} />
+      <AuthDialog
+        open={open}
+        onOpenChange={setOpen}
+        initialTab={initialTab}
+        redirectPath={redirectPath}
+      />
     </AuthDialogContext.Provider>
   );
 }

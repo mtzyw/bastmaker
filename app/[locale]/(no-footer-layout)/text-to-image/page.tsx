@@ -1,5 +1,6 @@
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import TextToImageLeftPanel from "@/components/ai/TextToImageLeftPanel";
+import TextToImageGuestPreview from "@/components/ai/TextToImageGuestPreview";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
@@ -61,7 +62,15 @@ export default async function TextToImagePage() {
       sections={sections}
       withSidebar={false}
       section2Left={<TextToImageLeftPanel />}
-      section2Right={<TextToImageRecentTasks hideEffectBadge />}
+      section2Right={
+        isAuthenticated ? (
+          <TextToImageRecentTasks hideEffectBadge />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <TextToImageGuestPreview />
+          </div>
+        )
+      }
       mergedSectionContent={
         <TextToImageSeoContent
           badgeLabel={t("metaTitle")}

@@ -27,85 +27,94 @@ interface MenuSection {
 export function AISidebar({ className, onNavigate }: { className?: string, onNavigate?: () => void }) {
   const router = useRouter();
   const { user } = useAuth();
+  const isGuest = !user;
   const t = useTranslations("CreationNav");
 
-  const menuSections: MenuSection[] = useMemo(() => [
-    {
-      items: [
-        {
-          id: "creation-center",
-          label: t("items.creationCenter"),
-          icon: <FileText className="w-5 h-5" />,
-        },
-        {
-          id: "explore",
-          label: t("items.explore"),
-          icon: <Search className="w-5 h-5" />,
-        },
-      ],
-    },
-    {
-      title: t("sections.video"),
-      variant: "dense",
-      items: [
-        {
-          id: "text-to-video",
-          label: t("items.textToVideo"),
-          icon: <Type className="w-5 h-5" />,
-        },
-        {
-          id: "image-to-video",
-          label: t("items.imageToVideo"),
-          icon: <ImageIcon className="w-5 h-5" />,
-        },
-        {
-          id: "lip-sync",
-          label: t("items.lipSync"),
-          icon: <MessageCircle className="w-5 h-5" />,
-        },
-        {
-          id: "sound-generation",
-          label: t("items.soundGeneration"),
-          icon: <Volume2 className="w-5 h-5" />,
-        },
-        {
-          id: "image-effects",
-          label: t("items.imageEffects"),
-          icon: <ImageIcon className="w-5 h-5" />,
-        },
-        {
-          id: "ai-video-effects",
-          label: t("items.videoEffects"),
-          icon: <Monitor className="w-5 h-5" />,
-        },
-      ],
-    },
-    {
-      title: t("sections.image"),
-      variant: "dense",
-      items: [
-        {
-          id: "text-to-image",
-          label: t("items.textToImage"),
-          icon: <Type className="w-5 h-5" />,
-        },
-        {
-          id: "image-to-image",
-          label: t("items.imageToImage"),
-          icon: <ImageIcon className="w-5 h-5" />,
-        },
-      ],
-    },
-    {
-      items: [
-        {
-          id: "assets",
-          label: t("items.assets"),
-          icon: <Folder className="w-5 h-5" />,
-        },
-      ],
-    },
-  ], [t])
+  const menuSections: MenuSection[] = useMemo(() => {
+    const videoItems: MenuItem[] = [
+      {
+        id: "text-to-video",
+        label: t("items.textToVideo"),
+        icon: <Type className="w-5 h-5" />,
+      },
+      {
+        id: "image-to-video",
+        label: t("items.imageToVideo"),
+        icon: <ImageIcon className="w-5 h-5" />,
+      },
+      {
+        id: "lip-sync",
+        label: t("items.lipSync"),
+        icon: <MessageCircle className="w-5 h-5" />,
+      },
+      {
+        id: "sound-generation",
+        label: t("items.soundGeneration"),
+        icon: <Volume2 className="w-5 h-5" />,
+      },
+      {
+        id: "image-effects",
+        label: t("items.imageEffects"),
+        icon: <ImageIcon className="w-5 h-5" />,
+      },
+      {
+        id: "ai-video-effects",
+        label: t("items.videoEffects"),
+        icon: <Monitor className="w-5 h-5" />,
+      },
+    ];
+
+    const filteredVideoItems = isGuest
+      ? videoItems.filter((item) => item.id !== "lip-sync" && item.id !== "sound-generation")
+      : videoItems;
+
+    return [
+      {
+        items: [
+          {
+            id: "creation-center",
+            label: t("items.creationCenter"),
+            icon: <FileText className="w-5 h-5" />,
+          },
+          {
+            id: "explore",
+            label: t("items.explore"),
+            icon: <Search className="w-5 h-5" />,
+          },
+        ],
+      },
+      {
+        title: t("sections.video"),
+        variant: "dense",
+        items: filteredVideoItems,
+      },
+      {
+        title: t("sections.image"),
+        variant: "dense",
+        items: [
+          {
+            id: "text-to-image",
+            label: t("items.textToImage"),
+            icon: <Type className="w-5 h-5" />,
+          },
+          {
+            id: "image-to-image",
+            label: t("items.imageToImage"),
+            icon: <ImageIcon className="w-5 h-5" />,
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            id: "assets",
+            label: t("items.assets"),
+            icon: <Folder className="w-5 h-5" />,
+          },
+        ],
+      },
+    ];
+  }, [t, isGuest])
 
   // Determine initial active item: prefer the first item with isActive, else the first item overall
   const fallbackActiveId = (() => {
@@ -125,19 +134,23 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
 
   const activeIdFromPath = useMemo(() => {
     const path = normalizePathname(pathname)
-    if (path.startsWith("/video-effects")) return "ai-video-effects"
-    if (path.startsWith("/image-effects")) return "image-effects"
-    if (path.startsWith("/sound-generation")) return "sound-generation"
-    if (path.startsWith("/lip-sync")) return "lip-sync"
-    if (path.startsWith("/text-to-video")) return "text-to-video"
-    if (path.startsWith("/image-to-video")) return "image-to-video"
-    if (path.startsWith("/text-to-image")) return "text-to-image"
-    if (path.startsWith("/image-to-image")) return "image-to-image"
-    if (path.startsWith("/my-creations")) return "assets"
-    if (path.startsWith("/explore")) return "explore"
-    if (path === "/" || path.startsWith("/creation")) return "creation-center"
-    return ""
-  }, [pathname])
+    let id = ""
+    if (path.startsWith("/video-effects")) id = "ai-video-effects"
+    else if (path.startsWith("/image-effects")) id = "image-effects"
+    else if (path.startsWith("/sound-generation")) id = "sound-generation"
+    else if (path.startsWith("/lip-sync")) id = "lip-sync"
+    else if (path.startsWith("/text-to-video")) id = "text-to-video"
+    else if (path.startsWith("/image-to-video")) id = "image-to-video"
+    else if (path.startsWith("/text-to-image")) id = "text-to-image"
+    else if (path.startsWith("/image-to-image")) id = "image-to-image"
+    else if (path.startsWith("/my-creations")) id = "assets"
+    else if (path.startsWith("/explore")) id = "explore"
+    else if (path === "/" || path.startsWith("/creation")) id = "creation-center"
+
+    if (!id) return ""
+    const exists = menuSections.some((section) => section.items.some((item) => item.id === id))
+    return exists ? id : ""
+  }, [pathname, menuSections])
 
   const [activeId, setActiveId] = useState<string>(activeIdFromPath || fallbackActiveId)
 

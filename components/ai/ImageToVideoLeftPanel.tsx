@@ -27,6 +27,8 @@ import { useRepromptStore } from "@/stores/repromptStore";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
@@ -84,6 +86,8 @@ export default function ImageToVideoLeftPanel() {
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.ImageToVideo");
   const commonT = useTranslations("CreationTools.Common");
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   const isTransitionModel = model === TRANSITION_MODEL;
   const videoModelConfig = useMemo(() => getVideoModelConfig(model), [model]);
@@ -239,6 +243,11 @@ export default function ImageToVideoLeftPanel() {
     const trimmedPrompt = prompt.trim();
 
     if (!trimmedPrompt || disableSubmit) {
+      return;
+    }
+
+    if (!user) {
+      openAuthDialog("signin");
       return;
     }
 
@@ -456,6 +465,7 @@ export default function ImageToVideoLeftPanel() {
     isImageMode,
     mode,
     model,
+    openAuthDialog,
     outroImage,
     prompt,
     removeHistoryItem,
@@ -463,6 +473,7 @@ export default function ImageToVideoLeftPanel() {
     translatePrompt,
     resolution,
     upsertHistoryItem,
+    user,
     videoLength,
     videoModelConfig,
     uploadedImage,

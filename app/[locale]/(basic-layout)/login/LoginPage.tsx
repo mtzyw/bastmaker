@@ -25,9 +25,15 @@ type LoginPageProps = {
   variant?: LoginPageVariant;
   mode?: LoginPageMode;
   onRequestSwitchMode?: SwitchHandler;
+  redirectPath?: string;
 };
 
-export default function LoginPage({ variant = "page", mode = "signup", onRequestSwitchMode }: LoginPageProps = {}) {
+export default function LoginPage({
+  variant = "page",
+  mode = "signup",
+  onRequestSwitchMode,
+  redirectPath,
+}: LoginPageProps = {}) {
   const router = useRouter();
   const { user, signInWithGoogle } = useAuth();
 
@@ -47,13 +53,13 @@ export default function LoginPage({ variant = "page", mode = "signup", onRequest
 
   const t = useTranslations("Login");
   const searchParams = useSearchParams();
-  const next = searchParams.get("next");
+  const next = redirectPath ?? searchParams.get("next") ?? undefined;
 
   useEffect(() => {
     if (user) {
-      router.replace("/");
+      router.replace(next || "/");
     }
-  }, [user, router]);
+  }, [user, router, next]);
 
   useEffect(() => {
     if (resendSeconds <= 0) return;

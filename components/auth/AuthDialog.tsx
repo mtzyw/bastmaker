@@ -14,6 +14,7 @@ type AuthDialogProps = {
   onOpenChange: (open: boolean) => void;
   initialTab?: AuthDialogTab;
   footerSlot?: ReactNode;
+  redirectPath?: string;
 };
 
 export function AuthDialog({
@@ -21,6 +22,7 @@ export function AuthDialog({
   onOpenChange,
   initialTab = "signin",
   footerSlot,
+  redirectPath,
 }: AuthDialogProps) {
   const t = useTranslations("Login");
   const [activeTab, setActiveTab] = useState<AuthDialogTab>(initialTab);
@@ -78,12 +80,20 @@ export function AuthDialog({
             </div>
             <TabsContent value="signin" className="mt-6 focus-visible:outline-none">
               <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <SignInPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signup")} />
+                <SignInPage
+                  variant="dialog"
+                  onRequestSwitchMode={() => setActiveTab("signup")}
+                  redirectPath={redirectPath}
+                />
               </div>
             </TabsContent>
             <TabsContent value="signup" className="mt-6 focus-visible:outline-none">
               <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <LoginPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signin")} />
+                <LoginPage
+                  variant="dialog"
+                  onRequestSwitchMode={() => setActiveTab("signin")}
+                  redirectPath={redirectPath}
+                />
               </div>
             </TabsContent>
           </Tabs>
