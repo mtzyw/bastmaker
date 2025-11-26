@@ -51,7 +51,6 @@ type ViewerAction = keyof typeof ACTION_ROUTE_MAP;
 type ViewerBoardProps = {
   job: ViewerJob;
   shareUrl: string;
-  localePrefix?: string;
 };
 
 function getPrimaryAsset(assets: ViewerJobAsset[], fallbackUrl: string | null) {
@@ -77,7 +76,7 @@ function isAudioAsset(asset: ViewerJobAsset | null | undefined) {
   return asset?.type === "audio";
 }
 
-export function ViewerBoard({ job, shareUrl, localePrefix }: ViewerBoardProps) {
+export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const headerT = useTranslations("Viewer.header");
   const t = useTranslations("Viewer.details");
   const router = useRouter();
@@ -88,15 +87,14 @@ export function ViewerBoard({ job, shareUrl, localePrefix }: ViewerBoardProps) {
 
   const primaryAsset = getPrimaryAsset(job.assets, job.fallbackUrl);
   const referenceAssets = job.referenceAssets;
-  const localePrefixValue = localePrefix ?? "";
   const actionUrlMap = useMemo(() => {
     return {
-      "text-to-image": `${localePrefixValue}${ACTION_ROUTE_MAP["text-to-image"]}`,
-      "image-to-image": `${localePrefixValue}${ACTION_ROUTE_MAP["image-to-image"]}`,
-      "text-to-video": `${localePrefixValue}${ACTION_ROUTE_MAP["text-to-video"]}`,
-      "image-to-video": `${localePrefixValue}${ACTION_ROUTE_MAP["image-to-video"]}`,
+      "text-to-image": ACTION_ROUTE_MAP["text-to-image"],
+      "image-to-image": ACTION_ROUTE_MAP["image-to-image"],
+      "text-to-video": ACTION_ROUTE_MAP["text-to-video"],
+      "image-to-video": ACTION_ROUTE_MAP["image-to-video"],
     } satisfies Record<ViewerAction, string>;
-  }, [localePrefixValue]);
+  }, []);
   const defaultAction: ViewerAction = MODALITY_ACTION_MAP[job.modality ?? ""] ?? "text-to-image";
   const referenceImageUrls = useMemo(() => {
     const refs = job.referenceAssets

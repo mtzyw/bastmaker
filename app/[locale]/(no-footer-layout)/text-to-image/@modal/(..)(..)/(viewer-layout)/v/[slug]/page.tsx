@@ -74,7 +74,7 @@ export default async function ViewerModalPage({
   return (
     <ViewerModal>
       <div className="md:h-auto md:max-h-[80vh] md:overflow-auto">
-        <ViewerBoard job={job} shareUrl={absoluteShareUrl} localePrefix={localePrefix} />
+        <ViewerBoard job={job} shareUrl={absoluteShareUrl} />
       </div>
     </ViewerModal>
   );

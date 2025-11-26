@@ -2212,10 +2212,7 @@ export default function TextToImageRecentTasks({
             ) : viewerJob ? (
               <ViewerBoard
                 job={viewerJob}
-                shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${
-                  localePrefix
-                }/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
-                localePrefix={localePrefix}
+                shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${localePrefix}/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
               />
             ) : (
               <div className="flex h-[40vh] w-full items-center justify-center text-white/60">
