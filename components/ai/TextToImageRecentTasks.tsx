@@ -51,7 +51,7 @@ import { siteConfig } from "@/config/site";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
-import { downloadBase64File, downloadFile, downloadViaProxy } from "@/lib/downloadFile";
+import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
 
 const CATEGORY_KEYS = ["全部", "视频", "图片", "特效", "音效"] as const;
 type CategoryFilter = typeof CATEGORY_KEYS[number];
@@ -490,6 +490,7 @@ export default function TextToImageRecentTasks({
       : normalizedCategories[0] ?? "全部";
   }, [initialCategory, normalizedCategories]);
   const locale = useLocale();
+  const localePrefix = useMemo(() => (locale === DEFAULT_LOCALE ? "" : `/${locale}`), [locale]);
   const router = useRouter();
   const historyT = useTranslations("CreationHistory");
   const promptLabel = historyT("labels.prompt");
@@ -868,25 +869,12 @@ export default function TextToImageRecentTasks({
         return;
       }
 
-      if (variant === "watermark") {
-        const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id });
-        if (!proxied) {
-          toast.error(historyT("messages.downloadFailed"));
-        }
-        return;
-      }
-
-      const downloaded = await downloadFile(trimmedUrl, fileName);
-      if (downloaded) {
-        return;
-      }
-
-      const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id });
+      const proxied = await downloadViaProxy(trimmedUrl, fileName, { taskId: task.id, variant });
       if (!proxied) {
-        window.open(trimmedUrl, "_blank", "noopener");
+        toast.error(historyT("messages.downloadFailed"));
       }
     },
-    [closeDownloadMenu, resolveDownloadTargets, downloadFile, downloadViaProxy]
+    [closeDownloadMenu, resolveDownloadTargets, downloadViaProxy]
   );
 
   const handleRegenerate = useCallback(
@@ -2225,8 +2213,9 @@ export default function TextToImageRecentTasks({
               <ViewerBoard
                 job={viewerJob}
                 shareUrl={`${typeof window !== "undefined" ? window.location.origin : siteConfig.url}${
-                  locale === DEFAULT_LOCALE ? "" : `/${locale}`
+                  localePrefix
                 }/v/${viewerJob.shareSlug ?? viewerJob.id}?source=share`}
+                localePrefix={localePrefix}
               />
             ) : (
               <div className="flex h-[40vh] w-full items-center justify-center text-white/60">

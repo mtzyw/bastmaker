@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import Image from "next/image";
 import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Link as I18nLink } from "@/i18n/routing";
+import { Link as I18nLink, useRouter } from "@/i18n/routing";
 import {
   Heart,
   Link as LinkIcon,
@@ -25,12 +25,33 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AudioPlayer from "@/components/audio-player";
+import { useRepromptStore } from "@/stores/repromptStore";
+import type { RepromptDraft } from "@/lib/ai/creation-retry";
+import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
+import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
 
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
+
+const ACTION_ROUTE_MAP = {
+  "text-to-image": "/text-to-image",
+  "image-to-image": "/image-to-image",
+  "text-to-video": "/text-to-video",
+  "image-to-video": "/image-to-video",
+} as const;
+
+const MODALITY_ACTION_MAP: Record<string, ViewerAction> = {
+  t2i: "text-to-image",
+  i2i: "image-to-image",
+  t2v: "text-to-video",
+  i2v: "image-to-video",
+};
+
+type ViewerAction = keyof typeof ACTION_ROUTE_MAP;
 
 type ViewerBoardProps = {
   job: ViewerJob;
   shareUrl: string;
+  localePrefix?: string;
 };
 
 function getPrimaryAsset(assets: ViewerJobAsset[], fallbackUrl: string | null) {
@@ -56,15 +77,106 @@ function isAudioAsset(asset: ViewerJobAsset | null | undefined) {
   return asset?.type === "audio";
 }
 
-export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
+export function ViewerBoard({ job, shareUrl, localePrefix }: ViewerBoardProps) {
   const headerT = useTranslations("Viewer.header");
   const t = useTranslations("Viewer.details");
+  const router = useRouter();
+  const setRepromptDraft = useRepromptStore((state) => state.setDraft);
 
   const createdAtLabel = useMemo(() => dayjs(job.createdAt).format(DATE_FORMAT), [job.createdAt]);
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
 
   const primaryAsset = getPrimaryAsset(job.assets, job.fallbackUrl);
   const referenceAssets = job.referenceAssets;
+  const localePrefixValue = localePrefix ?? "";
+  const actionUrlMap = useMemo(() => {
+    return {
+      "text-to-image": `${localePrefixValue}${ACTION_ROUTE_MAP["text-to-image"]}`,
+      "image-to-image": `${localePrefixValue}${ACTION_ROUTE_MAP["image-to-image"]}`,
+      "text-to-video": `${localePrefixValue}${ACTION_ROUTE_MAP["text-to-video"]}`,
+      "image-to-video": `${localePrefixValue}${ACTION_ROUTE_MAP["image-to-video"]}`,
+    } satisfies Record<ViewerAction, string>;
+  }, [localePrefixValue]);
+  const defaultAction: ViewerAction = MODALITY_ACTION_MAP[job.modality ?? ""] ?? "text-to-image";
+  const referenceImageUrls = useMemo(() => {
+    const refs = job.referenceAssets
+      .filter((asset) => asset.type === "image" && typeof asset.url === "string" && asset.url.length > 0)
+      .map((asset) => asset.url);
+    if (refs.length === 0) {
+      const fallback = job.assets.find((asset) => asset.type === "image" && asset.url);
+      if (fallback?.url) {
+        refs.push(fallback.url);
+      }
+    }
+    return refs;
+  }, [job.referenceAssets, job.assets]);
+  const primaryImageForVideo = referenceImageUrls[0] ?? primaryAsset?.url ?? null;
+
+  const buildDraftForAction = useCallback(
+    (action: ViewerAction): RepromptDraft => {
+      const prompt = job.prompt ?? "";
+      const translatePrompt = false;
+      const isImageJob = job.modality === "t2i" || job.modality === "i2i";
+      const isVideoJob = job.modality === "t2v" || job.modality === "i2v";
+      const imageModel = isImageJob ? job.modelLabel ?? undefined : undefined;
+      const videoModel = isVideoJob ? job.modelLabel ?? undefined : undefined;
+
+      if (action === "text-to-image") {
+        return {
+          kind: "text-to-image",
+          route: "/text-to-image",
+          prompt,
+          translatePrompt,
+          model: imageModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL,
+        };
+      }
+
+      if (action === "image-to-image") {
+        return {
+          kind: "image-to-image",
+          route: "/image-to-image",
+          prompt,
+          translatePrompt,
+          model: imageModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL,
+          referenceImageUrls,
+        };
+      }
+
+      if (action === "text-to-video") {
+        return {
+          kind: "text-to-video",
+          route: "/text-to-video",
+          prompt,
+          translatePrompt,
+          model: videoModel ?? DEFAULT_VIDEO_MODEL,
+        };
+      }
+
+      return {
+        kind: "image-to-video",
+        route: "/image-to-video",
+        prompt,
+        translatePrompt,
+        model: videoModel ?? DEFAULT_VIDEO_MODEL,
+        mode: "image",
+        primaryImageUrl: primaryImageForVideo ?? undefined,
+      };
+    },
+    [job.prompt, job.modality, job.modelLabel, referenceImageUrls, primaryImageForVideo]
+  );
+
+  const handleActionNavigate = useCallback(
+    (action: ViewerAction, overrideUrl?: string) => {
+      const targetUrl = overrideUrl ?? actionUrlMap[action];
+      if (!targetUrl) {
+        return;
+      }
+      const draft = buildDraftForAction(action);
+      setRepromptDraft(draft);
+      router.push(targetUrl);
+    },
+    [actionUrlMap, buildDraftForAction, router, setRepromptDraft]
+  );
 
   const renderPrimaryAsset = useMemo(() => {
     if (!primaryAsset) {
@@ -330,19 +442,35 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
             <h4 className="text-sm font-semibold text-white">{t("generateCTA", { default: "Create Similar Image" })}</h4>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+              <Button
+                variant="outline"
+                className="h-10 justify-start border-white/10 bg-transparent text-white"
+                onClick={() => handleActionNavigate("text-to-image")}
+              >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 {t("actions.textToImage", { default: "Text to Image" })}
               </Button>
-              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+              <Button
+                variant="outline"
+                className="h-10 justify-start border-white/10 bg-transparent text-white"
+                onClick={() => handleActionNavigate("image-to-image")}
+              >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 {t("actions.imageToImage", { default: "Image to Image" })}
               </Button>
-              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+              <Button
+                variant="outline"
+                className="h-10 justify-start border-white/10 bg-transparent text-white"
+                onClick={() => handleActionNavigate("text-to-video")}
+              >
                 <Video className="mr-2 h-4 w-4" />
                 {t("actions.textToVideo", { default: "Text to Video" })}
               </Button>
-              <Button variant="outline" className="h-10 justify-start border-white/10 bg-transparent text-white">
+              <Button
+                variant="outline"
+                className="h-10 justify-start border-white/10 bg-transparent text-white"
+                onClick={() => handleActionNavigate("image-to-video")}
+              >
                 <Video className="mr-2 h-4 w-4" />
                 {t("actions.imageToVideo", { default: "Image to Video" })}
               </Button>
@@ -368,7 +496,10 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
-              <Button className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 sm:min-w-[160px]">
+              <Button
+                className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 sm:min-w-[160px]"
+                onClick={() => handleActionNavigate(defaultAction)}
+              >
                 {t("generateCTA", { default: "Create Similar Image" })}
               </Button>
             </div>

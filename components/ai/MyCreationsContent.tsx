@@ -606,6 +606,7 @@ export function MyCreationsContent({
             <ViewerBoard
               job={viewerJob}
               shareUrl={viewerShareUrl ?? `${siteConfig.url}${localePrefix}/v/${viewerJob.shareSlug ?? viewerJob.id}`}
+              localePrefix={localePrefix}
             />
           ) : (
             <div className="flex h-[40vh] w-full items-center justify-center text-white/60">

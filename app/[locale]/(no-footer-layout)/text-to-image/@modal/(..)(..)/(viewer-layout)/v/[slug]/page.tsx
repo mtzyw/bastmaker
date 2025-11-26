@@ -45,7 +45,8 @@ export default async function ViewerModalPage({
   }
 
   const resolvedShareSlug = job.shareSlug || slug;
-  const sharePath = `${locale === DEFAULT_LOCALE ? "" : `/${locale}`}/v/${resolvedShareSlug}`;
+  const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+  const sharePath = `${localePrefix}/v/${resolvedShareSlug}`;
   const absoluteShareUrl = `${siteConfig.url}${sharePath}?${SHARE_REFERER_QUERY_KEY}=${SHARE_REFERER_QUERY_VALUE}`;
 
   const sourceParam = resolvedSearch?.[SHARE_REFERER_QUERY_KEY];
@@ -73,7 +74,7 @@ export default async function ViewerModalPage({
   return (
     <ViewerModal>
       <div className="md:h-auto md:max-h-[80vh] md:overflow-auto">
-        <ViewerBoard job={job} shareUrl={absoluteShareUrl} />
+        <ViewerBoard job={job} shareUrl={absoluteShareUrl} localePrefix={localePrefix} />
       </div>
     </ViewerModal>
   );

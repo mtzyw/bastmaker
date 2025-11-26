@@ -21,6 +21,7 @@ export type ViewerJob = {
   shareSlug: string;
   modality: string | null;
   modalityLabel: string | null;
+  modelSlug: string | null;
   modelLabel: string | null;
   title: string | null;
   summary: string | null;
@@ -248,6 +249,7 @@ export async function getViewerJobBySlug(
     shareSlug: job.share_slug ?? slug,
     modality: job.modality_code ?? null,
     modalityLabel,
+    modelSlug: job.model_slug_at_submit ?? null,
     modelLabel,
     title: job.public_title,
     summary: job.public_summary,

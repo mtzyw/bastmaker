@@ -108,7 +108,8 @@ export default async function ViewerPage({
     i2v: "/image-to-video",
   };
   const viewerBasePath = modalityPathMap[job.modality ?? ""] ?? "/text-to-image";
-  const generateUrl = `${locale === DEFAULT_LOCALE ? "" : `/${locale}`}${viewerBasePath}`;
+  const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+  const generateUrl = `${localePrefix}${viewerBasePath}`;
 
   const sourceParam = resolvedSearch?.[SHARE_REFERER_QUERY_KEY];
   const isShareVisit = Array.isArray(sourceParam)
@@ -136,7 +137,7 @@ export default async function ViewerPage({
     <>
       <ViewerHeader job={job} shareUrl={absoluteShareUrl} generateUrl={generateUrl} />
       <main className="px-4 pb-12 pt-4 sm:px-6">
-        <ViewerBoard job={job} shareUrl={absoluteShareUrl} />
+        <ViewerBoard job={job} shareUrl={absoluteShareUrl} localePrefix={localePrefix} />
       </main>
     </>
   );
