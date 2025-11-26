@@ -6,6 +6,7 @@ import ToltScript from "@/app/ToltScript";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import { LanguageDetectionAlert } from "@/components/LanguageDetectionAlert";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AuthDialogProvider } from "@/components/providers/AuthDialogProvider";
 import { TailwindIndicator } from "@/components/TailwindIndicator";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/config/site";
@@ -86,21 +87,23 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       >
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme={siteConfig.defaultNextTheme}
-              enableSystem
-            >
-              {messages.LanguageDetection && <LanguageDetectionAlert />}
+            <AuthDialogProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme={siteConfig.defaultNextTheme}
+                enableSystem
+              >
+                {messages.LanguageDetection && <LanguageDetectionAlert />}
 
-              {/* {messages.Header && <Header />} */}
+                {/* {messages.Header && <Header />} */}
 
-              {/* <main className="flex-1 flex flex-col items-center"> */}
-              {children}
-              {/* </main> */}
+                {/* <main className="flex-1 flex flex-col items-center"> */}
+                {children}
+                {/* </main> */}
 
-              {/* {messages.Footer && <Footer />} */}
-            </ThemeProvider>
+                {/* {messages.Footer && <Footer />} */}
+              </ThemeProvider>
+            </AuthDialogProvider>
           </AuthProvider>
         </NextIntlClientProvider>
         <GoogleOneTap />

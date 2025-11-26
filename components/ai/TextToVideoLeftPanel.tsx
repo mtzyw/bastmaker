@@ -27,6 +27,8 @@ import {
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -64,6 +66,8 @@ export default function TextToVideoLeftPanel() {
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.TextToVideo");
   const commonT = useTranslations("CreationTools.Common");
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   const hasValidModel = useMemo(
     () => textToVideoOptions.some((option) => option.value === model),
@@ -173,6 +177,11 @@ export default function TextToVideoLeftPanel() {
     const trimmedPrompt = prompt.trim();
 
     if (!trimmedPrompt || isSubmitting) {
+      return;
+    }
+
+    if (!user) {
+      openAuthDialog("signin");
       return;
     }
 
@@ -354,6 +363,8 @@ export default function TextToVideoLeftPanel() {
     videoModelConfig,
     isPublic,
     commonT,
+    user,
+    openAuthDialog,
   ]);
 
   return (

@@ -16,12 +16,9 @@ import { useRouter } from "@/i18n/routing";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
-import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode, type ReactElement, isValidElement, cloneElement, MouseEvent } from "react";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 type Menu = {
   name: string;
@@ -278,71 +275,35 @@ export function AuthDialogTrigger({
   triggerElement,
 }: AuthDialogTriggerProps) {
   const t = useTranslations("Login");
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">(initialTab);
-  const [open, setOpen] = useState(false);
+  const { openAuthDialog } = useAuthDialog();
 
-  useEffect(() => {
-    if (!open) {
-      setActiveTab(initialTab);
-    }
-  }, [open, initialTab]);
+  const handleOpen = () => {
+    openAuthDialog(initialTab);
+  };
 
-  const defaultTrigger = (
+  if (triggerElement && isValidElement(triggerElement)) {
+    const element = triggerElement as ReactElement;
+    return cloneElement(element, {
+      onClick: (event: MouseEvent<HTMLElement>) => {
+        if (typeof element.props.onClick === "function") {
+          element.props.onClick(event);
+        }
+        if (!event.defaultPrevented) {
+          handleOpen();
+        }
+      },
+    });
+  }
+
+  return (
     <Button
       variant="outline"
+      onClick={handleOpen}
       className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
         mobile ? "w-full" : ""
       }`}
     >
       {t("Button.signIn")}
     </Button>
-  );
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {triggerElement ?? defaultTrigger}
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl border-none bg-transparent p-0 text-white shadow-none md:max-h-[90vh]">
-        <DialogTitle className="sr-only">Authentication Dialog</DialogTitle>
-        <div className="rounded-[28px] border border-white/10 bg-[#050505]/95 p-4 sm:p-4.5 md:p-5">
-          <div className="space-y-1 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/50">Bestmaker</p>
-            <h2 className="text-lg font-semibold tracking-tight text-white md:text-xl">
-              {t("Button.signIn")} / {t("Button.signUp")}
-            </h2>
-            <p className="text-xs text-white/65">登录查看创作记录，注册即可领取新人积分。</p>
-          </div>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="mt-5 w-full text-white">
-            <div className="flex w-full justify-center">
-              <TabsList className="flex w-full max-w-[380px] items-center justify-center gap-2 rounded-2xl bg-white/5 p-1 text-white">
-                <TabsTrigger
-                  value="signin"
-                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/80 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
-                >
-                  {t("Button.signIn")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="signup"
-                  className="flex-1 rounded-xl px-4 py-1.5 text-xs font-semibold text-white/80 transition data-[state=active]:bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] data-[state=active]:text-white data-[state=active]:shadow-lg md:text-sm"
-                >
-                  {t("Button.signUp")}
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="signin" className="mt-6 focus-visible:outline-none">
-              <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <SignInPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signup")} />
-              </div>
-            </TabsContent>
-            <TabsContent value="signup" className="mt-6 focus-visible:outline-none">
-              <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <LoginPage variant="dialog" onRequestSwitchMode={() => setActiveTab("signin")} />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
