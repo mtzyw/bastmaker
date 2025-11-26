@@ -21,6 +21,8 @@ import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -58,6 +60,8 @@ export default function ImageToImageLeftPanel({
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.ImageToImage");
   const commonT = useTranslations("CreationTools.Common");
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const referenceImagesRef = useRef<ReferenceImage[]>([]);
   const imageUploaderLabels = useMemo(() => ({
     title: t("imageUploader.title"),
@@ -316,6 +320,11 @@ export default function ImageToImageLeftPanel({
       return;
     }
 
+    if (!user) {
+      openAuthDialog("signin");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
     setStatusMessage(null);
@@ -490,6 +499,8 @@ export default function ImageToImageLeftPanel({
     upsertHistoryItem,
     isPublic,
     commonT,
+    user,
+    openAuthDialog,
   ]);
 
   return (

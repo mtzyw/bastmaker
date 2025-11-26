@@ -15,6 +15,8 @@ import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 const MIN_DURATION = 0.5;
 const MAX_DURATION = 22;
@@ -31,6 +33,8 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
   const t = useTranslations("CreationTools.SoundGeneration");
   const commonT = useTranslations("CreationTools.Common");
   const panelTitle = title ?? t("title");
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   const modelConfig = useMemo(
     () => getSoundEffectModelConfig(DEFAULT_SOUND_EFFECT_MODEL),
@@ -80,6 +84,11 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt || isSubmitting) {
+      return;
+    }
+
+    if (!user) {
+      openAuthDialog("signin");
       return;
     }
 
@@ -241,6 +250,8 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
     removeHistoryItem,
     isPublic,
     commonT,
+    user,
+    openAuthDialog,
   ]);
 
   const handleDurationChange = (value: number) => {

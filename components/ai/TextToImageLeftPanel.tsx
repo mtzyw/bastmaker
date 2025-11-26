@@ -21,6 +21,8 @@ import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -45,6 +47,8 @@ export default function TextToImageLeftPanel({
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.TextToImage");
   const commonT = useTranslations("CreationTools.Common");
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -121,6 +125,11 @@ export default function TextToImageLeftPanel({
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt || isSubmitting) {
+      return;
+    }
+
+    if (!user) {
+      openAuthDialog("signin");
       return;
     }
 
@@ -276,6 +285,8 @@ export default function TextToImageLeftPanel({
     upsertHistoryItem,
     removeHistoryItem,
     commonT,
+    user,
+    openAuthDialog,
   ]);
 
   return (
