@@ -8,7 +8,7 @@ export type MyCreationsFilterOption = {
 };
 
 type MyCreationsFilterTabsProps = {
-  options: MyCreationsFilterOption[];
+  options: ReadonlyArray<MyCreationsFilterOption>;
   value: string;
   onChange?: (value: string) => void;
 };

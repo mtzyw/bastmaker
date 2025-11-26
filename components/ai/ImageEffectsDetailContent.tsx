@@ -55,6 +55,11 @@ type FeatureItem = {
   ctaHref: string;
 };
 
+type GalleryItem = {
+  title: string;
+  description?: string;
+};
+
 type FaqItem = {
   question: string;
   answer: string;
@@ -90,7 +95,7 @@ export function ImageEffectsDetailContent({
   const gallerySubheading =
     copy?.gallery?.subheading ??
     "查看不同风格的生成案例，快速评估模板是否适合你的项目。";
-  const galleryItems =
+  const galleryItems: GalleryItem[] =
     copy?.galleryItems ??
     legacyContent?.GALLERY_ITEMS?.map((item: any) => ({
       title: item.title,

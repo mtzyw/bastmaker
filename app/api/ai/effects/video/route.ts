@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
   const {
     providerModel: apiModel,
     metadata,
-    pricing_credits_override,
+    pricingCreditsOverride,
     providerCode,
     slug,
     title,
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  const effectiveCreditsCost = pricing_credits_override ?? 25;
+  const effectiveCreditsCost = pricingCreditsOverride ?? 25;
   const modalityCode = imageParam && payload[imageParam] ? "i2v" : "t2v";
 
   const metadataJsonForJob = {

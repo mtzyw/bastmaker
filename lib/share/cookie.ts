@@ -1,5 +1,8 @@
 import crypto from 'crypto';
-import { cookies, type RequestCookies } from 'next/headers';
+import { cookies } from 'next/headers';
+
+export type CookieStore = Awaited<ReturnType<typeof cookies>>;
+export type CookieStoreLike = CookieStore | PromiseLike<CookieStore>;
 
 import {
   SHARE_ATTRIBUTION_COOKIE,
@@ -93,14 +96,14 @@ function verifyToken(token: string): ShareAttributionPayload | null {
   };
 }
 
-async function getCookieStore(store?: RequestCookies) {
+async function getCookieStore(store?: CookieStoreLike) {
   if (store) return store;
   return cookies();
 }
 
 export async function setShareAttributionCookie(
   basePayload: ShareAttributionBase,
-  options?: { maxAge?: number; store?: RequestCookies }
+  options?: { maxAge?: number; store?: CookieStoreLike }
 ) {
   const maxAge = options?.maxAge ?? SHARE_ATTRIBUTION_COOKIE_MAX_AGE;
   const now = Date.now();
@@ -130,7 +133,7 @@ export async function setShareAttributionCookie(
   });
 }
 
-export async function clearShareAttributionCookie(store?: RequestCookies) {
+export async function clearShareAttributionCookie(store?: CookieStoreLike) {
   const cookieStore = await getCookieStore(store);
   cookieStore.set({
     name: SHARE_ATTRIBUTION_COOKIE,
@@ -140,7 +143,7 @@ export async function clearShareAttributionCookie(store?: RequestCookies) {
   });
 }
 
-export async function getShareAttributionCookie(store?: RequestCookies) {
+export async function getShareAttributionCookie(store?: CookieStoreLike) {
   try {
     const cookieStore = await getCookieStore(store);
     const token = cookieStore.get(SHARE_ATTRIBUTION_COOKIE)?.value;

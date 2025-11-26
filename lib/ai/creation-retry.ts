@@ -12,7 +12,12 @@ export type RegenerationResultPayload = {
 };
 
 export type RegenerationPlan = {
-  endpoint: "/api/ai/freepik/tasks" | "/api/ai/freepik/video" | "/api/ai/freepik/sound" | "/api/ai/effects/video";
+  endpoint:
+    | "/api/ai/freepik/tasks"
+    | "/api/ai/freepik/video"
+    | "/api/ai/freepik/sound"
+    | "/api/ai/effects/video"
+    | "/api/ai/effects/image";
   payload: Record<string, unknown>;
   optimisticItem: CreationItem;
   buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
@@ -954,7 +959,7 @@ function makeBaseOptimisticItem(
     referenceImageCount: number;
   }
 ): CreationItem {
-  const metadata = {
+  const metadata: Record<string, any> = {
     ...cloneRecord(original.metadata ?? {}),
     ...overrides.metadata,
     credits_cost: overrides.costCredits ?? original.costCredits ?? overrides.metadata?.["credits_cost"] ?? 0,
@@ -1004,7 +1009,7 @@ function buildPersistedFromOptimistic(
   const normalizedLatest = getString(result.freepikStatus ?? result.status) ?? normalizedStatus;
   const creditsCost = typeof result.creditsCost === "number" ? result.creditsCost : optimistic.costCredits;
 
-  const metadata = {
+  const metadata: Record<string, any> = {
     ...cloneRecord(optimistic.metadata),
     ...cloneRecord(extras?.metadata ?? {}),
     freepik_latest_status: normalizedLatest,

@@ -1,12 +1,15 @@
-import type { RequestCookies } from "next/headers";
-
 import { incrementAiJobShareConversion } from "@/actions/ai-jobs/public";
 import { shareRewardConfig, SHARE_REWARD_INVITEE_LOG_TYPE, SHARE_REWARD_OWNER_LOG_TYPE } from "@/config/share";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
-import { getShareAttributionCookie, clearShareAttributionCookie } from "@/lib/share/cookie";
+import {
+  getShareAttributionCookie,
+  clearShareAttributionCookie,
+  type CookieStoreLike,
+} from "@/lib/share/cookie";
+import type { Json } from "@/lib/supabase/types";
 
 type ConsumeOptions = {
-  store?: RequestCookies;
+  store?: CookieStoreLike;
 };
 
 export type ShareConsumptionResult = {
@@ -76,7 +79,7 @@ export async function consumeShareAttributionForUser(
       const { error } = await supabase.rpc("grant_share_reward_and_log", {
         p_user_id: payload.ownerId,
         p_credits_to_add: ownerCredits,
-        p_related_job_id: null,
+        p_related_job_id: payload.jobId ?? payload.shareSlug ?? "",
         p_log_type: SHARE_REWARD_OWNER_LOG_TYPE,
         p_notes: notes,
       });
@@ -90,7 +93,7 @@ export async function consumeShareAttributionForUser(
       const { error } = await supabase.rpc("grant_share_reward_and_log", {
         p_user_id: userId,
         p_credits_to_add: inviteeCredits,
-        p_related_job_id: null,
+        p_related_job_id: payload.jobId ?? payload.shareSlug ?? "",
         p_log_type: SHARE_REWARD_INVITEE_LOG_TYPE,
         p_notes: notes,
       });
@@ -153,7 +156,7 @@ export async function consumeShareAttributionForUser(
     return { consumed: false, reason: "max_reached" };
   }
 
-  const metadata = {
+  const metadata: Json = {
     shareSlug: job.share_slug ?? payload.shareSlug,
     locale: payload.locale,
     source: payload.source,
@@ -302,7 +305,7 @@ export async function consumeShareAttributionForUser(
 async function markConversionDismissed(
   client: ReturnType<typeof getServiceRoleClient>,
   conversionId: string,
-  metadata: Record<string, unknown>
+  metadata: Json
 ) {
   await client
     .from("job_share_conversions")

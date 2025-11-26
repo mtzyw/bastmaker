@@ -45,6 +45,7 @@ interface JobInfo {
 }
 
 const FEATURE_KEY = "multi_image_kontext_pro";
+const FEATURE_DISABLED = true;
 
 const UploadBox = ({
   getRootProps,
@@ -134,17 +135,6 @@ const UploadBox = ({
 );
 
 export default function MultiImageKontextProClient() {
-  const locale = useLocale();
-  const {
-    benefits,
-    optimisticDeduct,
-    mutate: revalidateBenefits,
-  } = useUserBenefits();
-  const { user } = useAuth();
-  const router = useRouter();
-  const galleryRef = useRef<any>(null);
-  const t = useTranslations("MultiImageKontextPro.client");
-  const FEATURE_DISABLED = true;
   if (FEATURE_DISABLED) {
     return (
       <section className="container mx-auto px-4 py-10">
@@ -155,6 +145,21 @@ export default function MultiImageKontextProClient() {
       </section>
     );
   }
+
+  return <MultiImageKontextProClientContent />;
+}
+
+function MultiImageKontextProClientContent() {
+  const locale = useLocale();
+  const {
+    benefits,
+    optimisticDeduct,
+    mutate: revalidateBenefits,
+  } = useUserBenefits();
+  const { user } = useAuth();
+  const router = useRouter();
+  const galleryRef = useRef<any>(null);
+  const t = useTranslations("MultiImageKontextPro.client");
 
   const [sourceImage1, setSourceImage1] = useState<string | null>(null);
   const [sourceImageUrl1, setSourceImageUrl1] = useState<string | null>(null);

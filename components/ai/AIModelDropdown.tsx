@@ -88,9 +88,9 @@ export function AIModelDropdown({
       >
         <div className="flex items-center gap-2.5 text-left">
           <div className={cn("flex items-center justify-center", selectedIconWrapperClass)}>
-            {selectedHasImage ? (
+            {selectedHasImage && selectedIcon?.src ? (
               <Image
-                src={selectedOption.icon.src}
+                src={selectedIcon.src}
                 alt={`${selectedOption.label} icon`}
                 width={28}
                 height={28}
@@ -163,9 +163,9 @@ export function AIModelDropdown({
                   aria-selected={isActive}
                 >
                   <span className={optionIconWrapperClass}>
-                    {optionHasImage ? (
+                    {optionHasImage && optionIcon?.src ? (
                       <Image
-                        src={option.icon.src}
+                        src={optionIcon.src}
                         alt={`${option.label} icon`}
                         width={16}
                         height={16}

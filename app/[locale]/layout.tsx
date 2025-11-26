@@ -50,13 +50,12 @@ export const viewport: Viewport = {
   themeColor: siteConfig.themeColors,
 };
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
+type LocaleLayoutProps = {
   children: React.ReactNode;
-  params: { locale: string };
-}) {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const { locale } = await params;
 
   // Ensure that the incoming `locale` is valid

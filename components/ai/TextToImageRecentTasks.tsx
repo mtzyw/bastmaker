@@ -94,6 +94,7 @@ type DisplayTask = {
   shareConversions: number;
   effectSlug?: string | null;
   effectTitle?: string | null;
+  metadataSource?: string | null;
 };
 
 function getMediaUrl(media?: TaskMedia) {
@@ -302,7 +303,7 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
       kind: "image",
       url: imageOutput.url,
       thumbUrl: imageOutput.thumbUrl,
-      durationSeconds: imageOutput.duration ?? null,
+      durationSeconds: imageOutput.durationSeconds ?? null,
     };
   }
 
@@ -314,7 +315,7 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
       kind: "video",
       url: videoOutput.url,
       thumbUrl: videoOutput.thumbUrl,
-      durationSeconds: videoOutput.duration ?? null,
+      durationSeconds: videoOutput.durationSeconds ?? null,
     };
   }
 
@@ -322,8 +323,8 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
     (output.type ?? "").toLowerCase().startsWith("audio")
   );
   if (audioOutput && audioOutput.url) {
-    const durationValue = Number.isFinite(audioOutput.duration ?? NaN)
-      ? Number(audioOutput.duration)
+    const durationValue = Number.isFinite(audioOutput.durationSeconds ?? NaN)
+      ? Number(audioOutput.durationSeconds)
       : Number.isFinite(job.metadata?.duration_seconds ?? NaN)
         ? Number(job.metadata?.duration_seconds)
         : Number.isFinite(job.inputParams?.duration_seconds ?? NaN)
@@ -342,7 +343,7 @@ function getPrimaryMedia(job: CreationItem): TaskMedia | undefined {
       kind: "unknown",
       url: fallback.url,
       thumbUrl: fallback.thumbUrl,
-      durationSeconds: fallback.duration ?? null,
+      durationSeconds: fallback.durationSeconds ?? null,
     };
   }
 
@@ -413,6 +414,11 @@ function mapJobRowToCreationItem(row: AiJobRow): CreationItem {
     seed: row.seed,
     isImageToImage,
     referenceImageCount,
+    shareSlug: row.share_slug,
+    shareVisitCount: row.share_visit_count ?? 0,
+    shareConversionCount: row.share_conversion_count ?? 0,
+    publicTitle: row.public_title ?? null,
+    publicSummary: row.public_summary ?? null,
   };
 }
 
@@ -423,6 +429,7 @@ function mapOutputRowToCreationOutput(row: AiJobOutputRow): CreationOutput {
     thumbUrl: row.thumb_url,
     type: row.type,
     createdAt: row.created_at,
+    durationSeconds: row.duration,
   };
 }
 
@@ -432,8 +439,10 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     typeof job.metadata?.effect_slug === "string" ? job.metadata.effect_slug : null;
   const effectTitle =
     typeof job.metadata?.effect_title === "string" ? job.metadata.effect_title : null;
+  const metadataSource =
+    typeof job.metadata?.source === "string" ? job.metadata.source : null;
   const promptValue = parsePrompt(job.inputParams?.prompt ?? job.inputParams?.text ?? job.metadata?.prompt);
-  const showPrompt = job.metadata?.source !== "lip-sync";
+  const showPrompt = metadataSource !== "lip-sync";
 
   return {
     id: job.jobId,
@@ -461,6 +470,7 @@ function toDisplayTask(job: CreationItem): DisplayTask {
     shareConversions: job.shareConversionCount,
     effectSlug,
     effectTitle,
+    metadataSource,
   };
 }
 
@@ -542,7 +552,7 @@ export default function TextToImageRecentTasks({
   const itemMap = useMemo(() => new Map(items.map((entry) => [entry.jobId, entry])), [items]);
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
   const [downloadMenuTaskId, setDownloadMenuTaskId] = useState<string | null>(null);
-  const downloadMenuCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const downloadMenuCloseTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const shouldShowCategoryFilter = normalizedCategories.length > 1;
 
   const fetchInFlightRef = useRef(false);
@@ -816,7 +826,7 @@ export default function TextToImageRecentTasks({
       clearDownloadMenuCloseTimeout();
       downloadMenuCloseTimeoutRef.current = window.setTimeout(() => {
         closeDownloadMenu(taskId);
-      }, 120);
+      }, 120) as unknown as ReturnType<typeof setTimeout>;
     },
     [clearDownloadMenuCloseTimeout, closeDownloadMenu]
   );
@@ -992,7 +1002,7 @@ export default function TextToImageRecentTasks({
       }
 
       try {
-        const modalityCodes = CATEGORY_MODALITY_MAP[activeCategory];
+        const modalityCodes = CATEGORY_MODALITY_MAP[CATEGORY_KEY_MAP[activeCategory]];
         const result = await getUserCreationsHistory({
           pageIndex: page,
           pageSize: PAGE_SIZE,
@@ -1015,10 +1025,11 @@ export default function TextToImageRecentTasks({
           return;
         }
 
-        mergeItems(result.data?.items ?? []);
+        const data = (result.data ?? {}) as { items?: CreationItem[]; hasMore?: boolean };
+        mergeItems(data.items ?? []);
         setError(null);
         setIsUnauthorized(false);
-        setHasMore(Boolean(result.data?.hasMore));
+        setHasMore(Boolean(data.hasMore));
         setPageIndex(page);
       } catch (err: any) {
         if (signal?.aborted) {
@@ -1129,6 +1140,9 @@ export default function TextToImageRecentTasks({
             }
             const row = payload.new as AiJobOutputRow | null;
             if (!row) {
+              return;
+            }
+            if (!row.job_id) {
               return;
             }
             appendOutput(row.job_id, mapOutputRowToCreationOutput(row));
@@ -1887,7 +1901,7 @@ export default function TextToImageRecentTasks({
               </header>
 
               <div className="space-y-2">
-                {!task.effectSlug && task.metadata?.source !== "lip-sync" && (
+                {!task.effectSlug && task.metadataSource !== "lip-sync" && (
                   <>
                       {task.prompt ? (
                         <p className="text-sm text-white/70 leading-relaxed">

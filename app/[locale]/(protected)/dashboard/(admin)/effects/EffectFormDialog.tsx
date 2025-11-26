@@ -140,7 +140,7 @@ export const EffectFormDialog = ({ isOpen, onOpenChange, effectToEdit }: EffectF
       onOpenChange(false); // Close dialog
       router.refresh(); // Refresh server components on the page
     } else {
-      toast.error(result.message || 'An unknown error occurred.', { id: toastId });
+      toast.error(result.error || 'An unknown error occurred.', { id: toastId });
       console.error(result.error);
     }
 

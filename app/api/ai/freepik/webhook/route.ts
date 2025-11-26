@@ -1,7 +1,7 @@
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
 import { formatProviderError } from "@/lib/ai/provider-error";
 import { refundCreditsForJob } from "@/lib/ai/job-finance";
-import { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -142,7 +142,9 @@ export async function POST(req: NextRequest) {
     | z.infer<typeof taskPayloadSchema>
     | { data: z.infer<typeof taskPayloadSchema> };
 
-  const task = "data" in parsedPayload ? parsedPayload.data : parsedPayload;
+  const task = ("data" in parsedPayload ? parsedPayload.data : parsedPayload) as z.infer<
+    typeof taskPayloadSchema
+  >;
   const providerTaskId = task.task_id ?? task.freepik_task_id ?? null;
 
   if (!providerTaskId) {
@@ -227,7 +229,7 @@ export async function POST(req: NextRequest) {
       : metadata.source === "sound" || metadata.modality_code === "t2a"
         ? "audio"
         : "image";
-  const updatedMetadata = {
+  const updatedMetadata: Record<string, any> = {
     ...metadata,
     freepik_latest_status: freepikStatus,
     freepik_last_event_at: new Date().toISOString(),
@@ -361,7 +363,7 @@ export async function POST(req: NextRequest) {
   await adminSupabase.from("ai_job_events").insert({
     job_id: job.id,
     event_type: `freepik_task_${internalStatus}`,
-    payload_json: json,
+    payload_json: json as Json,
   });
 
   return NextResponse.json({ success: true });

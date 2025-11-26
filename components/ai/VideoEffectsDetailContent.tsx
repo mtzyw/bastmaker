@@ -34,6 +34,11 @@ type FaqItem = {
   answer: string;
 };
 
+type GalleryItem = {
+  title: string;
+  description?: string;
+};
+
 function getSuggestedEffects(
   currentSlug: string,
   allEffects: VideoEffectTemplate[]
@@ -85,7 +90,7 @@ export function VideoEffectsDetailContent({
   const gallerySubheading =
     copy?.gallery?.subheading ??
     "探索更多灵感，快速切换到其他热门模板继续创作。";
-  const galleryItems =
+  const galleryItems: GalleryItem[] =
     copy?.galleryItems ??
     legacyContent?.GALLERY_ITEMS?.map((item: any) => ({
       title: item.title,

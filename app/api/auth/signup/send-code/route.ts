@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as React from "react";
 
 import { SignupOtpEmail } from "@/emails/signup-otp";
 import { siteConfig } from "@/config/site";
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
       from: `${fromName} <${fromEmail}>`,
       to: normalizedEmail,
       subject: `Bestmaker | Your verification code: ${code}`,
-      react: SignupOtpEmail({ code, email: normalizedEmail }),
+      react: React.createElement(SignupOtpEmail, { code, email: normalizedEmail }),
     });
 
     return NextResponse.json({ success: true });

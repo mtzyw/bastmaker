@@ -11,7 +11,7 @@ import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-fi
 import { apiResponse } from "@/lib/api-response";
 import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -438,7 +438,7 @@ export async function POST(req: NextRequest) {
     await adminSupabase.from("ai_job_events").insert({
       job_id: jobRecord.id,
       event_type: "freepik_image_effect_task_created",
-      payload_json: freepikResponse,
+      payload_json: freepikResponse as Json,
     });
 
     return apiResponse.success({

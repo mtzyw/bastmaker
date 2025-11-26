@@ -463,7 +463,7 @@ export default function TextToVideoLeftPanel() {
             className="mt-5"
             value={aspectRatio}
             options={aspectOptions}
-            onChange={setAspectRatio}
+            onChange={(value) => setAspectRatio(value as AspectRatio)}
             label={commonT("aspectRatioLabel")}
             description={t("aspectRatioDescription")}
           />

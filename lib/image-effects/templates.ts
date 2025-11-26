@@ -14,6 +14,7 @@ export type ImageEffectInputConfig = {
 
 export type ImageEffectPageContent = {
   mainImageUrl?: string;
+  previewImageUrl?: string;
   detailImageUrls?: string[];
 };
 

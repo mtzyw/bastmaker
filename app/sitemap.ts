@@ -34,10 +34,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = getServiceRoleClient();
     const { data: publicJobs, error: publicJobsError } = await supabase
       .from('ai_jobs')
-      .select('share_slug, updated_at')
+      .select('share_slug, created_at')
       .eq('is_public', true)
       .not('share_slug', 'is', null)
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(5000);
 
     if (publicJobsError) {
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         for (const locale of LOCALES) {
           viewerEntries.push({
             url: `${siteUrl}${locale === DEFAULT_LOCALE ? '' : `/${locale}`}/v/${job.share_slug}`,
-            lastModified: job.updated_at ? new Date(job.updated_at) : new Date(),
+            lastModified: job.created_at ? new Date(job.created_at) : new Date(),
             changeFrequency: 'weekly' as ChangeFrequency,
             priority: 0.6,
           });

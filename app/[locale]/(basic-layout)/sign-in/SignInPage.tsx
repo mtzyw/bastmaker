@@ -77,20 +77,6 @@ export default function SignInPage({ variant = "page", onRequestSwitchMode }: Si
     }
   };
 
-  if (user) {
-    return (
-      <div
-        className={
-          variant === "dialog"
-            ? "flex w-full items-center justify-center py-8"
-            : "flex min-h-screen items-center justify-center"
-        }
-      >
-        <Loader2 className="h-4 w-4 animate-spin" />
-      </div>
-    );
-  }
-
   const controlHeight = variant === "dialog" ? "h-11" : "h-12";
   const inputClass = `${controlHeight} w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none`;
   const wrapperClass =
@@ -121,6 +107,20 @@ export default function SignInPage({ variant = "page", onRequestSwitchMode }: Si
       </div>
     );
   }, [showTurnstile]);
+
+  if (user) {
+    return (
+      <div
+        className={
+          variant === "dialog"
+            ? "flex w-full items-center justify-center py-8"
+            : "flex min-h-screen items-center justify-center"
+        }
+      >
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
 
   const content = (
     <div className="relative w-full">

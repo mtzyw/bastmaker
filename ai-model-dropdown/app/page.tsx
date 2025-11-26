@@ -1,4 +1,4 @@
-import { AIModelDropdown } from "@/components/ai-model-dropdown"
+import { AIModelDropdown } from "../components/ai-model-dropdown"
 
 export default function Home() {
   return (

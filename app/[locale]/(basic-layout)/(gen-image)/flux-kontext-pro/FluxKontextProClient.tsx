@@ -44,19 +44,9 @@ interface JobInfo {
 }
 
 const FEATURE_KEY = "flux_kontext_pro"; // config/featureList.ts
+const FEATURE_DISABLED = true;
 
 export default function FluxKontextProClient() {
-  const locale = useLocale();
-  const { user } = useAuth();
-  const {
-    benefits,
-    optimisticDeduct,
-    mutate: revalidateBenefits,
-  } = useUserBenefits();
-  const router = useRouter();
-  const galleryRef = useRef<any>(null);
-  const t = useTranslations("FluxKontextPro.client");
-  const FEATURE_DISABLED = true;
   if (FEATURE_DISABLED) {
     return (
       <section className="container mx-auto px-4 py-10">
@@ -67,6 +57,21 @@ export default function FluxKontextProClient() {
       </section>
     );
   }
+
+  return <FluxKontextProClientContent />;
+}
+
+function FluxKontextProClientContent() {
+  const locale = useLocale();
+  const { user } = useAuth();
+  const {
+    benefits,
+    optimisticDeduct,
+    mutate: revalidateBenefits,
+  } = useUserBenefits();
+  const router = useRouter();
+  const galleryRef = useRef<any>(null);
+  const t = useTranslations("FluxKontextPro.client");
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);

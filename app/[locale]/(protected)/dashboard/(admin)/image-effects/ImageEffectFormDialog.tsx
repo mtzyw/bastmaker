@@ -64,7 +64,7 @@ const formSchema = z.object({
   detailImageUrls: z.array(z.string().url()).optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.input<typeof formSchema>;
 
 interface ImageEffectFormDialogProps {
   isOpen: boolean;

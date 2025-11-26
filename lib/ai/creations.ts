@@ -7,6 +7,7 @@ export type CreationOutput = {
   thumbUrl: string | null;
   type: string | null;
   createdAt: string | null;
+  durationSeconds?: number | null;
 };
 
 export type CreationItem = {
@@ -102,6 +103,9 @@ export async function fetchUserCreations(
     }
 
     outputsByJob = (outputs ?? []).reduce((acc, output) => {
+      if (!output.job_id) {
+        return acc;
+      }
       const list = acc.get(output.job_id) ?? [];
       list.push({
         id: output.id,

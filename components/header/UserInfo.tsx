@@ -40,14 +40,8 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { isLoading: isBenefitsLoading } = useUserBenefits();
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const t = useTranslations("Login");
-
-  const userMenus: Menu[] = t.raw("UserMenus");
-
-  const adminMenus: Menu[] = t.raw("AdminMenus");
 
   if (!user) {
     if (openAuthDialog) {
@@ -66,28 +60,59 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
     );
   }
 
+  return (
+    <AuthenticatedUserInfo
+      renderContainer={renderContainer}
+      isBenefitsLoading={isBenefitsLoading}
+      signOut={signOut}
+      user={user}
+    />
+  );
+}
+
+type AuthenticatedUserInfoProps = {
+  renderContainer?: (children: React.ReactNode) => React.ReactNode;
+  isBenefitsLoading: boolean;
+  signOut: () => Promise<void> | void;
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>;
+};
+
+function AuthenticatedUserInfo({
+  renderContainer,
+  isBenefitsLoading,
+  signOut,
+  user,
+}: AuthenticatedUserInfoProps) {
+  const router = useRouter();
+  const t = useTranslations("Login");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const userMenus: Menu[] = t.raw("UserMenus");
+  const adminMenus: Menu[] = t.raw("AdminMenus");
   const isStripeEnabled = process.env.NEXT_PUBLIC_ENABLE_STRIPE === "true";
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    if (!user) {
-      setInviteLink(null);
-      return;
-    }
-
     let active = true;
-    supabase
-      .from("users")
-      .select("invite_code")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!active) return;
+
+    const fetchInvite = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("invite_code")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!active) {
+          return;
+        }
+
         if (error) {
           console.error("[invite-link] failed to fetch invite code", error);
           setInviteLink(null);
           return;
         }
+
         if (data?.invite_code) {
           const origin =
             typeof window !== "undefined"
@@ -101,16 +126,21 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
         } else {
           setInviteLink(null);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
+        if (!active) {
+          return;
+        }
         console.error("[invite-link] unexpected error", error);
         setInviteLink(null);
-      });
+      }
+    };
+
+    void fetchInvite();
 
     return () => {
       active = false;
     };
-  }, [supabase, user]);
+  }, [supabase, user.id]);
 
   useEffect(() => {
     if (copyState !== "copied") return;
@@ -198,8 +228,6 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
           {menu.target && <ExternalLink className="w-4 h-4" />}
         </DropdownMenuItem>
       ))}
-      {/* </>
-      )} */}
 
       {user.role === "admin" && (
         <>

@@ -168,8 +168,8 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
         return null;
       }
 
-      const durationFromOutput = Number.isFinite(primaryOutput.duration ?? NaN)
-        ? Number(primaryOutput.duration)
+      const durationFromOutput = Number.isFinite(primaryOutput.durationSeconds ?? NaN)
+        ? Number(primaryOutput.durationSeconds)
         : undefined;
       const fallbackDuration = Number.isFinite(item.metadata?.duration_seconds ?? NaN)
         ? Number(item.metadata?.duration_seconds)

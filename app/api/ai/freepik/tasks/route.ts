@@ -11,7 +11,7 @@ import { formatProviderError } from "@/lib/ai/provider-error";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { apiResponse } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
-import { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   const modalityCode = isImageToImage ? "i2i" : modelConfig.defaultModality;
   const referenceImageCount = data.reference_images?.length ?? 0;
 
-  const metadataJson = {
+  const metadataJson: Record<string, any> = {
     source: isImageToImage ? "image-to-image" : "text-to-image",
     translate_prompt: data.translate_prompt ?? false,
     is_image_to_image: isImageToImage,
@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
     const freepikStatus: string | null = taskData?.status ?? null;
     const internalStatus = mapFreepikStatus(freepikStatus);
 
-    const updatedMetadata = {
+    const updatedMetadata: Record<string, any> = {
       ...metadataJson,
       freepik_task_id: providerJobId,
       freepik_initial_status: freepikStatus,
@@ -291,7 +291,7 @@ export async function POST(req: NextRequest) {
     await adminSupabase.from("ai_job_events").insert({
       job_id: jobRecord.id,
       event_type: "freepik_task_created",
-      payload_json: freepikResponse,
+      payload_json: freepikResponse as Json,
     });
 
     return apiResponse.success<FreepikTaskPayload>({

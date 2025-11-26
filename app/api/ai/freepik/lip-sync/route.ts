@@ -11,7 +11,7 @@ import { getLipSyncModelConfig, DEFAULT_LIP_SYNC_MODEL } from "@/lib/ai/lip-sync
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { apiResponse } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
-import { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   const modelConfig = getLipSyncModelConfig(resolvedModel);
   const isPublic = data.is_public ?? true;
 
-  const metadataJson = {
+  const metadataJson: Record<string, any> = {
     source: "lip-sync",
     credits_cost: modelConfig.creditsCost,
     video_url: data.video_url,
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
     const freepikStatus: string | null = taskData?.status ?? null;
     const internalStatus = mapFreepikStatus(freepikStatus);
 
-    const updatedMetadata = {
+    const updatedMetadata: Record<string, any> = {
       ...metadataJson,
       freepik_task_id: providerJobId,
       freepik_initial_status: freepikStatus,
@@ -259,7 +259,7 @@ export async function POST(req: NextRequest) {
     await adminSupabase.from("ai_job_events").insert({
       job_id: jobRecord.id,
       event_type: "freepik_lip_sync_task_created",
-      payload_json: freepikResponse,
+      payload_json: freepikResponse as Json,
     });
 
     return apiResponse.success<LipSyncTaskPayload>({

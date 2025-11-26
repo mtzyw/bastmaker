@@ -1,6 +1,6 @@
 "use server";
 
-import { actionResponse } from "@/lib/action-response";
+import { actionResponse, type ActionResult } from "@/lib/action-response";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/types";
 import { shareModalityDisplayName, shareModelDisplayName } from "@/lib/share/job-metadata";
@@ -124,7 +124,10 @@ type ViewerJobOptions = {
   allowPrivateForUserId?: string;
 };
 
-export async function getViewerJobBySlug(slug: string, options?: ViewerJobOptions) {
+export async function getViewerJobBySlug(
+  slug: string,
+  options?: ViewerJobOptions
+): Promise<ActionResult<ViewerJob>> {
   if (!slug) {
     return actionResponse.notFound("Missing slug", "NOT_FOUND");
   }
@@ -153,19 +156,25 @@ export async function getViewerJobBySlug(slug: string, options?: ViewerJobOption
     return actionResponse.notFound("Job not found", "NOT_FOUND");
   }
 
-  const { data: owner, error: ownerError } = await supabase
-    .from("users")
-    .select("id, full_name, avatar_url, invite_code")
-    .eq("id", job.user_id)
-    .maybeSingle();
+  let owner: Database["public"]["Tables"]["users"]["Row"] | null = null;
 
-  if (ownerError) {
-    console.error("[viewer-job] failed to fetch owner", ownerError);
+  if (typeof job.user_id === "string" && job.user_id.length > 0) {
+    const { data: ownerData, error: ownerError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", job.user_id)
+      .maybeSingle();
+
+    if (ownerError) {
+      console.error("[viewer-job] failed to fetch owner", ownerError);
+    } else {
+      owner = ownerData;
+    }
   }
 
   const { data: outputs, error: outputsError } = await supabase
     .from("ai_job_outputs")
-    .select("id, job_id, type, url, thumb_url, width, height, duration, created_at")
+    .select("*")
     .eq("job_id", job.id)
     .order("created_at", { ascending: true });
 
@@ -313,7 +322,10 @@ function buildCoverFromMetadata(metadata: Record<string, any>): ViewerJobAsset |
   };
 }
 
-export async function getPublicProfileBySlug(slug: string, options?: ProfileQueryOptions) {
+export async function getPublicProfileBySlug(
+  slug: string,
+  options?: ProfileQueryOptions
+): Promise<ActionResult<PublicProfile>> {
   if (!slug) {
     return actionResponse.notFound("Missing profile slug", "NOT_FOUND");
   }
@@ -364,7 +376,7 @@ export async function getPublicProfileBySlug(slug: string, options?: ProfileQuer
   if (jobIds.length > 0) {
     const { data: outputs, error: outputsError } = await supabase
       .from("ai_job_outputs")
-      .select("job_id, type, url, thumb_url, width, height, duration, created_at")
+      .select("*")
       .in("job_id", jobIds)
       .order("created_at", { ascending: true });
 
@@ -372,6 +384,9 @@ export async function getPublicProfileBySlug(slug: string, options?: ProfileQuer
       console.error("[profile] failed to fetch outputs", outputsError);
     } else if (outputs) {
       outputsByJob = outputs.reduce((acc, output) => {
+        if (!output.job_id) {
+          return acc;
+        }
         const list = acc.get(output.job_id) ?? [];
         list.push(output);
         acc.set(output.job_id, list);

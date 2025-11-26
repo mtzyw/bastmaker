@@ -7,12 +7,15 @@ import { notFound } from 'next/navigation';
 export const getViewerJob = cache(async (slug: string): Promise<ViewerJob> => {
   const result = await getViewerJobBySlug(slug);
 
-  if (!result.success || !result.data) {
+  if (!result.success) {
     if (result.customCode === 'NOT_FOUND') {
       notFound();
     }
-
     throw new Error(result.error ?? 'Failed to load job');
+  }
+
+  if (!result.data) {
+    throw new Error('Failed to load job');
   }
 
   return result.data;

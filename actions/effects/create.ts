@@ -40,7 +40,7 @@ export async function createVideoEffect(formData: FormData) {
   if (!validation.success) {
     const error = validation.error.flatten().fieldErrors;
     console.error("[CreateEffectAction] Validation failed:", error);
-    return actionResponse.error("Invalid form data", { error });
+    return actionResponse.error("Invalid form data", "VALIDATION_ERROR");
   }
 
   const data = validation.data;

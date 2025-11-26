@@ -187,6 +187,11 @@ export default function TextToImageLeftPanel({
         seed: null,
         isImageToImage: isImageToImageModel,
         referenceImageCount: 0,
+        shareSlug: null,
+        shareVisitCount: 0,
+        shareConversionCount: 0,
+        publicTitle: null,
+        publicSummary: null,
       };
     };
 

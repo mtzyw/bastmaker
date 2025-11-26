@@ -11,7 +11,7 @@ import { getSoundEffectModelConfig, DEFAULT_SOUND_EFFECT_MODEL } from "@/lib/ai/
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { apiResponse } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
-import { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   const isPublic = data.is_public ?? true;
   const translatePrompt = data.translate_prompt ?? false;
 
-  const metadataJson = {
+  const metadataJson: Record<string, any> = {
     source: "sound",
     mode: "text",
     translate_prompt: translatePrompt,
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
     const freepikStatus: string | null = taskData?.status ?? null;
     const internalStatus = mapFreepikStatus(freepikStatus);
 
-    const updatedMetadata = {
+    const updatedMetadata: Record<string, any> = {
       ...metadataJson,
       freepik_task_id: providerJobId,
       freepik_initial_status: freepikStatus,
@@ -256,7 +256,7 @@ export async function POST(req: NextRequest) {
     await adminSupabase.from("ai_job_events").insert({
       job_id: jobRecord.id,
       event_type: "freepik_sound_task_created",
-      payload_json: freepikResponse,
+      payload_json: freepikResponse as Json,
     });
 
     return apiResponse.success<FreepikSoundTaskPayload>({

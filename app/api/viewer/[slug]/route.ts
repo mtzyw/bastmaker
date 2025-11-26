@@ -28,9 +28,13 @@ export async function GET(
 
   const result = await getViewerJobBySlug(slug, { allowPrivateForUserId: userId });
 
-  if (!result.success || !result.data) {
+  if (!result.success) {
     const status = result.customCode === "NOT_FOUND" ? 404 : 500;
     return NextResponse.json({ success: false, error: result.error ?? "Failed to load" }, { status });
+  }
+
+  if (!result.data) {
+    return NextResponse.json({ success: false, error: "Failed to load" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, data: result.data });

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { generateShareSlug } from "@/lib/share/slug";
-import type { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 
 type JobShareUpdate = {
   adminClient: SupabaseClient<Database>;
@@ -38,7 +38,7 @@ export async function ensureJobShareMetadata({
   }
 
   if (publicAssets !== undefined) {
-    updatePayload.public_assets = Array.isArray(publicAssets) ? publicAssets : null;
+    updatePayload.public_assets = Array.isArray(publicAssets) ? (publicAssets as Json) : null;
   }
 
   const { error } = await adminClient

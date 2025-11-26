@@ -54,6 +54,18 @@ export type VideoEffectTemplate = {
 function mapTemplateRow(
   row: Database["public"]["Tables"]["video_effect_templates"]["Row"]
 ): Omit<VideoEffectTemplate, "inputs"> {
+  const extendedRow = row as Database["public"]["Tables"]["video_effect_templates"]["Row"] & {
+    modality_code?: string | null;
+    duration_seconds?: number | null;
+    resolution?: string | null;
+    aspect_ratio?: string | null;
+    mode?: string | null;
+    cfg_scale?: number | null;
+    seed?: number | null;
+    default_prompt?: string | null;
+    negative_prompt?: string | null;
+  };
+
   return {
     id: row.id,
     slug: row.slug,
@@ -62,18 +74,18 @@ function mapTemplateRow(
     category: row.category,
     previewVideoUrl: row.preview_video_url,
     previewCoverUrl: row.preview_cover_url,
-    modalityCode: row.modality_code ?? "i2v",
+    modalityCode: extendedRow.modality_code ?? "i2v",
     providerCode: row.provider_code ?? "freepik",
     providerModel: row.provider_model,
-    durationSeconds: row.duration_seconds,
-    resolution: row.resolution,
-    aspectRatio: row.aspect_ratio,
-    mode: row.mode,
-    cfgScale: row.cfg_scale,
-    seed: row.seed,
+    durationSeconds: extendedRow.duration_seconds ?? null,
+    resolution: extendedRow.resolution ?? null,
+    aspectRatio: extendedRow.aspect_ratio ?? null,
+    mode: extendedRow.mode ?? null,
+    cfgScale: extendedRow.cfg_scale ?? null,
+    seed: extendedRow.seed ?? null,
     pricingCreditsOverride: row.pricing_credits_override,
-    defaultPrompt: row.default_prompt,
-    negativePrompt: row.negative_prompt,
+    defaultPrompt: extendedRow.default_prompt ?? null,
+    negativePrompt: extendedRow.negative_prompt ?? null,
     promptVariables: Array.isArray(row.prompt_variables) ? row.prompt_variables : [],
     metadata: (row.metadata_json ?? {}) as Record<string, any>,
     isActive: row.is_active ?? true,

@@ -11,7 +11,7 @@ import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-fi
 import { toFreepikAspectRatio } from "@/lib/ai/freepik";
 import { apiResponse } from "@/lib/api-response";
 import { createClient } from "@/lib/supabase/server";
-import { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -649,7 +649,7 @@ export async function POST(req: NextRequest) {
       .map(([, url]) => url),
   ].filter((url): url is string => typeof url === "string" && url.length > 0);
 
-  const metadataJson = {
+  const metadataJson: Record<string, any> = {
     source: "video",
     mode,
     translate_prompt: translatePrompt,
@@ -883,7 +883,7 @@ export async function POST(req: NextRequest) {
     const freepikStatus: string | null = taskData?.status ?? null;
     const internalStatus = mapFreepikStatus(freepikStatus);
 
-    const updatedMetadata = {
+    const updatedMetadata: Record<string, any> = {
       ...metadataJson,
       freepik_task_id: providerJobId,
       freepik_initial_status: freepikStatus,
@@ -933,7 +933,7 @@ export async function POST(req: NextRequest) {
     await adminSupabase.from("ai_job_events").insert({
       job_id: jobRecord.id,
       event_type: "freepik_video_task_created",
-      payload_json: freepikResponse,
+      payload_json: freepikResponse as Json,
     });
 
     return apiResponse.success({
