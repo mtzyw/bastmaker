@@ -282,17 +282,21 @@ export function AuthDialogTrigger({
   };
 
   if (triggerElement && isValidElement(triggerElement)) {
-    const element = triggerElement as ReactElement;
-    return cloneElement(element, {
-      onClick: (event: MouseEvent<HTMLElement>) => {
-        if (typeof element.props.onClick === "function") {
-          element.props.onClick(event);
-        }
-        if (!event.defaultPrevented) {
-          handleOpen();
-        }
-      },
-    });
+    const element = triggerElement as ReactElement<any>;
+    return cloneElement(
+      element,
+      {
+        ...element.props,
+        onClick: (event: MouseEvent<HTMLElement>) => {
+          if (typeof element.props?.onClick === "function") {
+            element.props.onClick(event);
+          }
+          if (!event.defaultPrevented) {
+            handleOpen();
+          }
+        },
+      } as Record<string, any>
+    );
   }
 
   return (
