@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "signin": {
+      "title": "ログイン",
+      "description": "BestMaker AIアカウントにログイン"
+    },
+    "signup": {
+      "title": "サインアップ",
+      "description": "BestMaker AIアカウントに登録"
+    }
+  },
+  "headlines": {
+    "signupDetails": "アカウント詳細設定",
+    "signup": "Bestmakerに登録",
+    "signin": "Bestmakerにログイン"
+  },
+  "subHeadlines": {
+    "signupDetails": "認証済みメールアドレスのユーザー名とパスワードを設定して、最後の手順を完了してください。",
+    "signup": "メールまたはソーシャルログインでアカウントを作成し、より多くのAIツールとクレジット報酬を解除しましょう。",
+    "signin": "メールアドレスを入力して認証すると、すぐにログインして作成を続けることができます。"
+  },
+  "dialogDescription": "ログインして作成履歴を表示します。登録して無料クレジットを取得しましょう。",
+  "banner": {
+    "credits": "新規登録で{credits}クレジットをプレゼント",
+    "subtitle": "メールアドレスを入力して認証コードを取得してください。5分で登録完了。"
+  },
+  "labels": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "username": "ユーザー名"
+  },
+  "placeholders": {
+    "email": "name@example.com",
+    "password": "パスワードを入力",
+    "username": "ユーザー名を入力",
+    "code": "6桁のコードを入力",
+    "passwordMinLength": "パスワードを設定（8文字以上）"
+  },
+  "actions": {
+    "login": "ログイン",
+    "signUp": "今すぐ登録",
+    "sendCode": "コードを送信",
+    "directLogin": "直接ログイン",
+    "verifyEmail": "メールを認証",
+    "changeEmail": "メールアドレスを変更",
+    "resend": "再送信",
+    "completeSignup": "登録を完了"
+  },
+  "messages": {
+    "enterEmailAndPassword": "メールアドレスとパスワードを入力してください",
+    "completeCaptcha": "キャプチャ認証を完了してください",
+    "loginSuccess": "ログイン成功",
+    "loginFailed": "ログイン失敗",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "hasAccount": "すでにアカウントをお持ちですか？",
+    "termsAgreement": "ログインすることで、当社の",
+    "signupTermsAgreement": "登録することで、当社の",
+    "and": "および",
+    "codeSentTo": "コード送信先",
+    "waitSeconds": "{seconds}秒お待ちください",
+    "resendWait": "再送信 ({seconds}秒)",
+    "sendCodeFailed": "認証コードの送信に失敗しました",
+    "verifyCodeFailed": "認証コードが無効です",
+    "verifyEmailSuccess": "メール認証成功、ユーザー名とパスワードを設定してください",
+    "enterUsernameAndPassword": "ユーザー名とパスワードを入力してください",
+    "completeEmailVerification": "先にメール認証を完了してください",
+    "signupFailed": "登録失敗",
+    "signupSuccess": "登録成功",
+    "enterEmail": "メールアドレスを入力してください",
+    "captchaFailed": "キャプチャ認証に失敗しました。もう一度お試しください。"
+  },
+  "links": {
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー"
+  },
+  "signInMethods": {
+    "signInWithGoogle": "Googleでログイン",
+    "or": "または"
+  },
+  "Toast": {
+    "Google": {
+      "errorTitle": "Googleログイン失敗",
+      "errorDescription": "Googleでのログインを完了できませんでした。後でもう一度お試しください。"
+    }
+  }
+}

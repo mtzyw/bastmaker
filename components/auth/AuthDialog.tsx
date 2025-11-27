@@ -1,7 +1,7 @@
 "use client";
 
-import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import LoginPage from "@/app/[locale]/(basic-layout)/login/LoginPage";
+import SignInPage from "@/app/[locale]/(basic-layout)/sign-in/SignInPage";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
@@ -24,7 +24,7 @@ export function AuthDialog({
   footerSlot,
   redirectPath,
 }: AuthDialogProps) {
-  const t = useTranslations("Login");
+  const t = useTranslations("Auth");
   const [activeTab, setActiveTab] = useState<AuthDialogTab>(initialTab);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function AuthDialog({
               {tabLabels.signin} / {tabLabels.signup}
             </h2>
             <p className="text-xs text-white/65">
-              登录查看创作记录，注册即可领取新人积分。
+              {t("dialogDescription")}
             </p>
           </div>
           <Tabs

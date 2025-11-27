@@ -19,6 +19,7 @@
     "signup": "Create an account with email or social login to unlock more AI tools and credit rewards.",
     "signin": "Enter your email and verify to log in quickly and continue creating."
   },
+  "dialogDescription": "Log in to view your creation history. Sign up to get free credits.",
   "banner": {
     "credits": "New users get {credits} credits upon registration",
     "subtitle": "Enter your email to get a verification code. Complete registration in 5 minutes."

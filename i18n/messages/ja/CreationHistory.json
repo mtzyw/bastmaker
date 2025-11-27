@@ -7,10 +7,15 @@
     "audio": "音声"
   },
   "status": {
+    "pending": "待機中",
+    "queued": "キュー待ち",
     "processing": "生成中",
+    "running": "実行中",
+    "in_progress": "進行中",
     "completed": "完了",
     "failed": "失敗",
     "cancelled": "キャンセル",
+    "cancelled_insufficient_credits": "クレジット不足",
     "unknown": "不明な状態"
   },
   "actions": {

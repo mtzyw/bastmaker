@@ -51,6 +51,9 @@
     "stats": {
       "visitsLabel": "総訪問数",
       "conversionsLabel": "招待登録"
-    }
+    },
+    "downloadWatermark": "透かし付きでダウンロード",
+    "downloadClean": "透かしなしでダウンロード",
+    "downloadFailed": "ダウンロードに失敗しました"
   }
 }
