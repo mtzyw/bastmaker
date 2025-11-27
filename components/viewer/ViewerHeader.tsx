@@ -3,9 +3,9 @@
 import { useTranslations } from "next-intl";
 
 import { UserAvatar } from "@/components/header/UserAvatar";
-import { Link as I18nLink } from "@/i18n/routing";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
+import { Link as I18nLink } from "@/i18n/routing";
 
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 
@@ -20,7 +20,7 @@ export function ViewerHeader({ job: _job, shareUrl: _shareUrl, generateUrl }: Vi
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#14141e] backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#1c1c1c] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-6">
           <nav className="hidden items-center gap-6 text-sm text-white/70 md:flex">

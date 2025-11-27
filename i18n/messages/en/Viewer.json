@@ -37,6 +37,9 @@
     "outputSize": "Dimensions",
     "preview": "Reference",
     "tags": "Tags",
+    "downloadWatermark": "Download with watermark",
+    "downloadClean": "Download clean",
+    "downloadFailed": "Download failed, please try again",
     "actions": {
       "textToImage": "Text to Image",
       "imageToImage": "Image to Image",
