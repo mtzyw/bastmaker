@@ -154,6 +154,7 @@ export default function ImageCropperDialog({ open, imageSrc, fileType, onConfirm
                 onMediaLoaded={handleMediaLoaded}
                 objectFit="contain"
                 restrictPosition
+                initialCroppedAreaPercentages={{ x: 0, y: 0, width: 100, height: 100 }}
               />
             ) : (
               <div className="flex h-full items-center justify-center text-white/60 text-sm">暂无图片</div>
