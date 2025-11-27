@@ -10,100 +10,102 @@ html {
 
 @layer base {
   :root {
+    /* Premium Dark Theme (Source Replicated) */
     --default: 240 5.9% 10%;
     --default-foreground: 0 0% 98%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --background: 60 3.7% 10.6%;
+    --foreground: 0 0% 95%;
 
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --card: 240 20% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --popover: 240 20% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --primary: 35 90% 60%;
+    --primary-foreground: 0 0% 10%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --secondary: 240 20% 18%;
+    --secondary-foreground: 0 0% 95%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --muted: 240 20% 20%;
+    --muted-foreground: 240 10% 65%;
+
+    --accent: 35 80% 70%;
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 240 20% 22%;
+    --input: 240 20% 22%;
+    --ring: 35 90% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --chart-1: 211.7880 101.9718% 78.6759%;
+    --chart-1: 35 90% 60%;
     --chart-2: 217.4076 91.3672% 59.5787%;
     --chart-3: 221.4336 86.3731% 54.0624%;
     --chart-4: 223.6587 78.7180% 47.8635%;
     --chart-5: 226.5426 70.0108% 39.9224%;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 240 20% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 35 90% 60%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 240 20% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 20% 22%;
+    --sidebar-ring: 35 90% 60%;
   }
 
   .dark {
     --default: 0 0% 98%;
     --default-foreground: 240 5.9% 10%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --background: 60 3.7% 10.6%;
+    --foreground: 0 0% 95%;
 
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --card: 240 20% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --card: 240 10% 5%;
-    --card-foreground: 0 0% 98%;
+    --popover: 240 20% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --primary: 35 90% 60%;
+    --primary-foreground: 0 0% 10%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --secondary: 240 20% 18%;
+    --secondary-foreground: 0 0% 95%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 240 20% 20%;
+    --muted-foreground: 240 10% 65%;
+
+    --accent: 35 80% 70%;
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 211.7880 101.9718% 78.6759%;
+    --border: 240 20% 22%;
+    --input: 240 20% 22%;
+    --ring: 35 90% 60%;
+
+    --chart-1: 35 90% 60%;
     --chart-2: 217.4076 91.3672% 59.5787%;
     --chart-3: 221.4336 86.3731% 54.0624%;
     --chart-4: 223.6587 78.7180% 47.8635%;
     --chart-5: 226.5426 70.0108% 39.9224%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --sidebar-background: 240 20% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 35 90% 60%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 240 20% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 20% 22%;
+    --sidebar-ring: 35 90% 60%;
   }
 }
 
@@ -111,7 +113,8 @@ html {
   * {
     @apply border-border;
     /* Make scrollbars thin and gray across the app */
-    scrollbar-width: thin; /* Firefox */
+    scrollbar-width: thin;
+    /* Firefox */
     scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
   }
 
@@ -126,9 +129,11 @@ html {
   width: var(--scrollbar-size, 6px);
   height: var(--scrollbar-size, 6px);
 }
+
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
   border-radius: 9999px;
@@ -136,17 +141,21 @@ html {
 
 /* Element-scoped thin scrollbar utility */
 .thin-scrollbar {
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: thin;
+  /* Firefox */
   scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
 }
+
 .thin-scrollbar::-webkit-scrollbar {
   width: var(--scrollbar-size, 6px);
   height: var(--scrollbar-size, 6px);
 }
+
 .thin-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
   border-radius: 9999px;
 }
+
 .thin-scrollbar::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
 }
@@ -156,20 +165,31 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6)) var(--scrollbar-track, transparent);
 }
+
 .textarea-scrollbar::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+
 .textarea-scrollbar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb, rgb(107 114 128 / 0.6));
   border-radius: 9999px;
 }
+
 .textarea-scrollbar::-webkit-scrollbar-track {
   background: var(--scrollbar-track, transparent);
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }

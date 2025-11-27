@@ -1,15 +1,25 @@
-import CTA from "@/components/home/CTA";
-import FAQ from "@/components/home/FAQ";
-import Hero from "@/components/home/Hero";
+import { CTASection } from "@/components/landing/cta-section"
+import { FAQSection } from "@/components/landing/faq-section"
+import { Features } from "@/components/landing/features"
+import { HeroSection } from "@/components/landing/hero-section"
+import { MoreTools } from "@/components/landing/more-tools"
+import { PrivacySecurity } from "@/components/landing/privacy-security"
+import { Testimonials } from "@/components/landing/testimonials"
+import { VideoGallery } from "@/components/landing/video-gallery"
+import { WhyChoose } from "@/components/landing/why-choose"
 
-export default async function HomeComponent() {
+export default function Home() {
   return (
-    <div className="w-full">
-      <Hero />
-
-      <FAQ />
-
-      <CTA />
-    </div>
-  );
+    <main className="min-h-screen bg-background text-foreground">
+      <HeroSection />
+      <VideoGallery />
+      <WhyChoose />
+      <Features />
+      <PrivacySecurity />
+      <MoreTools />
+      <Testimonials />
+      <CTASection />
+      <FAQSection />
+    </main>
+  )
 }
