@@ -37,7 +37,7 @@ export default function SignInPage({
   const [showTurnstile, setShowTurnstile] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const t = useTranslations("Login");
+  const t = useTranslations("Auth");
   const searchParams = useSearchParams();
   const next = redirectPath ?? searchParams?.get("next") ?? undefined;
 

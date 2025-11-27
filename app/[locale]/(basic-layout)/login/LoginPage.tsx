@@ -51,7 +51,7 @@ export default function LoginPage({
   const [resendSeconds, setResendSeconds] = useState(0);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
-  const t = useTranslations("Login");
+  const t = useTranslations("Auth");
   const searchParams = useSearchParams();
   const next = redirectPath ?? searchParams.get("next") ?? undefined;
 
