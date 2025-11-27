@@ -35,8 +35,8 @@ export function AuthDialog({
 
   const tabLabels = useMemo(
     () => ({
-      signin: t("Button.signIn"),
-      signup: t("Button.signUp"),
+      signin: t("actions.login"),
+      signup: t("actions.signUp"),
     }),
     [t]
   );
