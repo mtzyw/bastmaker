@@ -8,6 +8,7 @@ import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { getUserCreationsHistory } from "@/actions/creations";
 import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
+import { ShareDialog } from "@/components/ShareDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -536,6 +537,8 @@ export default function TextToImageRecentTasks({
   const [trackedGeneration, setTrackedGeneration] = useState<Record<string, TrackedGenerationStatus>>({});
   const [taskToDelete, setTaskToDelete] = useState<DisplayTask | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [taskToShare, setTaskToShare] = useState<DisplayTask | null>(null);
   const viewerFetchRef = useRef<AbortController | null>(null);
   const prefetchedJobsRef = useRef<Map<string, ViewerJob>>(new Map());
   const prefetchingSlugsRef = useRef<Set<string>>(new Set());
@@ -1502,33 +1505,10 @@ export default function TextToImageRecentTasks({
         return;
       }
 
-      const localePrefix = locale === DEFAULT_LOCALE ? "" : `/${locale}`;
-      const shareUrl = `${window.location.origin}${localePrefix}/v/${task.shareSlug}?source=share`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({ url: shareUrl });
-          toast.success(historyT("messages.shareOpened"));
-        } catch (error) {
-          console.warn("[history-share] native share cancelled", error);
-        }
-        return;
-      }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          toast.success(historyT("messages.linkCopied"));
-        } catch (error) {
-          console.error("[history-share] copy failed", error);
-          toast.error(historyT("messages.linkCopyFailed"));
-        }
-        return;
-      }
-
-      window.prompt(historyT("messages.copyPrompt"), shareUrl);
+      setTaskToShare(task);
+      setShareDialogOpen(true);
     },
-    [locale]
+    [historyT]
   );
 
   const handleCopyLink = useCallback(
@@ -2259,6 +2239,17 @@ export default function TextToImageRecentTasks({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <ShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          shareUrl={
+            taskToShare?.shareSlug
+              ? `${typeof window !== "undefined" ? window.location.origin : ""}${locale === DEFAULT_LOCALE ? "" : `/${locale}`
+              }/v/${taskToShare.shareSlug}?source=share`
+              : ""
+          }
+          title={taskToShare?.prompt || "Check out my AI creation!"}
+        />
       </div>
     </TooltipProvider>
   );
