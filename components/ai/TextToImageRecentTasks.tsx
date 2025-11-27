@@ -1,29 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import dayjs from "dayjs";
 import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { getUserCreationsHistory } from "@/actions/creations";
-import { CreationItem, CreationOutput } from "@/lib/ai/creations";
-import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
-import { getVideoModelConfig } from "@/lib/ai/video-config";
-import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
-import AudioPlayer from "@components/audio-player";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
+import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,24 +18,40 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ViewerBoard } from "@/components/viewer/ViewerBoard";
+import { siteConfig } from "@/config/site";
+import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
+import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan, type RepromptDraft } from "@/lib/ai/creation-retry";
+import { CreationItem, CreationOutput } from "@/lib/ai/creations";
+import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import { createClient } from "@/lib/supabase/client";
+import { Database } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
+import AudioPlayer from "@components/audio-player";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { AlertTriangle, ArrowUp, Check, Clapperboard, Copy, Crown, Download, Heart, ImageUp, MoreHorizontal, PenSquare, RefreshCcw, Share2, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
-import { createClient } from "@/lib/supabase/client";
-import { Database } from "@/lib/supabase/types";
-import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan, type RepromptDraft } from "@/lib/ai/creation-retry";
-import { useRepromptStore } from "@/stores/repromptStore";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import type { ViewerJob } from "@/actions/ai-jobs/public";
-import { ViewerBoard } from "@/components/viewer/ViewerBoard";
-import { siteConfig } from "@/config/site";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
-import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
-import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
 
 const CATEGORY_KEYS = ["全部", "视频", "图片", "特效", "音效"] as const;
 type CategoryFilter = typeof CATEGORY_KEYS[number];
@@ -402,8 +402,8 @@ function mapJobRowToCreationItem(row: AiJobRow): CreationItem {
       typeof row.cost_actual_credits === "number"
         ? row.cost_actual_credits
         : typeof row.cost_estimated_credits === "number"
-        ? row.cost_estimated_credits
-        : 0,
+          ? row.cost_estimated_credits
+          : 0,
     outputs: [],
     metadata,
     inputParams,
@@ -600,8 +600,8 @@ export default function TextToImageRecentTasks({
 
       const referenceUrls = Array.isArray(original.metadata?.reference_image_urls)
         ? (original.metadata.reference_image_urls as unknown[])
-            .map((value) => (typeof value === "string" ? value : ""))
-            .filter((value): value is string => value.length > 0)
+          .map((value) => (typeof value === "string" ? value : ""))
+          .filter((value): value is string => value.length > 0)
         : [];
       if (referenceUrls.length > 0) {
         return referenceUrls[0];
@@ -1508,7 +1508,7 @@ export default function TextToImageRecentTasks({
       if (navigator.share) {
         try {
           await navigator.share({ url: shareUrl });
-        toast.success(historyT("messages.shareOpened"));
+          toast.success(historyT("messages.shareOpened"));
         } catch (error) {
           console.warn("[history-share] native share cancelled", error);
         }
@@ -1518,10 +1518,10 @@ export default function TextToImageRecentTasks({
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
-        toast.success(historyT("messages.linkCopied"));
+          toast.success(historyT("messages.linkCopied"));
         } catch (error) {
           console.error("[history-share] copy failed", error);
-        toast.error(historyT("messages.linkCopyFailed"));
+          toast.error(historyT("messages.linkCopyFailed"));
         }
         return;
       }
@@ -1548,7 +1548,7 @@ export default function TextToImageRecentTasks({
       if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
-        toast.success(historyT("messages.linkCopied"));
+          toast.success(historyT("messages.linkCopied"));
           return;
         } catch (error) {
           console.error("[history-copy] clipboard failed", error);
@@ -1797,306 +1797,306 @@ export default function TextToImageRecentTasks({
               const downloadMenuOpen = downloadMenuTaskId === task.id;
 
               return (
-              <article
-                key={task.id}
-                className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
-              >
-              <header className="flex items-center gap-3">
-                <Avatar className="h-8 w-8 border border-white/10 bg-white/10 text-white">
-                  <AvatarFallback className="text-xs font-semibold bg-transparent text-white">
-                    {task.provider.slice(0, 1).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-1 flex-col justify-center gap-1">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <article
+                  key={task.id}
+                  className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
+                >
+                  <header className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8 border border-white/10 bg-white/10 text-white">
+                      <AvatarFallback className="text-xs font-semibold bg-transparent text-white">
+                        {task.provider.slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-1 flex-col justify-center gap-1">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium leading-none text-white">
+                            {task.provider}
+                          </span>
+                          <Badge className="border-white/10 bg-white/10 text-white/80">
+                            {task.typeLabel}
+                          </Badge>
+                          {!task.effectSlug && (
+                            <Badge className="border-white/10 bg-white/5 text-white/60">
+                              {task.modelLabel}
+                            </Badge>
+                          )}
+                          {task.effectSlug && !hideEffectBadge ? (
+                            <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200">
+                              {effectBadgeLabel} · {task.effectTitle ?? task.effectSlug}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-white/50">
+                          <span>{task.createdAtLabel}</span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium leading-none text-white">
-                        {task.provider}
-                      </span>
-                      <Badge className="border-white/10 bg-white/10 text-white/80">
-                        {task.typeLabel}
-                      </Badge>
-                      {!task.effectSlug && (
-                        <Badge className="border-white/10 bg-white/5 text-white/60">
-                          {task.modelLabel}
-                        </Badge>
-                      )}
-                      {task.effectSlug && !hideEffectBadge ? (
-                        <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200">
-                          {effectBadgeLabel} · {task.effectTitle ?? task.effectSlug}
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <span>{task.createdAtLabel}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
-                      task.favorite && "text-pink-400 hover:text-pink-300"
-                    )}
-                    aria-label={task.favorite ? "Remove from favorites" : "Mark as favorite"}
-                    disabled
-                  >
-                    <Heart
-                      className="h-4 w-4"
-                      fill={task.favorite ? "currentColor" : "none"}
-                    />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                        aria-label={moreActionsLabel}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-40 border border-white/10 bg-[#1c1c1a] text-white shadow-lg"
-                    >
-                      <DropdownMenuItem
-                        className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
-                        disabled={task.status !== "succeeded" || !task.shareSlug}
-                        onSelect={() => {
-                          void handleCopyLink(task);
-                        }}
-                      >
-                        <Copy className="h-4 w-4" />
-                        <span>{historyT("actions.copyLink")}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-white/10" />
-                      <DropdownMenuItem
-                        className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
-                        onSelect={() => {
-                          handleRequestDelete(task);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span>{historyT("actions.delete")}</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </header>
-
-              <div className="space-y-2">
-                {!task.effectSlug && task.metadataSource !== "lip-sync" && (
-                  <>
-                      {task.prompt ? (
-                        <p className="text-sm text-white/70 leading-relaxed">
-                          <span className="text-white">{promptLabel}:</span>{" "}
-                          {task.prompt}
-                        </p>
-                      ) : null}
-                      {task.negativePrompt ? (
-                        <p className="text-xs text-white/50">
-                          <span className="text-white/70">{negativeLabel}:</span>{" "}
-                          {task.negativePrompt}
-                        </p>
-                      ) : null}
-                  </>
-                )}
-              </div>
-
-              {task.status === "failed" && task.errorMessage ? (
-                <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
-                  <span>{task.errorMessage}</span>
-                </div>
-              ) : null}
-
-              {task.status === "succeeded"
-                ? renderMedia(task)
-                : task.status === "processing"
-                ? (
-                    <div className="flex w-full max-w-[260px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-6 py-10">
-                      <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
-                    </div>
-                  )
-                : null}
-
-              <footer className="flex items-center gap-2 text-xs text-white/50">
-                {!task.effectSlug ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                        aria-label={usePromptLabel}
-                        onClick={() => void handleReprompt(task.id)}
-                      >
-                        <PenSquare className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{usePromptLabel}</TooltipContent>
-                  </Tooltip>
-                ) : null}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                    className={cn(
-                        "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
-                        isRegenerating(task.id) && "cursor-wait",
-                        task.status !== "succeeded" && "cursor-not-allowed opacity-40 hover:text-white/60 hover:bg-transparent"
-                      )}
-                      aria-label={retryLabel}
-                      disabled={isRegenerating(task.id) || task.status !== "succeeded"}
-                      onClick={() => void handleRegenerate(task.id)}
-                    >
-                      <RefreshCcw
                         className={cn(
-                          "h-4 w-4",
-                          isRegenerating(task.id) && "animate-spin"
+                          "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
+                          task.favorite && "text-pink-400 hover:text-pink-300"
                         )}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">{retryLabel}</TooltipContent>
-                </Tooltip>
-                {task.status === "succeeded" && task.media?.kind === "image" ? (
-                  <>
+                        aria-label={task.favorite ? "Remove from favorites" : "Mark as favorite"}
+                        disabled
+                      >
+                        <Heart
+                          className="h-4 w-4"
+                          fill={task.favorite ? "currentColor" : "none"}
+                        />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                            aria-label={moreActionsLabel}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-40 border border-white/10 bg-[#1c1c1a] text-white shadow-lg"
+                        >
+                          <DropdownMenuItem
+                            className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
+                            disabled={task.status !== "succeeded" || !task.shareSlug}
+                            onSelect={() => {
+                              void handleCopyLink(task);
+                            }}
+                          >
+                            <Copy className="h-4 w-4" />
+                            <span>{historyT("actions.copyLink")}</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-white/10" />
+                          <DropdownMenuItem
+                            className="focus:bg-transparent focus:text-[#dc2e5a] focus:[&_svg]:text-[#dc2e5a]"
+                            onSelect={() => {
+                              handleRequestDelete(task);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>{historyT("actions.delete")}</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </header>
+
+                  <div className="space-y-2">
+                    {!task.effectSlug && task.metadataSource !== "lip-sync" && (
+                      <>
+                        {task.prompt ? (
+                          <p className="text-sm text-white/70 leading-relaxed">
+                            <span className="text-white">{promptLabel}:</span>{" "}
+                            {task.prompt}
+                          </p>
+                        ) : null}
+                        {task.negativePrompt ? (
+                          <p className="text-xs text-white/50">
+                            <span className="text-white/70">{negativeLabel}:</span>{" "}
+                            {task.negativePrompt}
+                          </p>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+
+                  {task.status === "failed" && task.errorMessage ? (
+                    <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+                      <span>{task.errorMessage}</span>
+                    </div>
+                  ) : null}
+
+                  {task.status === "succeeded"
+                    ? renderMedia(task)
+                    : task.status === "processing"
+                      ? (
+                        <div className="flex w-full max-w-[260px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-6 py-10">
+                          <span className="block h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        </div>
+                      )
+                      : null}
+
+                  <footer className="flex items-center gap-2 text-xs text-white/50">
+                    {!task.effectSlug ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                            aria-label={usePromptLabel}
+                            onClick={() => void handleReprompt(task.id)}
+                          >
+                            <PenSquare className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{usePromptLabel}</TooltipContent>
+                      </Tooltip>
+                    ) : null}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                          aria-label={imageToImageLabel}
-                          onClick={() => void handleStartImageToImage(task)}
+                          className={cn(
+                            "h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]",
+                            isRegenerating(task.id) && "cursor-wait",
+                            task.status !== "succeeded" && "cursor-not-allowed opacity-40 hover:text-white/60 hover:bg-transparent"
+                          )}
+                          aria-label={retryLabel}
+                          disabled={isRegenerating(task.id) || task.status !== "succeeded"}
+                          onClick={() => void handleRegenerate(task.id)}
                         >
-                          <ImageUp className="h-4 w-4" />
+                          <RefreshCcw
+                            className={cn(
+                              "h-4 w-4",
+                              isRegenerating(task.id) && "animate-spin"
+                            )}
+                          />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">{imageToImageLabel}</TooltipContent>
+                      <TooltipContent side="top">{retryLabel}</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                    {task.status === "succeeded" && task.media?.kind === "image" ? (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                              aria-label={imageToImageLabel}
+                              onClick={() => void handleStartImageToImage(task)}
+                            >
+                              <ImageUp className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">{imageToImageLabel}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
+                              aria-label={imageToVideoLabel}
+                              onClick={() => void handleStartImageToVideo(task)}
+                            >
+                              <Clapperboard className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">{imageToVideoLabel}</TooltipContent>
+                        </Tooltip>
+                      </>
+                    ) : null}
+                    <DropdownMenu
+                      modal={false}
+                      open={!downloadDisabled && downloadMenuOpen}
+                      onOpenChange={(isOpen) => {
+                        if (isOpen) {
+                          openDownloadMenu(task.id, downloadDisabled);
+                        } else {
+                          closeDownloadMenu(task.id);
+                        }
+                      }}
+                    >
+                      <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                          aria-label={imageToVideoLabel}
-                          onClick={() => void handleStartImageToVideo(task)}
+                          aria-label={downloadActionLabel}
+                          aria-haspopup="menu"
+                          aria-expanded={downloadMenuOpen}
+                          disabled={downloadDisabled}
+                          onMouseEnter={() => openDownloadMenu(task.id, downloadDisabled)}
+                          onFocus={() => openDownloadMenu(task.id, downloadDisabled)}
+                          onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
+                          onBlur={() => scheduleDownloadMenuClose(task.id)}
                         >
-                          <Clapperboard className="h-4 w-4" />
+                          <Download className="h-4 w-4" />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">{imageToVideoLabel}</TooltipContent>
-                    </Tooltip>
-                  </>
-                ) : null}
-                  <DropdownMenu
-                  modal={false}
-                  open={!downloadDisabled && downloadMenuOpen}
-                  onOpenChange={(isOpen) => {
-                    if (isOpen) {
-                      openDownloadMenu(task.id, downloadDisabled);
-                    } else {
-                      closeDownloadMenu(task.id);
-                    }
-                  }}
-                >
-                  <DropdownMenuTrigger asChild>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        side="top"
+                        align="center"
+                        sideOffset={12}
+                        className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.4)]"
+                        onMouseEnter={clearDownloadMenuCloseTimeout}
+                        onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
+                        onFocusCapture={clearDownloadMenuCloseTimeout}
+                        onCloseAutoFocus={(event) => {
+                          event.preventDefault();
+                        }}
+                      >
+                        <DropdownMenuItem
+                          disabled={!hasWatermarkTarget}
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            void handleDownloadOptionClick(task, "watermark");
+                          }}
+                          className={cn(
+                            "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
+                            hasWatermarkTarget ? "cursor-pointer text-white/80" : "text-white/40"
+                          )}
+                        >
+                          <Download className="h-4 w-4 text-inherit" />
+                          <span className="flex-1">{downloadWatermarkLabel}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={!hasCleanTarget}
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            void handleDownloadOptionClick(task, "clean");
+                          }}
+                          className={cn(
+                            "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
+                            hasCleanTarget ? "cursor-pointer text-white/80" : "text-white/40"
+                          )}
+                        >
+                          <Download className="h-4 w-4 text-inherit" />
+                          <span className="flex-1">{downloadCleanLabel}</span>
+                          <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                            <Crown className="h-3 w-3 text-[#ffba49]" />
+                          </span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                      aria-label={downloadActionLabel}
-                      aria-haspopup="menu"
-                      aria-expanded={downloadMenuOpen}
-                      disabled={downloadDisabled}
-                      onMouseEnter={() => openDownloadMenu(task.id, downloadDisabled)}
-                      onFocus={() => openDownloadMenu(task.id, downloadDisabled)}
-                      onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
-                      onBlur={() => scheduleDownloadMenuClose(task.id)}
+                      aria-label={historyT("actions.share")}
+                      disabled={task.status !== "succeeded" || !task.shareSlug}
+                      onClick={() => handleShare(task)}
                     >
-                      <Download className="h-4 w-4" />
+                      <Share2 className="h-4 w-4" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="top"
-                    align="center"
-                    sideOffset={12}
-                    className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.4)]"
-                    onMouseEnter={clearDownloadMenuCloseTimeout}
-                    onMouseLeave={() => scheduleDownloadMenuClose(task.id)}
-                    onFocusCapture={clearDownloadMenuCloseTimeout}
-                    onCloseAutoFocus={(event) => {
-                      event.preventDefault();
-                    }}
-                  >
-                    <DropdownMenuItem
-                      disabled={!hasWatermarkTarget}
-                      onSelect={(event) => {
-                        event.preventDefault();
-                        void handleDownloadOptionClick(task, "watermark");
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
-                        hasWatermarkTarget ? "cursor-pointer text-white/80" : "text-white/40"
-                      )}
-                    >
-                      <Download className="h-4 w-4 text-inherit" />
-                      <span className="flex-1">{downloadWatermarkLabel}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      disabled={!hasCleanTarget}
-                      onSelect={(event) => {
-                        event.preventDefault();
-                        void handleDownloadOptionClick(task, "clean");
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] data-[highlighted]:text-[#dc2e5a]",
-                        hasCleanTarget ? "cursor-pointer text-white/80" : "text-white/40"
-                      )}
-                    >
-                      <Download className="h-4 w-4 text-inherit" />
-                      <span className="flex-1">{downloadCleanLabel}</span>
-                      <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
-                        <Crown className="h-3 w-3 text-[#ffba49]" />
-                      </span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-white/60 hover:text-white hover:bg-[#dc2e5a]"
-                  aria-label={historyT("actions.share")}
-                  disabled={task.status !== "succeeded" || !task.shareSlug}
-                  onClick={() => handleShare(task)}
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-                {isRegenerating(task.id) ? (
-                  <span className="ml-2 text-white/60">{generatingLabel}</span>
-                ) : null}
-              </footer>
-            </article>
-          );
-        })}
-          <div
-            ref={loadMoreRef}
-            className="py-4 text-center text-xs text-white/50"
-          >
-            {hasMore
-              ? isLoadingMore
-                ? loadingLabel
-                : loadMoreLabel
-              : noMoreLabel}
-          </div>
+                    {isRegenerating(task.id) ? (
+                      <span className="ml-2 text-white/60">{generatingLabel}</span>
+                    ) : null}
+                  </footer>
+                </article>
+              );
+            })}
+            <div
+              ref={loadMoreRef}
+              className="py-4 text-center text-xs text-white/50"
+            >
+              {hasMore
+                ? isLoadingMore
+                  ? loadingLabel
+                  : loadMoreLabel
+                : noMoreLabel}
+            </div>
           </div>
         </ScrollArea>
         {showScrollTop ? (
@@ -2242,7 +2242,7 @@ export default function TextToImageRecentTasks({
             <AlertDialogFooter>
               <AlertDialogCancel
                 disabled={isDeleting}
-                className="border-white/20 text-black hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10"
               >
                 {deleteCancelLabel}
               </AlertDialogCancel>

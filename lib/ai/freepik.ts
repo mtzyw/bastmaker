@@ -35,7 +35,7 @@ export function fromFreepikAspectRatio(value: string): string {
 }
 
 const TEXT_TO_IMAGE_MODEL_API_MAP: Record<string, string> = {
-  "Nano Banana Free": "gemini-2-5-flash-image-preview",
+  "Nano Banana Free": "seedream-v4-edit",
   "Flux Dev": "flux-dev",
   "Flux Pro 1.1": "flux-pro-v1-1",
   Hyperflux: "hyperflux",
