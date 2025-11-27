@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ImageIcon, Sparkles } from "lucide-react"
 import { useTranslations } from "next-intl"
+import Link from "next/link"
 
 export function HeroSection() {
   const t = useTranslations("Landing.Hero")
@@ -28,17 +29,21 @@ export function HeroSection() {
           {t("description")}
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-medium px-8"
-          >
-            <Sparkles className="w-5 h-5 mr-2" />
-            {t("textToVideoBtn")}
-          </Button>
-          <Button size="lg" variant="outline" className="border-border bg-card/50 hover:bg-card text-white hover:text-white px-8">
-            <ImageIcon className="w-5 h-5 mr-2" />
-            {t("imageToVideoBtn")}
-          </Button>
+          <Link href="/text-to-video">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-medium px-8"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              {t("textToVideoBtn")}
+            </Button>
+          </Link>
+          <Link href="/image-to-video">
+            <Button size="lg" variant="outline" className="border-border bg-card/50 hover:bg-card text-white hover:text-white px-8">
+              <ImageIcon className="w-5 h-5 mr-2" />
+              {t("imageToVideoBtn")}
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

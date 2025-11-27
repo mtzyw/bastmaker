@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Play } from "lucide-react"
 import { useTranslations } from "next-intl"
+import Link from "next/link"
 
 const videos = [
   "https://cdn.bestmaker.ai/tasks/c79eec6b-eb10-4b72-b9fa-f28d7a0e73af/99737affd67f4951913830bd1a821c8b.mp4",
@@ -50,9 +51,11 @@ export function VideoGallery() {
           ))}
         </div>
         <div className="text-center mt-12">
-          <Button size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-medium px-8">
-            {t("startBtn")}
-          </Button>
+          <Link href="/text-to-video">
+            <Button size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-medium px-8">
+              {t("startBtn")}
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
