@@ -1,7 +1,10 @@
 import { Mail, Video } from "lucide-react"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 export function Footer() {
+  const t = useTranslations("Landing.Footer")
+
   return (
     <footer className="py-16 bg-card border-t border-border">
       <div className="container mx-auto px-4">
@@ -13,99 +16,99 @@ export function Footer() {
               </div>
               <span className="font-bold text-lg text-foreground">BestMaker AI</span>
             </Link>
-            <p className="text-muted-foreground text-sm mb-4">AI驱动的视频生成平台，让创作更简单。</p>
+            <p className="text-muted-foreground text-sm mb-4">{t("description")}</p>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Mail className="w-4 h-4" />
               contact@bestmaker.ai
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">产品</h4>
+            <h4 className="font-semibold mb-4 text-foreground">{t("products")}</h4>
             <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  AI视频生成器
+                  {t("productLinks.videoGen")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  AI图片生成视频
+                  {t("productLinks.imageToVideo")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  AI视频模板
+                  {t("productLinks.templates")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  定价
+                  {t("productLinks.pricing")}
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">资源</h4>
+            <h4 className="font-semibold mb-4 text-foreground">{t("resources")}</h4>
             <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  帮助中心
+                  {t("resourceLinks.help")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  博客
+                  {t("resourceLinks.blog")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  教程
+                  {t("resourceLinks.tutorial")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  API文档
+                  {t("resourceLinks.api")}
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">关于我们</h4>
+            <h4 className="font-semibold mb-4 text-foreground">{t("about")}</h4>
             <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  公司简介
+                  {t("aboutLinks.company")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  联系我们
+                  {t("aboutLinks.contact")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  隐私政策
+                  {t("aboutLinks.privacy")}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="hover:text-amber-400 transition-colors">
-                  服务条款
+                  {t("aboutLinks.terms")}
                 </Link>
               </li>
             </ul>
           </div>
         </div>
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm">© 2025 BestMaker AI. All rights reserved.</p>
+          <p className="text-muted-foreground text-sm">{t("copyright")}</p>
           <div className="flex gap-6 text-muted-foreground text-sm">
             <Link href="#" className="hover:text-amber-400 transition-colors">
-              隐私政策
+              {t("bottomLinks.privacy")}
             </Link>
             <Link href="#" className="hover:text-amber-400 transition-colors">
-              服务条款
+              {t("bottomLinks.terms")}
             </Link>
             <Link href="#" className="hover:text-amber-400 transition-colors">
-              Cookie设置
+              {t("bottomLinks.cookie")}
             </Link>
           </div>
         </div>

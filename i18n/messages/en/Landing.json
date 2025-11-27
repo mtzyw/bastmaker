@@ -1,59 +1,210 @@
 {
+  "Header": {
+    "nav": {
+      "video": "AI Video",
+      "features": "Features",
+      "pricing": "Pricing",
+      "explore": "Explore"
+    },
+    "login": "Login",
+    "freeTrial": "Free Trial",
+    "language": "English"
+  },
   "Hero": {
-    "badge": "All-in-One AI Studio",
-    "title": "BestMaker AI: Generate Images, Video, Audio & Copy Together",
-    "description": "BestMaker AI unifies photoreal editors, storyboard-to-motion pipelines, script + voice drafting, and collaborative reviews. Compose prompts once, reuse them across modalities, and hand off production-ready files without tab fatigue.",
-    "getStarted": "Start Creating",
-    "getFreeTrial": "Free Trial (30 Cr)"
+    "badge": "BestMaker AI",
+    "title": "Create stunning videos from text or <br></br>images with our free online AI video generator",
+    "description": "BestMaker AI is an AI-based video generation tool that helps users easily create high-quality AI videos through simple text descriptions or images.",
+    "textToVideoBtn": "AI Text to Video",
+    "imageToVideoBtn": "AI Image to Video"
   },
-  "Features": {
-    "title": "Professional multi-modal editing <highlight>in one canvas</highlight>",
-    "description": "Swap between photoreal retouching, multi-image staging, UI layouting, storyboard-to-motion, and voice-ready scripts while BestMaker AI keeps prompts, color science, and credits in sync.",
-    "credits": "Credits",
-    "tryNow": "Try Now"
+  "VideoGallery": {
+    "title": "Transform text and images into videos with these popular AI video effects",
+    "description": "BestMaker AI offers various AI video generation features, including text-to-video, image-to-video, and more. Browse the AI video examples below to see what types of content our AI video generator can create.",
+    "videoLabel": "Video Example",
+    "aiGeneratedBadge": "AI Generated Video",
+    "startBtn": "Start AI Video Generation →"
   },
-  "FAQ": {
-    "title": "Frequently Asked Questions",
-    "description": "Everything you need to run BestMaker AI as your all-in-one generation studio.",
+  "WhyChoose": {
+    "title": "Why Choose BestMaker AI Video Generator?",
+    "description": "BestMaker AI is a powerful and easy-to-use AI video generation platform. Whether you are a content creator, marketer, or casual user, BestMaker AI can help you quickly create professional-grade AI videos.",
     "items": [
       {
-        "question": "What makes BestMaker AI an all-in-one creator studio?",
-        "answer": "BestMaker AI routes image, video, audio, and copy tasks through one prompt graph. Shared context preserves style, camera cues, and tone so every output stays aligned."
+        "title": "Free to Use",
+        "desc": "Get free credits daily to experience AI video generation without paying"
       },
       {
-        "question": "Can I mix multiple models or engines per project?",
-        "answer": "Yes. Blend BestMaker-native engines with partner models, then assign them to specific layers or shots without losing continuity."
+        "title": "Up to 4K Resolution",
+        "desc": "Generate high-definition 4K videos with clear and delicate picture quality"
       },
       {
-        "question": "How fast are generations and edits?",
-        "answer": "Most outputs finish in 10–30 seconds. Parallel pipelines let you preview storyboards, clips, and scripts simultaneously while variants continue to render in the background."
+        "title": "Multiple AI Models",
+        "desc": "Supports various mainstream AI models to meet different creative needs"
       },
       {
-        "question": "Which formats can I import or export?",
-        "answer": "Upload JPG, PNG, WEBP, or layered references. Export PNG, JPG, MP4, GIF, WebM, MP3, WAV, and prompt JSON bundles ready for developer or marketing handoff."
+        "title": "Zero Learning Curve",
+        "desc": "Simple and easy-to-use interface, no professional skills required"
       },
       {
-        "question": "Is commercial usage included?",
-        "answer": "Every asset generated with BestMaker AI includes full commercial rights, making it safe for brand launches, ads, and internal documentation."
+        "title": "Any Style",
+        "desc": "Supports various video styles, from realistic to animated"
       },
       {
-        "question": "How are my assets secured?",
-        "answer": "Uploads are encrypted at rest, processing happens in isolated workers, and you can choose regional storage plus fine-grained workspace permissions."
+        "title": "Massive Templates",
+        "desc": "Rich video template library to quickly start your creation"
       }
     ]
   },
-  "UseCases": {
-    "title": "Multi-Modal Launchpads",
-    "description": "See how teams spin hero art, walkthrough videos, product explainers, and newsletters from a single shared workspace."
+  "Features": {
+    "badge": "AI Video Generator Features",
+    "title": "What features does BestMaker AI Video Generator have?",
+    "feature1": {
+      "title": "Free AI Text-to-Video Generator, Create Videos from Text",
+      "description": "BestMaker AI's text-to-video feature allows you to generate high-quality AI videos by simply entering a text description. Supports multiple AI models, including Minimax, Hunyuan, Kling, Pika, etc., providing you with diverse creative choices.",
+      "list": [
+        "Supports multiple mainstream AI video models",
+        "Up to 4K resolution output",
+        "Daily free credits, experience without paying"
+      ]
+    }
+  },
+  "PrivacySecurity": {
+    "title": "Privacy and Data Security of AI Video Generator",
+    "description": "BestMaker AI values user privacy and data security. We use advanced encryption technology to protect your data and ensure your creative content is safe and reliable.",
+    "items": [
+      {
+        "title": "Data Encryption",
+        "desc": "All data transmission uses SSL encryption"
+      },
+      {
+        "title": "Privacy Protection",
+        "desc": "Your data will not be used for other purposes"
+      },
+      {
+        "title": "Secure Storage",
+        "desc": "Video files are securely stored in the cloud"
+      }
+    ]
+  },
+  "MoreTools": {
+    "title": "Explore More AI Video Tools to Unleash Your Creativity",
+    "description": "In addition to AI video generation, BestMaker AI also offers a variety of AI tools to help you complete more creative work.",
+    "items": [
+      {
+        "name": "Video Style",
+        "desc": "AI Video Style Transfer"
+      },
+      {
+        "name": "AI Outpainting",
+        "desc": "Intelligently expand image boundaries"
+      },
+      {
+        "name": "AI Video Templates",
+        "desc": "One-click template application"
+      },
+      {
+        "name": "AI Asset Generation",
+        "desc": "Generate video assets"
+      },
+      {
+        "name": "AI Video Editing",
+        "desc": "Intelligent video editing"
+      },
+      {
+        "name": "AI Dubbing",
+        "desc": "Intelligent speech synthesis"
+      }
+    ]
   },
   "Testimonials": {
-    "title": "Loved by Multi-Format Teams",
-    "description": "Product, growth, and creative orgs rely on BestMaker AI to keep every format in sync."
+    "title": "Real User Reviews of BestMaker AI Video Generator",
+    "items": [
+      {
+        "name": "Sarah Johnson",
+        "role": "Content Creator",
+        "content": "BestMaker AI is the best AI video generation tool I've ever used! Fast generation, clear picture quality, highly recommended!"
+      },
+      {
+        "name": "Michael Brown",
+        "role": "Marketing Manager",
+        "content": "Using BestMaker AI has greatly improved our video production efficiency, saving a lot of time and cost."
+      },
+      {
+        "name": "Emily Wilson",
+        "role": "Social Media Influencer",
+        "content": "The interface is simple and easy to use, and the AI-generated videos are amazing. It has become an essential tool for my creation."
+      }
+    ]
   },
   "CTA": {
-    "badge": "Build once, publish everywhere",
-    "title": "Run every workflow in <highlight>one AI studio</highlight>",
-    "description": "Join thousands of teams orchestrating images, clips, narration, and copy without hopping tools. Start with 30 free credits—no card needed.",
-    "primaryButton": "Start Creating Free"
+    "title": "Want to create stunning videos with an AI video generator?",
+    "description": "Start using BestMaker AI now and experience the charm of AI video generation.",
+    "button": "Start Creating for Free"
+  },
+  "FAQ": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "Can I use one account for all three AI tools (Video, Music, Image)?",
+        "answer": "Absolutely! With just one account, you can fully access our AI Video Generator, AI Music Generator, and AI Image Editor. No need to switch platforms or pay repeatedly, you can easily complete all multimedia creation in one place."
+      },
+      {
+        "question": "Can the generated content be freely used for commercial purposes?",
+        "answer": "Absolutely! All videos, music, and images generated by the platform are 100% original and grant full commercial usage rights. Whether for YouTube monetization, advertising, corporate projects, or client delivery, you can use them with confidence without paying extra copyright fees."
+      },
+      {
+        "question": "How fast is the content creation speed?",
+        "answer": "Extremely fast!\nAI Music: About 30 seconds\nImage Editing: About 3-5 seconds\nVideo Generation: Just a few minutes to output 4K quality\nOur self-developed high-performance AI engine ensures the shortest waiting time, making creation more efficient than ever."
+      },
+      {
+        "question": "Do I need professional skills to use it?",
+        "answer": "Not at all! Just describe the effect you want in simple language, and the system will automatically generate professional-level content. Anyone can easily get started, and create high-quality videos, music, and images with zero foundation."
+      },
+      {
+        "question": "What high-quality formats can be downloaded?",
+        "answer": "The platform provides professional-level output:\n4K Ultra HD Video\nStudio-grade lossless audio formats\nHigh-resolution images\nAll content is watermark-free and can be directly used for commercial and professional production scenarios."
+      },
+      {
+        "question": "Can content generated by different tools be combined?",
+        "answer": "Of course! You can:\nAdd generated music to your video\nConvert static images into animated videos\nEdit images first and then use them in video scenes\nThrough our all-in-one system, everything from assets to finished films can be seamlessly connected."
+      },
+      {
+        "question": "Is there a limit on the quantity of content creation?",
+        "answer": "The free plan provides a high daily quota to meet the needs of most users.\nIf you have higher production requirements, the Pro plan offers larger or even unlimited usage quotas, suitable for studios, creators, and enterprises."
+      },
+      {
+        "question": "How does the cost compare to using separate AI tools?",
+        "answer": "Our all-in-one platform saves more money than subscribing to multiple video, music, and image tools separately. You only need to pay a price close to a single tool to get premium access to three AI creation tools, completing the full content production process at a lower cost."
+      }
+    ]
+  },
+  "Footer": {
+    "description": "AI-driven video generation platform, making creation easier.",
+    "products": "Products",
+    "productLinks": {
+      "videoGen": "AI Video Generator",
+      "imageToVideo": "AI Image to Video",
+      "templates": "AI Video Templates",
+      "pricing": "Pricing"
+    },
+    "resources": "Resources",
+    "resourceLinks": {
+      "help": "Help Center",
+      "blog": "Blog",
+      "tutorial": "Tutorials",
+      "api": "API Documentation"
+    },
+    "about": "About Us",
+    "aboutLinks": {
+      "company": "Company Profile",
+      "contact": "Contact Us",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "copyright": "© 2025 BestMaker AI. All rights reserved.",
+    "bottomLinks": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookie": "Cookie Settings"
+    }
   }
 }
