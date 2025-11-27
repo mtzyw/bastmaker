@@ -1,36 +1,83 @@
 "use client";
 
-import dayjs from "dayjs";
-import Image from "next/image";
-import { useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
-import { Link as I18nLink, useRouter } from "@/i18n/routing";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link as I18nLink, useRouter } from "@/i18n/routing";
+import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import dayjs from "dayjs";
+import {
+  Copy,
+  Crown, Download,
   Heart,
+  ImageIcon,
   Link as LinkIcon,
   Share as ShareIcon,
-  MoreHorizontal,
-  Copy,
   Video,
-  ImageIcon,
-  Waves,
+  Waves
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import type { ViewerJob, ViewerJobAsset } from "@/actions/ai-jobs/public";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import AudioPlayer from "@/components/audio-player";
-import { useRepromptStore } from "@/stores/repromptStore";
-import type { RepromptDraft } from "@/lib/ai/creation-retry";
 import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
+import AudioPlayer from "@/components/audio-player";
+import { ShareDialog } from "@/components/ShareDialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import type { RepromptDraft } from "@/lib/ai/creation-retry";
+import { cn } from "@/lib/utils";
+import { useRepromptStore } from "@/stores/repromptStore";
+
 
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
+
+function inferFileExtension(url?: string | null, fallback: string = "png") {
+  if (!url) {
+    return fallback;
+  }
+  const clean = url.split(/[?#]/)[0] ?? "";
+  const match = clean.match(/\.([a-zA-Z0-9]+)$/);
+  if (!match) {
+    return fallback;
+  }
+  const ext = match[1].toLowerCase();
+  if (!ext || ext.length > 6) {
+    return fallback;
+  }
+  return ext;
+}
+
+function sanitizeFileStem(raw?: string | null) {
+  if (!raw) {
+    return null;
+  }
+  const stem = raw
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-_]/g, "")
+    .toLowerCase()
+    .slice(0, 48)
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return stem.length > 0 ? stem : null;
+}
+
+function buildDownloadFileName(job: ViewerJob, variant: "watermark" | "clean", extension: string) {
+  const stem =
+    sanitizeFileStem(job.prompt) ??
+    sanitizeFileStem(job.modelLabel) ??
+    `nexty-${job.id.slice(0, 6)}`;
+  const suffix = variant === "watermark" ? "-wm" : "-clean";
+  return `${stem}${suffix}.${extension}`;
+}
 
 const ACTION_ROUTE_MAP = {
   "text-to-image": "/text-to-image",
@@ -81,6 +128,8 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const t = useTranslations("Viewer.details");
   const router = useRouter();
   const setRepromptDraft = useRepromptStore((state) => state.setDraft);
+  const [isLiked, setIsLiked] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const createdAtLabel = useMemo(() => dayjs(job.createdAt).format(DATE_FORMAT), [job.createdAt]);
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
@@ -310,25 +359,54 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
     }
   }, [job.prompt, t]);
 
-  const quickShare = useCallback(() => {
-    if (navigator.share) {
-      navigator
-        .share({ url: shareUrl })
-        .then(() => toast.success(headerT("copySuccess", { default: "Link copied" })))
-        .catch(() => {});
-      return;
-    }
+  const handleShare = useCallback(() => {
+    setShareDialogOpen(true);
+  }, []);
 
+  const handleCopyLink = useCallback(() => {
     if (navigator.clipboard?.writeText) {
       navigator.clipboard
         .writeText(shareUrl)
         .then(() => toast.success(headerT("copySuccess", { default: "Link copied" })))
         .catch(() => toast.error(t("copyPromptError", { default: "Copy failed" })));
-      return;
+    } else {
+      const result = window.prompt(t("copyPromptManual", { default: "Copy link" }), shareUrl);
+      if (result !== null) {
+        toast.success(headerT("copySuccess", { default: "Link copied" }));
+      }
     }
-
-    window.prompt(t("copyPromptManual", { default: "Copy link" }), shareUrl);
   }, [shareUrl, headerT, t]);
+
+  const handleDownloadOptionClick = useCallback(
+    async (variant: "watermark" | "clean") => {
+      let urlToDownload = primaryAsset?.url;
+      if (variant === "watermark") {
+        urlToDownload = primaryAsset?.url;
+      } else {
+        urlToDownload = primaryAsset?.url;
+      }
+
+      if (!urlToDownload) {
+        toast.error(t("downloadFailed", { default: "Download failed" }));
+        return;
+      }
+
+      const fallbackExt = isVideoAsset(primaryAsset) ? "mp4" : isAudioAsset(primaryAsset) ? "mp3" : "png";
+      const extension = inferFileExtension(urlToDownload, fallbackExt);
+      const fileName = buildDownloadFileName(job, variant, extension);
+
+      if (urlToDownload.startsWith("data:")) {
+        downloadBase64File(urlToDownload, fileName);
+        return;
+      }
+
+      const proxied = await downloadViaProxy(urlToDownload, fileName, { taskId: job.id, variant });
+      if (!proxied) {
+        toast.error(t("downloadFailed", { default: "Download failed" }));
+      }
+    },
+    [job, primaryAsset, t]
+  );
 
   const tagCandidates = [job.modalityLabel, job.modelLabel]
     .filter((tag): tag is string => Boolean(tag))
@@ -476,23 +554,67 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/60">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="p-2 text-white/70 hover:text-white">
-                  <Heart className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("p-2 transition-colors", isLiked ? "text-red-500 hover:text-red-600" : "text-white/70 hover:text-white")}
+                  onClick={() => setIsLiked(!isLiked)}
+                >
+                  <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
                 </Button>
-                <Button variant="ghost" size="icon" className="p-2 text-white/70 hover:text-white">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="p-2 text-white/70 hover:text-white"
+                  onClick={handleCopyLink}
+                >
                   <LinkIcon className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="p-2 text-white/70 hover:text-white"
-                  onClick={quickShare}
+                  onClick={handleShare}
                 >
                   <ShareIcon className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="p-2 text-white/70 hover:text-white">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="p-2 text-white/70 hover:text-white">
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="top"
+                    align="center"
+                    sideOffset={12}
+                    className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.4)]"
+                  >
+                    <DropdownMenuItem
+                      onSelect={(event: Event) => {
+                        event.preventDefault();
+                        void handleDownloadOptionClick("watermark");
+                      }}
+                      className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] cursor-pointer text-white/80"
+                    >
+                      <Download className="h-4 w-4 text-inherit" />
+                      <span className="flex-1">{t("downloadWatermark", { default: "Download with watermark" })}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        void handleDownloadOptionClick("clean");
+                      }}
+                      className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a] hover:text-[#dc2e5a] cursor-pointer text-white/80"
+                    >
+                      <Download className="h-4 w-4 text-inherit" />
+                      <span className="flex-1">{t("downloadClean", { default: "Download clean" })}</span>
+                      <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                        <Crown className="h-3 w-3 text-[#ffba49]" />
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <Button
                 className="bg-[#dc2e5a] text-white hover:bg-[#dc2e5a]/90 sm:min-w-[160px]"
@@ -504,6 +626,12 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
           </section>
         </div>
       </div>
-    </Card>
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        shareUrl={shareUrl}
+        title={job.prompt || "Check out my AI creation!"}
+      />
+    </Card >
   );
 }

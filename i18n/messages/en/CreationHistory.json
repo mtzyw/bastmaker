@@ -7,11 +7,16 @@
     "audio": "Audio"
   },
   "status": {
+    "pending": "Pending",
+    "queued": "Queued",
     "processing": "Processing",
+    "running": "Running",
+    "in_progress": "In Progress",
     "completed": "Completed",
-    "failed": "Failed",
+    "failed": "Generation Failed",
     "cancelled": "Cancelled",
-    "unknown": "Unknown status"
+    "cancelled_insufficient_credits": "Insufficient Credits",
+    "unknown": "Unknown Status"
   },
   "actions": {
     "viewAll": "View all",

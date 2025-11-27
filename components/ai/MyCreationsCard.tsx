@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils";
 
 import {
   getEffectiveStatus,
-  getStatusLabel,
-  isProcessingStatus,
-  isVideoOutput,
   isAudioOutput,
+  isProcessingStatus,
+  isVideoOutput
 } from "@/components/ai/my-creations-helpers";
 import AudioPlayer from "@components/audio-player";
+import { useTranslations } from "next-intl";
 
 const GRID_ROW_HEIGHT = 12; // matches auto-rows-[12px]
 const GRID_GAP = 16; // gap-4 => 1rem
@@ -29,6 +29,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
   const measurementNotifiedRef = useRef(false);
   const [isMeasured, setIsMeasured] = useState(false);
   const [rowSpan, setRowSpan] = useState(1);
+  const historyT = useTranslations("CreationHistory");
 
   useEffect(() => {
     measurementNotifiedRef.current = false;
@@ -112,7 +113,7 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
   const video = isVideoOutput(primaryOutput);
   const audio = isAudioOutput(primaryOutput);
   const effectiveStatus = getEffectiveStatus(item);
-  const statusLabel = getStatusLabel(effectiveStatus);
+  const statusLabel = effectiveStatus ? historyT(`status.${effectiveStatus}`) : historyT("status.unknown");
   const isInProgress = isProcessingStatus(effectiveStatus);
   const isError =
     effectiveStatus === "failed" ||
