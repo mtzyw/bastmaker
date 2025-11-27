@@ -10,7 +10,12 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function getCroppedImageBlob(imageSrc: string, crop: Area): Promise<Blob> {
+export async function getCroppedImageBlob(
+  imageSrc: string,
+  crop: Area,
+  mimeType: string = "image/png",
+  quality: number = 0.92
+): Promise<Blob> {
   const image = await loadImage(imageSrc);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -35,13 +40,17 @@ export async function getCroppedImageBlob(imageSrc: string, crop: Area): Promise
   );
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Canvas is empty"));
-      }
-    }, "image/png", 0.92);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Canvas is empty"));
+        }
+      },
+      mimeType,
+      quality
+    );
   });
 }
 

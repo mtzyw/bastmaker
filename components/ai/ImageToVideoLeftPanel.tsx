@@ -1,34 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Coins, Sparkles, Trash2 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
-import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
 import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   DEFAULT_VIDEO_LENGTH,
   DEFAULT_VIDEO_MODEL,
   DEFAULT_VIDEO_RESOLUTION,
-  VideoLengthValue,
-  VideoResolutionValue,
   VIDEO_MODEL_SELECT_OPTIONS,
   VIDEO_RESOLUTION_PRESETS,
+  VideoLengthValue,
+  VideoResolutionValue,
   getAllowedVideoLengths,
   getModelOption,
 } from "@/components/ai/video-models";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { CreationItem } from "@/lib/ai/creations";
+import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { cn } from "@/lib/utils";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
-import { getVideoModelConfig } from "@/lib/ai/video-config";
-import { Switch } from "@/components/ui/switch";
+import { Coins, Sparkles, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type UploadKind = "primary" | "intro" | "outro" | "tail";
 
@@ -174,8 +174,8 @@ export default function ImageToVideoLeftPanel() {
       repromptDraft.model && optionValues.includes(repromptDraft.model)
         ? repromptDraft.model
         : VIDEO_MODEL_SELECT_OPTIONS.find((option) => option.label === repromptDraft.model)?.value ??
-          optionValues[0] ??
-          DEFAULT_VIDEO_MODEL;
+        optionValues[0] ??
+        DEFAULT_VIDEO_MODEL;
     setModel(matchedModel);
 
     const resolutionChoices = VIDEO_RESOLUTION_PRESETS[matchedModel] ?? [FALLBACK_RESOLUTION];
@@ -933,7 +933,7 @@ export default function ImageToVideoLeftPanel() {
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               canSubmit &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait"
             )}
             disabled={disableSubmit}
@@ -949,6 +949,7 @@ export default function ImageToVideoLeftPanel() {
       <ImageCropperDialog
         open={cropperOpen}
         imageSrc={cropSource?.src ?? null}
+        fileType={cropSource?.fileType}
         onCancel={handleCropCancel}
         onConfirm={handleCropConfirm}
       />

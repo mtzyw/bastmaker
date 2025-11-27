@@ -1,13 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { getCroppedImageBlob } from "@/lib/image/crop-image";
+import { cn } from "@/lib/utils";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import Cropper, { type Area, type MediaSize } from "react-easy-crop";
 import "react-easy-crop/react-easy-crop.css";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { getCroppedImageBlob } from "@/lib/image/crop-image";
 
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 3;
@@ -28,13 +28,14 @@ type AspectSelectValue = (typeof ASPECT_OPTIONS)[number]["value"];
 type ImageCropperDialogProps = {
   open: boolean;
   imageSrc: string | null;
+  fileType?: string;
   onConfirm: (payload: { blob: Blob; dataUrl: string; width: number; height: number }) => void;
   onCancel: () => void;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-export default function ImageCropperDialog({ open, imageSrc, onConfirm, onCancel }: ImageCropperDialogProps) {
+export default function ImageCropperDialog({ open, imageSrc, fileType, onConfirm, onCancel }: ImageCropperDialogProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(ZOOM_MIN);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -105,7 +106,8 @@ export default function ImageCropperDialog({ open, imageSrc, onConfirm, onCancel
     if (!imageSrc || !croppedAreaPixels) return;
     try {
       setIsProcessing(true);
-      const blob = await getCroppedImageBlob(imageSrc, croppedAreaPixels);
+      const mimeType = fileType || "image/png";
+      const blob = await getCroppedImageBlob(imageSrc, croppedAreaPixels, mimeType);
       const { width, height } = croppedAreaPixels;
       const reader = new FileReader();
       reader.readAsDataURL(blob);
