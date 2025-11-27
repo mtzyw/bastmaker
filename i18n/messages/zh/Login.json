@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "signin": {
+      "title": "登录",
+      "description": "登录您的 BestMaker AI 账户"
+    },
+    "signup": {
+      "title": "注册",
+      "description": "注册您的 BestMaker AI 账户"
+    }
+  },
+  "headlines": {
+    "signupDetails": "设置账号信息",
+    "signup": "注册你的 Bestmaker 账号",
+    "signin": "登录你的 Bestmaker 账号"
+  },
+  "subHeadlines": {
+    "signupDetails": "为通过验证的邮箱设置用户名与密码，完成最后一步。",
+    "signup": "使用邮箱或社交账号创建账户，解锁更多 AI 工具与积分奖励。",
+    "signin": "输入邮箱并验证后即可快速登录，继续创作。"
+  },
+  "banner": {
+    "credits": "新手注册就送 {credits} 积分",
+    "subtitle": "输入邮箱即可获取验证码，5 分钟内完成注册。"
+  },
+  "labels": {
+    "email": "邮箱地址",
+    "password": "密码",
+    "username": "用户名"
+  },
+  "placeholders": {
+    "email": "name@example.com",
+    "password": "请输入密码",
+    "username": "给自己取一个名字",
+    "code": "输入 6 位验证码",
+    "passwordMinLength": "设置登录密码（至少 8 位）"
+  },
+  "actions": {
+    "login": "登录",
+    "signUp": "立即注册",
+    "sendCode": "发送验证码",
+    "directLogin": "直接登录",
+    "verifyEmail": "验证邮箱",
+    "changeEmail": "换一个邮箱",
+    "resend": "重新发送",
+    "completeSignup": "完成注册"
+  },
+  "messages": {
+    "enterEmailAndPassword": "请输入邮箱和密码",
+    "completeCaptcha": "请完成验证码验证",
+    "loginSuccess": "登录成功",
+    "loginFailed": "登录失败",
+    "noAccount": "还没有账号？",
+    "hasAccount": "已有账号？",
+    "termsAgreement": "登录即表示同意我们的",
+    "signupTermsAgreement": "注册即表示同意我们的",
+    "and": "与",
+    "codeSentTo": "验证码已发送到",
+    "waitSeconds": "请等待 {seconds}s",
+    "resendWait": "重新发送 ({seconds}s)",
+    "sendCodeFailed": "发送验证码失败",
+    "verifyCodeFailed": "验证码验证失败",
+    "verifyEmailSuccess": "邮箱验证成功，请设置用户名和密码",
+    "enterUsernameAndPassword": "请填写用户名和密码",
+    "completeEmailVerification": "请先完成邮箱验证",
+    "signupFailed": "注册失败",
+    "signupSuccess": "注册成功",
+    "enterEmail": "请输入邮箱地址",
+    "captchaFailed": "验证码校验失败，请重试。"
+  },
+  "links": {
+    "terms": "使用条款",
+    "privacy": "隐私政策"
+  },
+  "signInMethods": {
+    "signInWithGoogle": "通过 Google 登录",
+    "or": "或"
+  },
+  "Toast": {
+    "Google": {
+      "errorTitle": "Google 登录失败",
+      "errorDescription": "无法通过 Google 完成登录，请稍后重试。"
+    }
+  }
+}

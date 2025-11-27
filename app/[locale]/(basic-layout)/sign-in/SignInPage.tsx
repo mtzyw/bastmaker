@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -49,11 +49,11 @@ export default function SignInPage({
 
   const handlePasswordLogin = async () => {
     if (!email || !password) {
-      toast.error("请输入邮箱和密码");
+      toast.error(t("messages.enterEmailAndPassword"));
       return;
     }
     if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !captchaToken) {
-      toast.error("请完成验证码验证");
+      toast.error(t("messages.completeCaptcha"));
       return;
     }
     setIsLoggingIn(true);
@@ -65,10 +65,10 @@ export default function SignInPage({
         options: captchaToken ? { captchaToken } : undefined,
       });
       if (error) throw error;
-      toast.success("登录成功");
+      toast.success(t("messages.loginSuccess"));
       router.replace(next || "/");
     } catch (e: any) {
-      toast.error("登录失败", { description: e?.message });
+      toast.error(t("messages.loginFailed"), { description: e?.message });
     } finally {
       setIsLoggingIn(false);
     }
@@ -95,7 +95,7 @@ export default function SignInPage({
   const gradientWidth = variant === "dialog" ? "max-w-sm -mb-2" : "max-w-lg -mb-8";
   const cardPadding = variant === "dialog" ? "px-4 pb-4 pt-10" : "px-8 pb-12 pt-24";
   const headingSize = variant === "dialog" ? "text-base md:text-lg" : "text-3xl md:text-4xl";
-  const descriptionSize = variant === "dialog" ? "text-xs" : "text-sm md:text-base";
+  const subTextSize = variant === "dialog" ? "text-xs" : "text-sm md:text-base";
   const badgeSize = variant === "dialog" ? "text-[9px]" : "text-sm";
   const subBadgeSize = variant === "dialog" ? "text-[9px]" : "text-xs";
   const innerMaxWidth = variant === "dialog" ? "max-w-xs" : "max-w-lg";
@@ -136,6 +136,11 @@ export default function SignInPage({
         className={`relative rounded-[32px] border border-white/10 bg-[#161616] ${cardPadding} shadow-[0_30px_80px_rgba(15,23,42,0.45)] backdrop-blur`}
       >
         <div className={`flex flex-col items-center ${sectionGap} text-center`}>
+          <div className={`${titleSpacing}`}>
+            <h1 className={`${headingSize} font-semibold tracking-tight`}>{t("headlines.signin")}</h1>
+            <p className={`${subTextSize} text-white/70`}>{t("subHeadlines.signin")}</p>
+          </div>
+
           <div className={`w-full ${innerMaxWidth} ${contentStackSpacing} text-left text-white/85`}>
             <div className="flex justify-center">
               <Button
@@ -156,11 +161,11 @@ export default function SignInPage({
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                  邮箱地址
+                  {t("labels.email")}
                 </label>
                 <Input
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t("placeholders.email")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setShowTurnstile(true)}
@@ -169,11 +174,11 @@ export default function SignInPage({
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                  密码
+                  {t("labels.password")}
                 </label>
                 <Input
                   type="password"
-                  placeholder="请输入密码"
+                  placeholder={t("placeholders.password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={`${inputClass} mt-1`}
@@ -187,25 +192,25 @@ export default function SignInPage({
                 disabled={isLoggingIn}
                 className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
               >
-                登录 {isLoggingIn && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                {t("actions.login")} {isLoggingIn && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
               </Button>
 
               {onRequestSwitchMode ? (
                 <div className="text-center text-xs text-white/50">
-                  还没有账号？
+                  {t("messages.noAccount")}
                   <button
                     type="button"
                     onClick={() => onRequestSwitchMode("signup")}
                     className="ml-1 font-semibold text-[#dc2e5a] underline-offset-4 hover:underline"
                   >
-                    立即注册
+                    {t("actions.signUp")}
                   </button>
                 </div>
               ) : (
                 <p className="text-center text-xs text-white/50">
-                  还没有账号？
+                  {t("messages.noAccount")}
                   <Link href="/sign-up" className="ml-1 font-semibold text-[#dc2e5a]">
-                    立即注册
+                    {t("actions.signUp")}
                   </Link>
                 </p>
               )}
@@ -213,13 +218,13 @@ export default function SignInPage({
           </div>
 
           <p className="text-center text-[11px] text-white/30">
-            登录即表示同意我们的{" "}
+            {t("messages.termsAgreement")}{" "}
             <Link className="text-white/50 underline underline-offset-4 hover:text-white" href="/terms-of-service">
-              使用条款
+              {t("links.terms")}
             </Link>{" "}
-            与{" "}
+            {t("messages.and")}{" "}
             <Link className="text-white/50 underline underline-offset-4 hover:text-white" href="/privacy-policy">
-              隐私政策
+              {t("links.privacy")}
             </Link>
             。
           </p>

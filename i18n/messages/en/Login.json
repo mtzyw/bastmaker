@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "signin": {
+      "title": "Sign In",
+      "description": "Sign in to your BestMaker AI account"
+    },
+    "signup": {
+      "title": "Sign Up",
+      "description": "Sign up for a BestMaker AI account"
+    }
+  },
+  "headlines": {
+    "signupDetails": "Set Account Details",
+    "signup": "Sign up for Bestmaker",
+    "signin": "Sign in to Bestmaker"
+  },
+  "subHeadlines": {
+    "signupDetails": "Set a username and password for your verified email to complete the last step.",
+    "signup": "Create an account with email or social login to unlock more AI tools and credit rewards.",
+    "signin": "Enter your email and verify to log in quickly and continue creating."
+  },
+  "banner": {
+    "credits": "New users get {credits} credits upon registration",
+    "subtitle": "Enter your email to get a verification code. Complete registration in 5 minutes."
+  },
+  "labels": {
+    "email": "Email Address",
+    "password": "Password",
+    "username": "Username"
+  },
+  "placeholders": {
+    "email": "name@example.com",
+    "password": "Enter your password",
+    "username": "Pick a username",
+    "code": "Enter 6-digit code",
+    "passwordMinLength": "Set password (min 8 chars)"
+  },
+  "actions": {
+    "login": "Sign In",
+    "signUp": "Sign Up Now",
+    "sendCode": "Send Code",
+    "directLogin": "Log In Directly",
+    "verifyEmail": "Verify Email",
+    "changeEmail": "Change Email",
+    "resend": "Resend",
+    "completeSignup": "Complete Sign Up"
+  },
+  "messages": {
+    "enterEmailAndPassword": "Please enter email and password",
+    "completeCaptcha": "Please complete the captcha verification",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "termsAgreement": "By logging in, you agree to our",
+    "signupTermsAgreement": "By signing up, you agree to our",
+    "and": "and",
+    "codeSentTo": "Code sent to",
+    "waitSeconds": "Please wait {seconds}s",
+    "resendWait": "Resend ({seconds}s)",
+    "sendCodeFailed": "Failed to send verification code",
+    "verifyCodeFailed": "Verification code failed",
+    "verifyEmailSuccess": "Email verified successfully, please set username and password",
+    "enterUsernameAndPassword": "Please enter username and password",
+    "completeEmailVerification": "Please complete email verification first",
+    "signupFailed": "Sign up failed",
+    "signupSuccess": "Sign up successful",
+    "enterEmail": "Please enter email address",
+    "captchaFailed": "Captcha verification failed, please try again."
+  },
+  "links": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  },
+  "signInMethods": {
+    "signInWithGoogle": "Sign in with Google",
+    "or": "OR"
+  },
+  "Toast": {
+    "Google": {
+      "errorTitle": "Google Login Failed",
+      "errorDescription": "Could not complete login with Google. Please try again later."
+    }
+  }
+}

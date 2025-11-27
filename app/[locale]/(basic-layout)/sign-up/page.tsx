@@ -18,8 +18,8 @@ export async function generateMetadata({
 
   return constructMetadata({
     page: "Sign Up",
-    title: t("title"),
-    description: t("description"),
+    title: t("meta.signup.title"),
+    description: t("meta.signup.description"),
     locale: locale as Locale,
     path: `/sign-up`,
   });

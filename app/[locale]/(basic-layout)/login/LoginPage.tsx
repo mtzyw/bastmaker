@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { Loader2, Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Loader2, Mail } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -80,14 +80,14 @@ export default function LoginPage({
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || "发送验证码失败");
+      throw new Error(result?.error || t("messages.sendCodeFailed"));
     }
 
     setStep("verify");
     setVerificationToken(null);
     setCode("");
     setResendSeconds(30);
-    toast.success("验证码已发送，请查收邮箱");
+    toast.success(t("messages.codeSentTo") + " " + email);
     return true;
   };
 
@@ -95,7 +95,7 @@ export default function LoginPage({
     setIsSending(false);
     setShowTurnstile(false);
     setPendingAction(null);
-    toast.error("验证码校验失败，请重试。");
+    toast.error(t("messages.captchaFailed"));
   };
 
   const handleTurnstileSuccess = async (token: string) => {
@@ -103,7 +103,7 @@ export default function LoginPage({
     try {
       await sendVerificationCode(token);
     } catch (error: any) {
-      toast.error("发送验证码失败", { description: error?.message });
+      toast.error(t("messages.sendCodeFailed"), { description: error?.message });
     } finally {
       setIsSending(false);
       setShowTurnstile(false);
@@ -113,7 +113,7 @@ export default function LoginPage({
 
   const handleSendCode = async () => {
     if (!email) {
-      toast.error("请输入邮箱地址");
+      toast.error(t("messages.enterEmail"));
       return;
     }
 
@@ -129,7 +129,7 @@ export default function LoginPage({
     try {
       await sendVerificationCode();
     } catch (error: any) {
-      toast.error("发送验证码失败", { description: error?.message });
+      toast.error(t("messages.sendCodeFailed"), { description: error?.message });
     } finally {
       setIsSending(false);
     }
@@ -137,7 +137,7 @@ export default function LoginPage({
 
   const handleVerify = async () => {
     if (!email || !code) {
-      toast.error("请输入邮箱和验证码");
+      toast.error(t("messages.enterEmailAndPassword")); // Reusing this message or should add a new one? "Please enter email and code"
       return;
     }
 
@@ -153,11 +153,11 @@ export default function LoginPage({
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result?.error || "验证码验证失败");
+        throw new Error(result?.error || t("messages.verifyCodeFailed"));
       }
 
       setVerificationToken(result.token);
-      toast.success("邮箱验证成功，请设置用户名和密码");
+      toast.success(t("messages.verifyEmailSuccess"));
       setStep("details");
       setCode("");
     } catch (error: any) {
@@ -169,11 +169,11 @@ export default function LoginPage({
 
   const handleCompleteSignup = async () => {
     if (!username || !password) {
-      toast.error("请填写用户名和密码");
+      toast.error(t("messages.enterUsernameAndPassword"));
       return;
     }
     if (!verificationToken) {
-      toast.error("请先完成邮箱验证");
+      toast.error(t("messages.completeEmailVerification"));
       return;
     }
 
@@ -193,7 +193,7 @@ export default function LoginPage({
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result?.error || "注册失败");
+        throw new Error(result?.error || t("messages.signupFailed"));
       }
 
       const supabase = createClient();
@@ -203,10 +203,10 @@ export default function LoginPage({
       });
       if (error) throw error;
 
-      toast.success("注册成功");
+      toast.success(t("messages.signupSuccess"));
       router.replace(next || "/");
     } catch (error: any) {
-      toast.error("注册失败", { description: error?.message });
+      toast.error(t("messages.signupFailed"), { description: error?.message });
     } finally {
       setIsCompleting(false);
     }
@@ -274,17 +274,17 @@ export default function LoginPage({
   const isSignupMode = mode === "signup";
   const headline = (() => {
     if (isSignupMode) {
-      return step === "details" ? "设置账号信息" : "注册你的 Bestmaker 账号";
+      return step === "details" ? t("headlines.signupDetails") : t("headlines.signup");
     }
-    return "登录你的 Bestmaker 账号";
+    return t("headlines.signin");
   })();
   const subHeadline = (() => {
     if (isSignupMode) {
       return step === "details"
-        ? "为通过验证的邮箱设置用户名与密码，完成最后一步。"
-        : "使用邮箱或社交账号创建账户，解锁更多 AI 工具与积分奖励。";
+        ? t("subHeadlines.signupDetails")
+        : t("subHeadlines.signup");
     }
-    return "输入邮箱并验证后即可快速登录，继续创作。";
+    return t("subHeadlines.signin");
   })();
   const controlHeight = variant === "dialog" ? "h-11" : "h-12";
   const inputClass = `${controlHeight} w-full rounded-xl border border-white/15 bg-white/[0.08] px-4 text-sm text-white placeholder:text-white/40 focus:border-white focus:bg-white/10 focus:outline-none`;
@@ -315,9 +315,9 @@ export default function LoginPage({
           className={`relative z-10 mx-auto ${gradientWidth} w-full rounded-3xl bg-[linear-gradient(to_right,_rgb(18,194,233),_rgb(196,113,237),_rgb(246,79,89))] ${ctaPadding} text-center text-white shadow-[0_20px_60px_rgba(123,97,255,0.35)]`}
         >
           <p className={`${badgeSize} font-semibold leading-relaxed`}>
-            新手注册就送 {process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0"} 积分
+            {t("banner.credits", { credits: process.env.NEXT_PUBLIC_WELCOME_CREDITS ?? "0" })}
           </p>
-          <p className={`${subBadgeSize} font-medium text-white/85`}>输入邮箱即可获取验证码，5 分钟内完成注册。</p>
+          <p className={`${subBadgeSize} font-medium text-white/85`}>{t("banner.subtitle")}</p>
         </div>
       )}
 
@@ -352,11 +352,11 @@ export default function LoginPage({
                 <div className={fieldStackSpacing}>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                      邮箱地址
+                      {t("labels.email")}
                     </label>
                     <Input
                       type="email"
-                      placeholder="name@example.com"
+                      placeholder={t("placeholders.email")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={inputClass}
@@ -370,26 +370,26 @@ export default function LoginPage({
                     disabled={isSending}
                     className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
                   >
-                    发送验证码 {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                    {t("actions.sendCode")} {isSending && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
                   </Button>
 
                   {isSignupMode ? (
                     onRequestSwitchMode ? (
                       <div className="text-center text-xs text-white/50">
-                        已有账号？
+                        {t("messages.hasAccount")}
                         <button
                           type="button"
                           onClick={() => onRequestSwitchMode("signin")}
                           className="ml-1 font-semibold text-[#dc2e5a] underline-offset-4 hover:underline"
                         >
-                          直接登录
+                          {t("actions.directLogin")}
                         </button>
                       </div>
                     ) : (
                       <p className="text-center text-xs text-white/50">
-                        已有账号？
+                        {t("messages.hasAccount")}
                         <Link href="/sign-in" className="ml-1 font-semibold text-[#dc2e5a]">
-                          直接登录
+                          {t("actions.directLogin")}
                         </Link>
                       </p>
                     )
@@ -403,25 +403,25 @@ export default function LoginPage({
                 <div className={`rounded-2xl border border-white/10 bg-white/5 ${verifyCardPadding} text-sm text-white/80`}>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <span>验证码已发送到</span>
+                    <span>{t("messages.codeSentTo")}</span>
                   </div>
                   <p className="mt-1 break-all font-semibold text-white">{email}</p>
                 </div>
 
                 <Input
-                  placeholder="输入 6 位验证码"
+                  placeholder={t("placeholders.code")}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className={inputClass}
                 />
 
-                  <Button
-                    onClick={handleVerify}
-                    disabled={isVerifying}
-                    className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
-                  >
-                    验证邮箱 {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
-                  </Button>
+                <Button
+                  onClick={handleVerify}
+                  disabled={isVerifying}
+                  className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
+                >
+                  {t("actions.verifyEmail")} {isVerifying && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                </Button>
 
                 {renderTurnstile()}
 
@@ -430,15 +430,15 @@ export default function LoginPage({
                     className="underline underline-offset-4 hover:text-white"
                     onClick={handleUseDifferentEmail}
                   >
-                    换一个邮箱
+                    {t("actions.changeEmail")}
                   </button>
                   <button
                     className="font-semibold text-[#dc2e5a]"
                     onClick={handleResendCode}
                     disabled={isSending || resendSeconds > 0}
-                    title={resendSeconds > 0 ? `请等待 ${resendSeconds}s` : undefined}
+                    title={resendSeconds > 0 ? t("messages.waitSeconds", { seconds: resendSeconds }) : undefined}
                   >
-                    {resendSeconds > 0 ? `重新发送 (${resendSeconds}s)` : "重新发送"}
+                    {resendSeconds > 0 ? t("messages.resendWait", { seconds: resendSeconds }) : t("actions.resend")}
                   </button>
                 </div>
               </div>
@@ -448,10 +448,10 @@ export default function LoginPage({
               <div className={fieldStackSpacing}>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                    用户名
+                    {t("labels.username")}
                   </label>
                   <Input
-                    placeholder="给自己取一个名字"
+                    placeholder={t("placeholders.username")}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className={`${inputClass} mt-1`}
@@ -459,11 +459,11 @@ export default function LoginPage({
                 </div>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                    密码
+                    {t("labels.password")}
                   </label>
                   <Input
                     type="password"
-                    placeholder="设置登录密码（至少 8 位）"
+                    placeholder={t("placeholders.passwordMinLength")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`${inputClass} mt-1`}
@@ -474,26 +474,26 @@ export default function LoginPage({
                   disabled={isCompleting}
                   className={`${controlHeight} w-full rounded-xl bg-white text-sm font-semibold text-[#232323] hover:bg-white/90`}
                 >
-                  完成注册 {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
+                  {t("actions.completeSignup")} {isCompleting && <Loader2 className="ml-2 h-4 w-4 animate-spin text-[#232323]" />}
                 </Button>
               </div>
             )}
           </div>
 
           <p className="text-center text-[11px] text-white/30">
-            注册即表示同意我们的{" "}
+            {t("messages.signupTermsAgreement")}{" "}
             <Link
               className="text-white/50 underline underline-offset-4 hover:text-white"
               href="/terms-of-service"
             >
-              使用条款
+              {t("links.terms")}
             </Link>{" "}
-            与{" "}
+            {t("messages.and")}{" "}
             <Link
               className="text-white/50 underline underline-offset-4 hover:text-white"
               href="/privacy-policy"
             >
-              隐私政策
+              {t("links.privacy")}
             </Link>
             。
           </p>
