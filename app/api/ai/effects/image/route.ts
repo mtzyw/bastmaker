@@ -6,24 +6,24 @@ import {
   FreepikTaskResponse,
 } from "@/lib/ai/freepik-client";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
-import { formatProviderError } from "@/lib/ai/provider-error";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
+import { formatProviderError } from "@/lib/ai/provider-error";
 import { apiResponse } from "@/lib/api-response";
+import {
+  generateR2Key,
+  getDataFromDataUrl,
+  serverUploadFile,
+} from "@/lib/cloudflare/r2";
+import {
+  fetchImageEffectTemplate,
+  type ImageEffectTemplate,
+} from "@/lib/image-effects/templates";
 import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import {
-  fetchImageEffectTemplate,
-  type ImageEffectTemplate,
-} from "@/lib/image-effects/templates";
-import {
-  generateR2Key,
-  getDataFromDataUrl,
-  serverUploadFile,
-} from "@/lib/cloudflare/r2";
 
 type AssetPayload = { url: string };
 
@@ -186,17 +186,17 @@ export async function POST(req: NextRequest) {
     template.inputs.length > 0
       ? template.inputs
       : [
-          {
-            id: "primary",
-            slot: "primary",
-            type: "image",
-            isRequired: true,
-            maxSizeMb: null,
-            instructions: null,
-            metadata: {},
-            displayOrder: 0,
-          },
-        ];
+        {
+          id: "primary",
+          slot: "primary",
+          type: "image",
+          isRequired: true,
+          maxSizeMb: null,
+          instructions: null,
+          metadata: {},
+          displayOrder: 0,
+        },
+      ];
 
   const missingSlots: string[] = [];
 
@@ -382,7 +382,7 @@ export async function POST(req: NextRequest) {
     aspect_ratio: aspectRatio ?? undefined,
     reference_images: referenceImageUrls,
     translate_prompt: translatePrompt,
-    image_url: primaryImageUrl ?? undefined,
+    // image_url: primaryImageUrl ?? undefined, // Removed to fix validation error with seedream-v4-edit
     negative_prompt: negativePrompt ?? undefined,
     webhook_url: getWebhookUrl(),
   };
@@ -414,9 +414,9 @@ export async function POST(req: NextRequest) {
     if (internalStatus === "failed") {
       const providerError = formatProviderError(
         (taskData as any)?.error ??
-          (taskData as any)?.message ??
-          (freepikResponse as any)?.error ??
-          (freepikResponse as any)?.message
+        (taskData as any)?.message ??
+        (freepikResponse as any)?.error ??
+        (freepikResponse as any)?.message
       );
       const errorMessage = providerError ?? "Generation failed. Please try again.";
       updates.error_message = errorMessage;
