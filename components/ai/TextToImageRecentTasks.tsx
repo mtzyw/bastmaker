@@ -1793,16 +1793,16 @@ export default function TextToImageRecentTasks({
                           <span className="text-sm font-medium leading-none text-white">
                             {task.provider}
                           </span>
-                          <Badge className="border-white/10 bg-white/10 text-white/80 hover:bg-white/10">
+                          <Badge variant="outline" className="border-white/10 bg-white/10 text-white/80 hover:bg-white/10">
                             {task.typeLabel}
                           </Badge>
                           {!task.effectSlug && (
-                            <Badge className="border-white/10 bg-white/5 text-white/60 hover:bg-white/5">
+                            <Badge variant="outline" className="border-white/10 bg-white/5 text-white/60 hover:bg-white/5">
                               {task.modelLabel}
                             </Badge>
                           )}
                           {task.effectSlug && !hideEffectBadge ? (
-                            <Badge className="border-pink-500/20 bg-pink-500/10 text-pink-200 hover:bg-pink-500/10">
+                            <Badge variant="outline" className="border-pink-500/20 bg-pink-500/10 text-pink-200 hover:bg-pink-500/10">
                               {effectBadgeLabel} · {task.effectTitle ?? task.effectSlug}
                             </Badge>
                           ) : null}

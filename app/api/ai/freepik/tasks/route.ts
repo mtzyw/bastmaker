@@ -234,10 +234,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const providerModel =
-      data.model === "seedream-v4-edit" || data.model === "imagen3"
-        ? "seedream-v4"
-        : data.model;
+    let providerModel = data.model;
+    if (!isImageToImage) {
+      if (data.model === "seedream-v4-edit" || data.model === "imagen3") {
+        providerModel = "seedream-v4";
+      }
+    }
     const freepikResponse = (await createFreepikImageTask(
       providerModel,
       payload
