@@ -1,6 +1,7 @@
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
 import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
+import { HideIfAuthenticated } from "@/components/auth/HideIfAuthenticated";
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
@@ -131,7 +132,6 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isAuthenticated = Boolean(user);
 
   const rightSection = (
     <TextToImageRecentTasks
@@ -150,13 +150,13 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       section2Left={<VideoEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        isAuthenticated ? null : (
+        <HideIfAuthenticated>
           <VideoEffectsDetailContent
             effect={localizedTemplate}
             allEffects={localizedAllEffects}
             copy={copy}
           />
-        )
+        </HideIfAuthenticated>
       }
       hideMergedSection={false}
     />

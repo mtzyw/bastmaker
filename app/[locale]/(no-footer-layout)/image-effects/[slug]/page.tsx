@@ -1,6 +1,7 @@
 import { ImageEffectsDetailContent } from "@/components/ai/ImageEffectsDetailContent";
 import { ImageEffectsEditorLeftPanel } from "@/components/ai/ImageEffectsEditorLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import { HideIfAuthenticated } from "@/components/auth/HideIfAuthenticated";
 import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { loadImageEffectCopy } from "@/lib/image-effects/content";
@@ -11,7 +12,6 @@ import {
   type ImageEffectTemplate,
 } from "@/lib/image-effects/templates";
 import { constructMetadata } from "@/lib/metadata";
-import { createClient } from "@/lib/supabase/server";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -148,12 +148,6 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
     resolvedTemplate.previewImageUrl ||
     "https://cdn.bestmaker.ai/static/placeholders/image-effect-detail.jpg";
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const isAuthenticated = Boolean(user);
-
   const rightSection = (
     <TextToImageRecentTasks
       initialCategory="图片"
@@ -172,13 +166,13 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
       section2Left={<ImageEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        isAuthenticated ? null : (
+        <HideIfAuthenticated>
           <ImageEffectsDetailContent
             effect={localizedTemplate}
             allEffects={localizedAllEffects}
             copy={copy}
           />
-        )
+        </HideIfAuthenticated>
       }
       hideMergedSection={false}
     />

@@ -31,6 +31,7 @@ interface ShareDialogProps {
 }
 
 export function ShareDialog({ open, onOpenChange, shareUrl, title = "Check this out!" }: ShareDialogProps) {
+  console.log("[ShareDialog] title:", title);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

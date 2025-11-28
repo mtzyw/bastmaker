@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import * as React from "react";
 
-import { SignupOtpEmail } from "@/emails/signup-otp";
 import { siteConfig } from "@/config/site";
-import { normalizeEmail, validateEmail } from "@/lib/email";
-import resend from "@/lib/resend";
-import { getServiceRoleClient } from "@/lib/supabase/admin";
+import { SignupOtpEmail } from "@/emails/signup-otp";
 import {
   generateSignupCode,
   getSignupCodeExpiryISO,
   hashSignupCode,
   SIGNUP_OTP_PURPOSE,
 } from "@/lib/auth/signup-otp";
+import { normalizeEmail } from "@/lib/email";
+import { validateEmailServer } from "@/lib/email-server";
+import resend from "@/lib/resend";
+import { getServiceRoleClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   try {
@@ -23,10 +24,10 @@ export async function POST(request: Request) {
     }
 
     const normalizedEmail = normalizeEmail(email);
-    const { isValid, error } = validateEmail(normalizedEmail);
+    const { isValid, error } = validateEmailServer(normalizedEmail);
     if (!isValid) {
       return NextResponse.json(
-        { error: error === "disposable_email_not_allowed" ? "该邮箱不支持注册" : "邮箱格式不正确" },
+        { error: error === "disposable_email_not_allowed" ? "Registration with this email domain is not supported." : "Invalid email address." },
         { status: 400 }
       );
     }

@@ -1,7 +1,8 @@
 'use server';
 import { NewsletterWelcomeEmail } from '@/emails/newsletter-welcome';
 import { actionResponse, ActionResult } from '@/lib/action-response';
-import { normalizeEmail, validateEmail } from '@/lib/email';
+import { normalizeEmail } from "@/lib/email";
+import { validateEmailServer } from "@/lib/email-server";
 import resend from '@/lib/resend';
 import { checkRateLimit } from '@/lib/upstash';
 import { getTranslations } from 'next-intl/server';
@@ -36,7 +37,7 @@ export async function subscribeToNewsletter(email: string, locale = 'en'): Promi
     const t = await getTranslations({ locale, namespace: 'Footer.Newsletter' });
 
     const normalizedEmail = normalizeEmail(email);
-    const { isValid, error } = validateEmail(normalizedEmail);
+    const { isValid, error } = validateEmailServer(normalizedEmail);
 
     if (!isValid) {
       return actionResponse.error(error || t('subscribe.invalidEmail'));
@@ -90,7 +91,7 @@ export async function unsubscribeFromNewsletter(token: string, locale = 'en'): P
 
     const email = Buffer.from(token, 'base64').toString();
     const normalizedEmail = normalizeEmail(email);
-    const { isValid, error } = validateEmail(normalizedEmail);
+    const { isValid, error } = validateEmailServer(normalizedEmail);
 
     if (!isValid) {
       return actionResponse.error(error || t('unsubscribe.invalidEmail'));
