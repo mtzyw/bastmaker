@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { incrementAiJobShareVisit } from "@/actions/ai-jobs/public";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { ViewerHeader } from "@/components/viewer/ViewerHeader";
+import { siteConfig } from "@/config/site";
+import { DEFAULT_LOCALE, Locale } from "@/i18n/routing";
+import { constructMetadata } from "@/lib/metadata";
 import {
   SHARE_REFERER_QUERY_KEY,
   SHARE_REFERER_QUERY_VALUE,
 } from "@/lib/share/constants";
 import { setShareAttributionCookie } from "@/lib/share/cookie";
-import { siteConfig } from "@/config/site";
-import { DEFAULT_LOCALE, Locale } from "@/i18n/routing";
-import { constructMetadata } from "@/lib/metadata";
-import { incrementAiJobShareVisit } from "@/actions/ai-jobs/public";
 
 import { getViewerJob } from "./data";
 
@@ -58,6 +58,7 @@ export async function generateMetadata({
       images: imageList,
       locale,
       path: buildPath(locale, job.shareSlug),
+      noIndex: true,
     });
   } catch (error) {
     if (typeof error === "object" && error && "digest" in error) {

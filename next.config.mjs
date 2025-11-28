@@ -22,6 +22,12 @@ const nextConfig = {
       permanent: true,
     },
   ],
+  rewrites: async () => [
+    {
+      source: "/Sitemap.xml",
+      destination: "/sitemap.xml",
+    },
+  ],
   images: {
     unoptimized:
       process.env.NEXT_PUBLIC_OPTIMIZED_IMAGES &&
@@ -29,10 +35,10 @@ const nextConfig = {
     remotePatterns: [
       ...(process.env.R2_PUBLIC_URL
         ? [
-            {
-              hostname: process.env.R2_PUBLIC_URL.replace("https://", ""),
-            },
-          ]
+          {
+            hostname: process.env.R2_PUBLIC_URL.replace("https://", ""),
+          },
+        ]
         : []),
       {
         hostname: "cdn.bestmaker.ai",
@@ -43,8 +49,8 @@ const nextConfig = {
     removeConsole:
       process.env.NODE_ENV === "production"
         ? {
-            exclude: ["error"],
-          }
+          exclude: ["error"],
+        }
         : false,
   },
 };
