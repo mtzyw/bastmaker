@@ -2248,7 +2248,7 @@ export default function TextToImageRecentTasks({
               }/v/${taskToShare.shareSlug}?source=share`
               : ""
           }
-          title={taskToShare?.prompt || "Check out my AI creation!"}
+          title="Create Realistic/Imaginary HD Videos or Image | BestMaker Ai"
         />
       </div>
     </TooltipProvider>

@@ -630,7 +630,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         shareUrl={shareUrl}
-        title={job.prompt || "Check out my AI creation!"}
+        title="Create Realistic/Imaginary HD Videos or Image | BestMaker Ai"
       />
     </Card >
   );
