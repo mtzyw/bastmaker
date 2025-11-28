@@ -1,0 +1,33 @@
+{
+  "backToList": "Back to List",
+  "templateLabel": "Effect Template",
+  "changeTemplate": "Change",
+  "referenceLabel": "Reference Image",
+  "uploadPlaceholder": "Click or drag to upload reference image",
+  "uploadHint": "Supports PNG / JPG / MP4, max size 200MB",
+  "uploadHintCropper": "Supports PNG / JPG, crop available after upload, shorter side > 360px",
+  "uploading": "Uploading...",
+  "reselect": "Reselect",
+  "selectImage": "Select Image",
+  "recrop": "Recrop",
+  "fileLabel": "File:",
+  "remove": "Remove",
+  "publicLabel": "Publish to Profile",
+  "publicHint": "Only visible to you when disabled",
+  "creditsLabel": "Credits required:",
+  "create": "Create",
+  "toggleOptions": {
+    "protect": {
+      "label": "Copy Protection",
+      "description": "Prevent others from directly cloning my effect project."
+    }
+  },
+  "errors": {
+    "invalidFileType": "Format not supported for this effect, please upload an image.",
+    "uploadFailed": "Upload failed, please try again later.",
+    "uploadAbnormal": "Upload result abnormal, please reselect material.",
+    "imageTooSmall": "Upload failed, shorter side must be greater than 360 pixels.",
+    "referenceMissing": "Please upload material first.",
+    "submitFailed": "Submission failed, please try again later."
+  }
+}

@@ -99,7 +99,7 @@ export default function ImageToImageLeftPanel({
 
   const aspectOptions = useMemo(() => {
     if (model === "Seedream 4 Edit" || model === "Nano Banana Free") {
-      return ["1:1", "16:9", "9:16", "2:3", "3:4", "3:2", "4:3"];
+      return ["1:1", "16:9", "9:16", "3:4", "4:3"];
     }
     return [] as string[];
   }, [model]);

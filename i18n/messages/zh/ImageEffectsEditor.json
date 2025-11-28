@@ -1,0 +1,25 @@
+{
+  "title": "AI 图片特效",
+  "uploadLabel": "上传参考图",
+  "uploadHint": "支持 PNG、JPG、WEBP 格式，建议分辨率大于 1024×1024。",
+  "previewAlt": "参考图预览",
+  "templateAlt": "模板参考",
+  "uploadPlaceholder": "点击或拖拽上传参考图",
+  "uploading": "上传中...",
+  "promptLabel": "提示词",
+  "aspectRatioLabel": "纵横比",
+  "publicLabel": "公开到个人主页",
+  "publicHint": "关闭后仅自己可见",
+  "creditsLabel": "所需点数：",
+  "generating": "生成中...",
+  "create": "创建图片特效",
+  "templateNotConfigured": "模板未配置",
+  "errors": {
+    "invalidFileType": "仅支持上传图片素材，请选择 PNG/JPG/WebP 格式",
+    "uploadFailed": "图片上传失败，请稍后重试",
+    "providerMissing": "当前模板尚未配置 Provider Model，请在后台完善后再试。",
+    "referenceMissing": "请先上传参考图片",
+    "promptMissing": "提示词不能为空",
+    "submitFailed": "提交失败，请稍后重试"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "backToList": "返回列表",
+  "templateLabel": "特效模板",
+  "changeTemplate": "更换",
+  "referenceLabel": "参考图",
+  "uploadPlaceholder": "点击或拖拽上传参考图",
+  "uploadHint": "支持 PNG / JPG / MP4，最大 200MB",
+  "uploadHintCropper": "支持 PNG / JPG，上传后可裁剪，较短边需大于 360px",
+  "uploading": "上传中...",
+  "reselect": "重新选择",
+  "selectImage": "选择图片",
+  "recrop": "重新裁剪",
+  "fileLabel": "文件：",
+  "remove": "移除",
+  "publicLabel": "公开到个人主页",
+  "publicHint": "关闭后仅自己可见",
+  "creditsLabel": "Credits 消耗",
+  "create": "创建",
+  "toggleOptions": {
+    "protect": {
+      "label": "复制保护",
+      "description": "防止他人直接克隆我的特效项目。"
+    }
+  },
+  "errors": {
+    "invalidFileType": "AI接吻特效暂不支持该格式，请上传图片素材",
+    "uploadFailed": "上传失败，请稍后重试",
+    "uploadAbnormal": "上传结果异常，请重新选择素材",
+    "imageTooSmall": "上传失败，图片较短边需大于 360 像素",
+    "referenceMissing": "请先上传素材",
+    "submitFailed": "提交失败，请稍后再试"
+  }
+}

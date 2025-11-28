@@ -1,17 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/i18n/routing";
-import type { VideoEffectTemplate } from "@/lib/video-effects/templates";
 import type { CreationItem } from "@/lib/ai/creations";
+import type { VideoEffectTemplate } from "@/lib/video-effects/templates";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { toast } from "sonner";
 import { ChevronRight, Coins, Crown, Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type ToggleOption = {
   id: string;
@@ -20,15 +21,6 @@ type ToggleOption = {
   defaultChecked?: boolean;
   premium?: boolean;
 };
-
-const TOGGLE_OPTIONS: readonly ToggleOption[] = [
-  {
-    id: "protect",
-    label: "复制保护",
-    description: "防止他人直接克隆我的特效项目。",
-    premium: true,
-  },
-];
 
 const DEFAULT_PREVIEW_VIDEO =
   "https://cdn.bestmaker.ai/tasks/10a81006-480e-4ccf-ba60-c9887e2be6f8/0.mp4";
@@ -92,6 +84,17 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     setCropperOpen(true);
   }, []);
 
+  const t = useTranslations("VideoEffectsEditor");
+
+  const toggleOptions = useMemo<ToggleOption[]>(() => [
+    {
+      id: "protect",
+      label: t("toggleOptions.protect.label"),
+      description: t("toggleOptions.protect.description"),
+      premium: true,
+    },
+  ], [t]);
+
   const handleCropCancel = useCallback(() => {
     setCropperOpen(false);
     setCropSource((current) => {
@@ -116,15 +119,15 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     });
     const json = await response.json();
     if (!response.ok || !json?.success) {
-      const message = typeof json?.error === "string" ? json.error : "上传失败，请稍后重试";
+      const message = typeof json?.error === "string" ? json.error : t("errors.uploadFailed");
       throw new Error(message);
     }
     const url = json?.data?.url;
     if (typeof url !== "string" || url.length === 0) {
-      throw new Error("上传结果异常，请重新选择素材");
+      throw new Error(t("errors.uploadAbnormal"));
     }
     return url;
-  }, []);
+  }, [t]);
 
   const handleCropConfirm = useCallback(
     async ({
@@ -140,7 +143,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     }) => {
       const shortestSide = Math.min(width, height);
       if (!Number.isFinite(shortestSide) || shortestSide <= 360) {
-        toast.error("上传失败，图片较短边需大于 360 像素", { duration: 6000 });
+        toast.error(t("errors.imageTooSmall"), { duration: 6000 });
         handleCropCancel();
         return;
       }
@@ -180,13 +183,13 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
           return { ...current, remoteUrl };
         });
       } catch (error: any) {
-        const message = error instanceof Error ? error.message : "上传失败，请稍后再试";
+        const message = error instanceof Error ? error.message : t("errors.uploadFailed");
         toast.error(message, { duration: 6000 });
       } finally {
         setIsUploading(false);
       }
     },
-    [cropSource, handleCropCancel, localAsset?.previewUrl, uploadImageToR2]
+    [cropSource, handleCropCancel, localAsset?.previewUrl, uploadImageToR2, t]
   );
 
   const handleSelectFile = useCallback(
@@ -197,7 +200,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
 
       if (shouldUseCropper) {
         if (!file.type.startsWith("image/")) {
-          toast.error("AI接吻特效暂不支持该格式，请上传图片素材", { duration: 6000 });
+          toast.error(t("errors.invalidFileType"), { duration: 6000 });
           return;
         }
         setOriginalFile(file);
@@ -228,14 +231,14 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
           return { ...current, remoteUrl };
         });
       } catch (error: any) {
-        const message = error instanceof Error ? error.message : "上传失败，请稍后再试";
+        const message = error instanceof Error ? error.message : t("errors.uploadFailed");
         toast.error(message, { duration: 6000 });
         setLocalAsset(null);
       } finally {
         setIsUploading(false);
       }
     },
-    [localAsset?.previewUrl, openCropperWithFile, shouldUseCropper, uploadImageToR2]
+    [localAsset?.previewUrl, openCropperWithFile, shouldUseCropper, uploadImageToR2, t]
   );
 
   const handleCreate = useCallback(async () => {
@@ -243,7 +246,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
       return;
     }
     if (!localAsset?.remoteUrl) {
-      toast.warning("请先上传素材");
+      toast.warning(t("errors.referenceMissing"));
       return;
     }
 
@@ -322,7 +325,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
       });
       const json = await response.json().catch(() => ({}));
       if (!response.ok || !json?.success) {
-        const message = json?.error ?? response.statusText ?? "提交失败，请稍后再试";
+        const message = json?.error ?? response.statusText ?? t("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -359,12 +362,12 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     } catch (error: any) {
       // If anything fails, ensure the temporary item is removed.
       removeHistoryItem(tempJobId);
-      const message = error instanceof Error ? error.message : "提交失败，请稍后再试";
+      const message = error instanceof Error ? error.message : t("errors.submitFailed");
       toast.error(message, { duration: 6000 });
     } finally {
       setIsSubmitting(false);
     }
-  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem, isPublic]);
+  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem, isPublic, t]);
 
   return (
     <div className="flex h-full w-full flex-col text-white">
@@ -375,7 +378,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
               href="/video-effects"
               className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.3em] text-white/50 transition hover:text-white"
             >
-              返回列表
+              {t("backToList")}
             </Link>
             <div>
               {effect.category ? <p className="text-sm text-white/60">{effect.category}</p> : null}
@@ -390,12 +393,12 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
 
           <section className="space-y-3">
             <header className="flex items-center justify-between">
-              <span className="text-sm font-medium text-white/90">特效模板</span>
+              <span className="text-sm font-medium text-white/90">{t("templateLabel")}</span>
               <button
                 type="button"
                 className="inline-flex items-center gap-1 text-xs text-blue-300 transition hover:text-blue-200"
               >
-                更换
+                {t("changeTemplate")}
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </header>
@@ -413,7 +416,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
           </section>
 
           <section className="space-y-3">
-            <div className="text-sm">参考图</div>
+            <div className="text-sm">{t("referenceLabel")}</div>
             <div
               className="relative"
               onDragOver={(event) => {
@@ -446,7 +449,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                     ) : (
                       <Image
                         src={localAsset.previewUrl}
-                        alt="参考图预览"
+                        alt={t("referenceLabel")}
                         width={640}
                         height={640}
                         className="max-h-full max-w-full object-contain"
@@ -472,24 +475,24 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                           setOriginalFile(null);
                         }}
                       >
-                        移除
+                        {t("remove")}
                       </Button>
                     </div>
                   </>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-xs text-white/60">
                     <Upload className="h-6 w-6 text-white/40" />
-                    <p>点击或拖拽上传参考图</p>
+                    <p>{t("uploadPlaceholder")}</p>
                     <p className="text-white/35">
                       {shouldUseCropper
-                        ? "支持 PNG / JPG，上传后可裁剪，较短边需大于 360px"
-                        : "支持 PNG / JPG / MP4，最大 200MB"}
+                        ? t("uploadHintCropper")
+                        : t("uploadHint")}
                     </p>
                   </div>
                 )}
                 {isUploading ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
-                    上传中...
+                    {t("uploading")}
                   </div>
                 ) : null}
               </button>
@@ -513,7 +516,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                 onClick={() => inputRef.current?.click()}
                 className="hover:text-white"
               >
-                {localAsset ? "重新选择" : "选择图片"}
+                {localAsset ? t("reselect") : t("selectImage")}
               </button>
               {shouldUseCropper && localAsset ? (
                 <button
@@ -524,16 +527,16 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
                   }}
                   className="hover:text-white"
                 >
-                  重新裁剪
+                  {t("recrop")}
                 </button>
               ) : null}
-              {localAsset ? <span className="text-white/40">文件：{localAsset.file.name}</span> : null}
+              {localAsset ? <span className="text-white/40">{t("fileLabel")} {localAsset.file.name}</span> : null}
             </div>
           </section>
 
           <section className="space-y-4">
             <div className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
-              {TOGGLE_OPTIONS.map((toggle) => (
+              {toggleOptions.map((toggle) => (
                 <div
                   key={toggle.id}
                   className="flex items-center justify-between gap-4 rounded-lg border border-white/5 bg-black/30 px-4 py-3"
@@ -562,17 +565,17 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
         <div className="px-4 md:px-6">
           <div className="mb-4 flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{t("publicLabel")}</span>
+              <span className="text-xs text-white/50">{t("publicHint")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
           <div className="mb-3">
-            <div className="mb-2 text-sm text-white/80">Credits 消耗</div>
+            <div className="mb-2 text-sm text-white/80">{t("creditsLabel")}</div>
             <div className="flex items-center justify-between text-sm text-white/80">
               <div className="flex items-center gap-2">
                 <Coins className="h-4 w-4 text-pink-400" />
-                Credits required:
+                {t("creditsLabel")}
               </div>
               <div>{pricing} Credits</div>
             </div>
@@ -582,7 +585,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
             onClick={handleCreate}
             disabled={isSubmitting || isUploading || !localAsset?.remoteUrl}
           >
-            创建
+            {t("create")}
           </Button>
           {statusMessage ? <p className="mt-2 text-xs text-white/60">{statusMessage}</p> : null}
         </div>

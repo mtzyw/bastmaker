@@ -1,17 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { Coins, Upload, Trash2 } from "lucide-react";
-import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
+import { Textarea } from "@/components/ui/textarea";
 import type { CreationItem } from "@/lib/ai/creations";
-import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { toast } from "sonner";
+import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
 import { cn } from "@/lib/utils";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { Coins, Trash2, Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const DEFAULT_PREVIEW_IMAGE =
   "https://cdn.bestmaker.ai/static/placeholders/image-effect-preview.jpg";
@@ -96,6 +97,18 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     };
   }, [localAsset?.previewUrl]);
 
+  const t = useTranslations("ImageEffectsEditor");
+
+  const imageUploaderLabels = useMemo(() => ({
+    title: t("uploadLabel"),
+    uploading: t("uploading"),
+    addLabel: t("uploadLabel"),
+    addAriaLabel: t("uploadLabel"),
+    imageAlt: t("previewAlt"),
+    previewAlt: t("previewAlt"),
+    closePreview: "Close Preview", // Not in JSON yet, keeping hardcoded or need to add? It wasn't in the original hardcoded strings I saw.
+  }), [t]);
+
   const handleSelectFile = useCallback(
     async (file: File | null) => {
       if (!file) {
@@ -103,7 +116,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       }
 
       if (!file.type.startsWith("image/")) {
-        toast.error("仅支持上传图片素材，请选择 PNG/JPG/WebP 格式");
+        toast.error(t("errors.invalidFileType"));
         return;
       }
 
@@ -130,7 +143,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
         if (!response.ok || !result?.success) {
           const message =
-            typeof result?.error === "string" ? result.error : "图片上传失败，请稍后重试";
+            typeof result?.error === "string" ? result.error : t("errors.uploadFailed");
           throw new Error(message);
         }
 
@@ -142,14 +155,14 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
         });
       } catch (error: any) {
         const message =
-          error instanceof Error ? error.message : "图片上传失败，请稍后再试";
+          error instanceof Error ? error.message : t("errors.uploadFailed");
         toast.error(message);
         setLocalAsset(null);
       } finally {
         setIsUploading(false);
       }
     },
-    [localAsset?.previewUrl]
+    [localAsset?.previewUrl, t]
   );
 
   const creditsCost = effect.pricingCreditsOverride ?? 6;
@@ -236,17 +249,17 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
   const handleCreate = useCallback(async () => {
     if (!providerReady) {
-      toast.error("当前模板尚未配置 Provider Model，请在后台完善后再试。");
+      toast.error(t("errors.providerMissing"));
       return;
     }
 
     if (!localAsset?.remoteUrl) {
-      toast.error("请先上传参考图片");
+      toast.error(t("errors.referenceMissing"));
       return;
     }
 
     if (!promptForSubmit) {
-      toast.error("提示词不能为空");
+      toast.error(t("errors.promptMissing"));
       return;
     }
 
@@ -296,7 +309,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
       if (!response.ok || !result?.success) {
         const message =
-          result?.error ?? response.statusText ?? "提交失败，请稍后重试";
+          result?.error ?? response.statusText ?? t("errors.submitFailed");
         throw new Error(message);
       }
 
@@ -326,7 +339,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       setStatusMessage(null);
     } catch (error: any) {
       removeHistoryItem(tempJobId);
-      const message = error instanceof Error ? error.message : "提交失败，请稍后重试";
+      const message = error instanceof Error ? error.message : t("errors.submitFailed");
       setErrorMessage(message);
       toast.error(message);
     } finally {
@@ -342,6 +355,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     removeHistoryItem,
     resolvedAspectRatio,
     upsertHistoryItem,
+    providerReady,
+    t
   ]);
 
   const previewImage = effect.previewImageUrl ?? DEFAULT_PREVIEW_IMAGE;
@@ -351,7 +366,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
           <p className="text-sm uppercase tracking-[0.3em] text-white/40">
-            AI 图片特效
+            {t("title")}
           </p>
           <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
             {effect.title}
@@ -362,9 +377,9 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
           <section className="mt-8 space-y-4">
             <div className="space-y-2">
-              <h2 className="text-sm font-medium text-white/80">上传参考图</h2>
+              <h2 className="text-sm font-medium text-white/80">{t("uploadLabel")}</h2>
               <p className="text-xs text-white/50">
-                支持 PNG、JPG、WEBP 格式，建议分辨率大于 1024×1024。
+                {t("uploadHint")}
               </p>
               <button
                 type="button"
@@ -376,7 +391,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
                 {localAsset?.previewUrl ? (
                   <Image
                     src={localAsset.previewUrl}
-                    alt="参考图预览"
+                    alt={t("previewAlt")}
                     fill
                     className="object-cover"
                   />
@@ -384,20 +399,20 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
                   <>
                     <Image
                       src={previewImage}
-                      alt="模板参考"
+                      alt={t("templateAlt")}
                       fill
                       className="object-cover opacity-30"
                     />
                     <div className="relative flex flex-col items-center gap-2 text-xs text-white/70">
                       <Upload className="h-6 w-6 text-white/60" />
-                      <span>点击或拖拽上传参考图</span>
+                      <span>{t("uploadPlaceholder")}</span>
                     </div>
                   </>
                 )}
                 <div className="pointer-events-none absolute inset-0 border border-white/10" />
                 {isUploading ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs text-white/80">
-                    上传中...
+                    {t("uploading")}
                   </div>
                 ) : null}
               </button>
@@ -434,7 +449,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
             {!isPromptHidden ? (
               <div className="space-y-2">
-                <h2 className="text-sm font-medium text-white/80">提示词</h2>
+                <h2 className="text-sm font-medium text-white/80">{t("promptLabel")}</h2>
                 <Textarea
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
@@ -449,7 +464,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
 
             {!isAspectRatioHidden ? (
               <div className="space-y-2">
-                <h2 className="text-sm font-medium text-white/80">纵横比</h2>
+                <h2 className="text-sm font-medium text-white/80">{t("aspectRatioLabel")}</h2>
                 <div className="flex flex-wrap gap-2">
                   {["1:1", "3:4", "4:5", "9:16", "16:9"].map((ratio) => (
                     <button
@@ -477,15 +492,15 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
         <div className="space-y-3 px-4 md:px-6">
           <div className="flex items-center justify-between gap-3 text-sm text-white/80">
             <div className="flex flex-col">
-              <span>公开到个人主页</span>
-              <span className="text-xs text-white/50">关闭后仅自己可见</span>
+              <span>{t("publicLabel")}</span>
+              <span className="text-xs text-white/50">{t("publicHint")}</span>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
           <div className="flex items-center justify-between text-sm text-white/80">
             <div className="flex items-center gap-2">
               <Coins className="h-4 w-4 text-pink-400" />
-              Credits required:
+              {t("creditsLabel")}
             </div>
             <div>{creditsCost} Credits</div>
           </div>
@@ -493,8 +508,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
             className={cn(
               "h-12 w-full bg-gray-900 text-white transition-colors disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               promptForSubmit &&
-                localAsset?.remoteUrl &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              localAsset?.remoteUrl &&
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               (isSubmitting || isUploading) && "cursor-wait"
             )}
             disabled={
@@ -506,7 +521,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
             }
             onClick={() => void handleCreate()}
           >
-            {providerReady ? (isSubmitting ? "生成中..." : "创建图片特效") : "模板未配置"}
+            {providerReady ? (isSubmitting ? t("generating") : t("create")) : t("templateNotConfigured")}
           </Button>
           {errorMessage ? (
             <p className="text-xs text-red-400">{errorMessage}</p>

@@ -1,0 +1,33 @@
+{
+  "backToList": "リストに戻る",
+  "templateLabel": "エフェクトテンプレート",
+  "changeTemplate": "変更",
+  "referenceLabel": "参考画像",
+  "uploadPlaceholder": "クリックまたはドラッグして参考画像をアップロード",
+  "uploadHint": "PNG / JPG / MP4対応、最大200MB",
+  "uploadHintCropper": "PNG / JPG対応、アップロード後に切り抜き可能、短辺360px以上",
+  "uploading": "アップロード中...",
+  "reselect": "再選択",
+  "selectImage": "画像を選択",
+  "recrop": "再切り抜き",
+  "fileLabel": "ファイル：",
+  "remove": "削除",
+  "publicLabel": "プロフィールに公開",
+  "publicHint": "オフにすると自分だけが見られます",
+  "creditsLabel": "必要クレジット",
+  "create": "作成",
+  "toggleOptions": {
+    "protect": {
+      "label": "コピー保護",
+      "description": "他のユーザーによるエフェクトプロジェクトの直接複製を防ぎます。"
+    }
+  },
+  "errors": {
+    "invalidFileType": "このエフェクトはこの形式に対応していません。画像をアップロードしてください。",
+    "uploadFailed": "アップロードに失敗しました。後でもう一度お試しください。",
+    "uploadAbnormal": "アップロード結果が異常です。素材を再選択してください。",
+    "imageTooSmall": "アップロードに失敗しました。画像の短辺は360ピクセル以上である必要があります。",
+    "referenceMissing": "先に素材をアップロードしてください。",
+    "submitFailed": "送信に失敗しました。後でもう一度お試しください。"
+  }
+}

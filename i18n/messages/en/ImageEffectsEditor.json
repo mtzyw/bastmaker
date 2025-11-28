@@ -1,0 +1,25 @@
+{
+  "title": "AI Image Effects",
+  "uploadLabel": "Upload Reference Image",
+  "uploadHint": "Supports PNG, JPG, WEBP. Recommended resolution > 1024x1024.",
+  "previewAlt": "Reference Preview",
+  "templateAlt": "Template Reference",
+  "uploadPlaceholder": "Click or drag to upload reference image",
+  "uploading": "Uploading...",
+  "promptLabel": "Prompt",
+  "aspectRatioLabel": "Aspect Ratio",
+  "publicLabel": "Publish to Profile",
+  "publicHint": "Only visible to you when disabled",
+  "creditsLabel": "Credits required:",
+  "generating": "Generating...",
+  "create": "Create Image Effect",
+  "templateNotConfigured": "Template Not Configured",
+  "errors": {
+    "invalidFileType": "Only image files are supported. Please select PNG/JPG/WebP.",
+    "uploadFailed": "Image upload failed, please try again later.",
+    "providerMissing": "Provider Model not configured for this template.",
+    "referenceMissing": "Please upload a reference image first.",
+    "promptMissing": "Prompt cannot be empty.",
+    "submitFailed": "Submission failed, please try again later."
+  }
+}

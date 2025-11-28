@@ -1,9 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useRef } from "react";
 
 const FALLBACK_PREVIEW_IMAGE =
   "https://cdn.bestmaker.ai/static/placeholders/image-effect-preview.jpg";
@@ -65,14 +66,16 @@ type ImageEffectsGalleryProps = {
 };
 
 export default function ImageEffectsGallery({ effects }: ImageEffectsGalleryProps) {
+  const t = useTranslations("ImageEffects");
+
   return (
     <div className="flex h-full flex-col">
       <header className="mb-8 space-y-2">
         <h2 className="text-2xl font-semibold text-white md:text-3xl">
-          AI 图片特效模板集合
+          {t("header.title")}
         </h2>
         <p className="text-sm text-white/60">
-          浏览精选模板，上传照片即可生成高级质感的图片作品。
+          {t("header.description")}
         </p>
       </header>
 

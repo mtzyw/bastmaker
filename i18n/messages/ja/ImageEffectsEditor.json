@@ -1,0 +1,25 @@
+{
+  "title": "AI画像エフェクト",
+  "uploadLabel": "参考画像をアップロード",
+  "uploadHint": "PNG、JPG、WEBP形式に対応。1024x1024以上の解像度を推奨します。",
+  "previewAlt": "参考プレビュー",
+  "templateAlt": "テンプレート参考",
+  "uploadPlaceholder": "クリックまたはドラッグして参考画像をアップロード",
+  "uploading": "アップロード中...",
+  "promptLabel": "プロンプト",
+  "aspectRatioLabel": "アスペクト比",
+  "publicLabel": "プロフィールに公開",
+  "publicHint": "オフにすると自分だけが見られます",
+  "creditsLabel": "必要クレジット：",
+  "generating": "生成中...",
+  "create": "画像エフェクトを作成",
+  "templateNotConfigured": "テンプレート未設定",
+  "errors": {
+    "invalidFileType": "画像ファイルのみ対応しています。PNG/JPG/WebPを選択してください。",
+    "uploadFailed": "画像のアップロードに失敗しました。後でもう一度お試しください。",
+    "providerMissing": "このテンプレートにはプロバイダーモデルが設定されていません。",
+    "referenceMissing": "先に参考画像をアップロードしてください。",
+    "promptMissing": "プロンプトは空にできません。",
+    "submitFailed": "送信に失敗しました。後でもう一度お試しください。"
+  }
+}

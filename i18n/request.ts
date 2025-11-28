@@ -31,6 +31,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       SoundGenerationPage: (await import(`./messages/${locale}/SoundGenerationPage.json`)).default,
       TextToImagePage: (await import(`./messages/${locale}/TextToImagePage.json`)).default,
       ImageToImagePage: (await import(`./messages/${locale}/ImageToImagePage.json`)).default,
+      ImageEffects: (await import(`./messages/${locale}/ImageEffects.json`)).default,
+      ImageEffectsEditor: (await import(`./messages/${locale}/ImageEffectsEditor.json`)).default,
+      VideoEffectsEditor: (await import(`./messages/${locale}/VideoEffectsEditor.json`)).default,
 
       // Dashboard - User
       CreditHistory: (await import(`./messages/${locale}/Dashboard/User/CreditHistory.json`)).default,
