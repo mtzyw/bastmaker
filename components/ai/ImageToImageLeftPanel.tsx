@@ -1,28 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ImageGridUploader from "@/components/ai/ImageGridUploader";
-import { Coins, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import ImageGridUploader from "@/components/ai/ImageGridUploader";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { CreationItem } from "@/lib/ai/creations";
+import { toFreepikAspectRatio } from "@/lib/ai/freepik";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { cn } from "@/lib/utils";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
-import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
-import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
-import { Switch } from "@/components/ui/switch";
+import { Coins, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -58,6 +59,7 @@ export default function ImageToImageLeftPanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [aspectRatio, setAspectRatio] = useState("1:1");
   const t = useTranslations("CreationTools.ImageToImage");
   const commonT = useTranslations("CreationTools.Common");
   const { user } = useAuth();
@@ -95,6 +97,22 @@ export default function ImageToImageLeftPanel({
 
   const maxCount = getMaxCountByModel(model);
 
+  const aspectOptions = useMemo(() => {
+    if (model === "Seedream 4 Edit") {
+      return ["1:1", "16:9", "9:16", "3:4", "4:3"];
+    }
+    return [] as string[];
+  }, [model]);
+
+  useEffect(() => {
+    if (aspectOptions.length === 0) {
+      return;
+    }
+    if (!aspectOptions.includes(aspectRatio)) {
+      setAspectRatio(aspectOptions[0]);
+    }
+  }, [aspectOptions, aspectRatio]);
+
   useEffect(() => {
     const allowedValues = availableOptions.map((option) => option.value);
     if (!allowedValues.includes(model)) {
@@ -126,9 +144,13 @@ export default function ImageToImageLeftPanel({
         allowedValues.includes(repromptDraft.model)
           ? repromptDraft.model
           : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
-            allowedValues[0] ??
-            TEXT_TO_IMAGE_DEFAULT_MODEL;
+          allowedValues[0] ??
+          TEXT_TO_IMAGE_DEFAULT_MODEL;
       setModel(matchedModel);
+    }
+
+    if (repromptDraft.aspectRatio) {
+      setAspectRatio(repromptDraft.aspectRatio);
     }
 
     const urls = repromptDraft.referenceImageUrls.slice(0, maxCount);
@@ -342,6 +364,8 @@ export default function ImageToImageLeftPanel({
       }
 
       const referenceCount = referenceUrls.length;
+      const apiAspectRatio = toFreepikAspectRatio(aspectRatio);
+
       const buildHistoryItem = ({
         jobId,
         status,
@@ -390,6 +414,7 @@ export default function ImageToImageLeftPanel({
             reference_image_urls: referenceUrls,
             primary_image_url: referenceUrls[0] ?? null,
             is_public: isPublic,
+            aspect_ratio: apiAspectRatio,
           },
           inputParams: {
             model: apiModel,
@@ -399,6 +424,7 @@ export default function ImageToImageLeftPanel({
             reference_image_urls: referenceUrls,
             primary_image_url: referenceUrls[0] ?? null,
             is_public: isPublic,
+            aspect_ratio: apiAspectRatio,
           },
           modalityCode: "i2i",
           modelSlug: apiModel,
@@ -428,6 +454,7 @@ export default function ImageToImageLeftPanel({
         prompt: trimmedPrompt,
         reference_images: referenceUrls,
         translate_prompt: translatePrompt,
+        aspect_ratio: apiAspectRatio,
         is_public: isPublic,
       };
 
@@ -501,6 +528,7 @@ export default function ImageToImageLeftPanel({
     commonT,
     user,
     openAuthDialog,
+    aspectRatio,
   ]);
 
   return (
@@ -562,6 +590,15 @@ export default function ImageToImageLeftPanel({
             </div>
           </div>
 
+          <AspectRatioInlineSelector
+            className="mt-5"
+            value={aspectRatio}
+            options={aspectOptions}
+            onChange={setAspectRatio}
+            label={commonT("aspectRatioLabel")}
+            description={commonT("aspectRatioDescription")}
+          />
+
           {/* Output moved to fixed bottom region */}
         </div>
       </ScrollArea>
@@ -593,7 +630,7 @@ export default function ImageToImageLeftPanel({
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               prompt.trim() &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait"
             )}
             disabled={disableSubmit}

@@ -5,17 +5,17 @@ import {
   FreepikRequestError,
   FreepikTaskResponse,
 } from "@/lib/ai/freepik-client";
-import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
+import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { formatProviderError } from "@/lib/ai/provider-error";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { apiResponse } from "@/lib/api-response";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/types";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { ensureJobShareMetadata } from "@/lib/share/job-share";
 
 const requestSchema = z.object({
   model: z.string().min(1),
@@ -108,9 +108,9 @@ export async function POST(req: NextRequest) {
     modality_code: modalityCode,
     ...(referenceImageCount > 0
       ? {
-          reference_inputs: { primary: true },
-          reference_images: referenceImageUrls,
-        }
+        reference_inputs: { primary: true },
+        reference_images: referenceImageUrls,
+      }
       : {}),
     is_public: isPublic,
     reference_image_urls: referenceImageUrls,
@@ -234,8 +234,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const providerModel =
+      data.model === "seedream-v4-edit" || data.model === "imagen3"
+        ? "seedream-v4"
+        : data.model;
     const freepikResponse = (await createFreepikImageTask(
-      data.model,
+      providerModel,
       payload
     )) as FreepikTaskResponse | Record<string, unknown> | null;
     const taskData = (freepikResponse as FreepikTaskResponse | null)?.data ?? null;
@@ -261,9 +265,9 @@ export async function POST(req: NextRequest) {
     if (internalStatus === "failed") {
       const providerError = formatProviderError(
         (taskData as any)?.error ??
-          (taskData as any)?.message ??
-          (freepikResponse as any)?.error ??
-          (freepikResponse as any)?.message
+        (taskData as any)?.message ??
+        (freepikResponse as any)?.error ??
+        (freepikResponse as any)?.message
       );
       const errorMessage = providerError ?? "Generation failed. Please try again.";
       updates.error_message = errorMessage;

@@ -1,28 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Trash2, Coins } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
   getTextToImageApiModel,
 } from "@/components/ai/text-image-models";
-import { toFreepikAspectRatio } from "@/lib/ai/freepik";
-import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
-import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { CreationItem } from "@/lib/ai/creations";
+import { toFreepikAspectRatio } from "@/lib/ai/freepik";
+import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
+import { cn } from "@/lib/utils";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
-import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
+import { Coins, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -102,8 +102,8 @@ export default function TextToImageLeftPanel({
       const matchByValue = allowedValues.includes(repromptDraft.model)
         ? repromptDraft.model
         : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
-          allowedValues[0] ??
-          TEXT_TO_IMAGE_DEFAULT_MODEL;
+        allowedValues[0] ??
+        TEXT_TO_IMAGE_DEFAULT_MODEL;
       setModel(matchByValue);
     }
 
@@ -385,7 +385,7 @@ export default function TextToImageLeftPanel({
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               prompt.trim() &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait"
             )}
             disabled={!prompt.trim() || isSubmitting}
