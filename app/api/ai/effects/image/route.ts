@@ -1,4 +1,5 @@
 import { deductCredits } from "@/actions/usage/deduct";
+import { toFreepikModelValue } from "@/lib/ai/freepik";
 import {
   createFreepikImageTask,
   FreepikImagePayload,
@@ -388,8 +389,15 @@ export async function POST(req: NextRequest) {
   };
 
   try {
+    const providerModel = toFreepikModelValue(template.providerModel);
+    console.log("[image-effects] submitting task:", {
+      model: providerModel,
+      originalModel: template.providerModel,
+      payload,
+    });
+
     const freepikResponse = (await createFreepikImageTask(
-      template.providerModel,
+      providerModel,
       payload
     )) as FreepikTaskResponse | Record<string, unknown> | null;
 
