@@ -1,12 +1,12 @@
-import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
-import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
-import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import { VideoEffectsDetailContent } from "@/components/ai/VideoEffectsDetailContent";
+import { VideoEffectsEditorLeftPanel } from "@/components/ai/VideoEffectsEditorLeftPanel";
+import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { Locale, LOCALES } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
-import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
 import { loadVideoEffectCopy } from "@/lib/video-effects/content";
+import { getVideoEffectBySlug, VIDEO_EFFECTS } from "@/lib/video-effects/effects";
 import {
   fetchVideoEffectTemplate,
   listActiveVideoEffects,
@@ -83,33 +83,33 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   const resolvedTemplate: VideoEffectTemplate = template
     ? template
     : {
-        id: `fallback-${effect.slug}`,
-        slug: effect.slug,
-        title: effect.title,
-        description: effect.description ?? null,
-        category: effect.category ?? null,
-        previewVideoUrl: null,
-        previewCoverUrl: null,
-        modalityCode: "i2v",
-        providerCode: "freepik",
-        providerModel: "",
-        durationSeconds: null,
-        resolution: null,
-        aspectRatio: null,
-        mode: null,
-        cfgScale: null,
-        seed: null,
-        pricingCreditsOverride: null,
-        defaultPrompt: null,
-        negativePrompt: null,
-        promptVariables: [],
-        metadata: {},
-        isActive: true,
-        displayOrder: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        inputs: [],
-      };
+      id: `fallback-${effect.slug}`,
+      slug: effect.slug,
+      title: effect.title,
+      description: effect.description ?? null,
+      category: effect.category ?? null,
+      previewVideoUrl: null,
+      previewCoverUrl: null,
+      modalityCode: "i2v",
+      providerCode: "freepik",
+      providerModel: "",
+      durationSeconds: null,
+      resolution: null,
+      aspectRatio: null,
+      mode: null,
+      cfgScale: null,
+      seed: null,
+      pricingCreditsOverride: null,
+      defaultPrompt: null,
+      negativePrompt: null,
+      promptVariables: [],
+      metadata: {},
+      isActive: true,
+      displayOrder: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      inputs: [],
+    };
 
   const { copy } = await loadVideoEffectCopy(slug, locale as Locale);
   const localizedTemplate: VideoEffectTemplate =
@@ -150,11 +150,13 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       section2Left={<VideoEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        <VideoEffectsDetailContent
-          effect={localizedTemplate}
-          allEffects={localizedAllEffects}
-          copy={copy}
-        />
+        isAuthenticated ? null : (
+          <VideoEffectsDetailContent
+            effect={localizedTemplate}
+            allEffects={localizedAllEffects}
+            copy={copy}
+          />
+        )
       }
       hideMergedSection={false}
     />

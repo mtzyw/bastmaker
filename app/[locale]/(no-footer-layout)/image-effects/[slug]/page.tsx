@@ -1,16 +1,17 @@
-import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
-import { ImageEffectsEditorLeftPanel } from "@/components/ai/ImageEffectsEditorLeftPanel";
 import { ImageEffectsDetailContent } from "@/components/ai/ImageEffectsDetailContent";
+import { ImageEffectsEditorLeftPanel } from "@/components/ai/ImageEffectsEditorLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import PureFourSections, { SectionConfig } from "@/components/sections/PureFourSections";
 import { Locale, LOCALES } from "@/i18n/routing";
-import { constructMetadata } from "@/lib/metadata";
+import { loadImageEffectCopy } from "@/lib/image-effects/content";
+import { getImageEffectBySlug, IMAGE_EFFECTS } from "@/lib/image-effects/effects";
 import {
   fetchImageEffectTemplate,
   listActiveImageEffects,
   type ImageEffectTemplate,
 } from "@/lib/image-effects/templates";
-import { getImageEffectBySlug, IMAGE_EFFECTS } from "@/lib/image-effects/effects";
-import { loadImageEffectCopy } from "@/lib/image-effects/content";
+import { constructMetadata } from "@/lib/metadata";
+import { createClient } from "@/lib/supabase/server";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -86,23 +87,23 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
   const resolvedTemplate: ImageEffectTemplate = template
     ? template
     : {
-        id: `fallback-${effectDefinition.slug}`,
-        slug: effectDefinition.slug,
-        title: effectDefinition.title,
-        description: effectDefinition.description ?? null,
-        category: effectDefinition.category ?? null,
-        previewImageUrl: null,
-        providerCode: "freepik",
-        providerModel: "",
-        pricingCreditsOverride: null,
-        promptVariables: [],
-        metadata: {},
-        isActive: true,
-        displayOrder: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        inputs: [],
-      };
+      id: `fallback-${effectDefinition.slug}`,
+      slug: effectDefinition.slug,
+      title: effectDefinition.title,
+      description: effectDefinition.description ?? null,
+      category: effectDefinition.category ?? null,
+      previewImageUrl: null,
+      providerCode: "freepik",
+      providerModel: "",
+      pricingCreditsOverride: null,
+      promptVariables: [],
+      metadata: {},
+      isActive: true,
+      displayOrder: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      inputs: [],
+    };
 
   const { copy } = await loadImageEffectCopy(slug, locale as Locale);
   const localizedTemplate: ImageEffectTemplate =
@@ -147,6 +148,12 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
     resolvedTemplate.previewImageUrl ||
     "https://cdn.bestmaker.ai/static/placeholders/image-effect-detail.jpg";
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(user);
+
   const rightSection = (
     <TextToImageRecentTasks
       initialCategory="图片"
@@ -165,11 +172,13 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
       section2Left={<ImageEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        <ImageEffectsDetailContent
-          effect={localizedTemplate}
-          allEffects={localizedAllEffects}
-          copy={copy}
-        />
+        isAuthenticated ? null : (
+          <ImageEffectsDetailContent
+            effect={localizedTemplate}
+            allEffects={localizedAllEffects}
+            copy={copy}
+          />
+        )
       }
       hideMergedSection={false}
     />
