@@ -1,5 +1,5 @@
 import { deductCredits } from "@/actions/usage/deduct";
-import { toFreepikModelValue } from "@/lib/ai/freepik";
+import { toFreepikAspectRatio, toFreepikModelValue } from "@/lib/ai/freepik";
 import {
   createFreepikImageTask,
   FreepikImagePayload,
@@ -95,7 +95,7 @@ function resolveTemplatePrompt(
   return {
     prompt,
     negativePrompt: overrides.negative_prompt ?? defaults.negative_prompt ?? null,
-    aspectRatio: overrides.aspect_ratio ?? defaults.aspect_ratio ?? null,
+    aspectRatio: toFreepikAspectRatio(overrides.aspect_ratio ?? defaults.aspect_ratio ?? "1:1"),
     translatePrompt:
       typeof overrides.translate_prompt === "boolean"
         ? overrides.translate_prompt
