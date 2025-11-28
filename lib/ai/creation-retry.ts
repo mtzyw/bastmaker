@@ -1,7 +1,7 @@
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
+import { DEFAULT_SOUND_EFFECT_MODEL, getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
-import { DEFAULT_SOUND_EFFECT_MODEL, getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 
 export type RegenerationResultPayload = {
   jobId?: string | null;
@@ -13,11 +13,11 @@ export type RegenerationResultPayload = {
 
 export type RegenerationPlan = {
   endpoint:
-    | "/api/ai/freepik/tasks"
-    | "/api/ai/freepik/video"
-    | "/api/ai/freepik/sound"
-    | "/api/ai/effects/video"
-    | "/api/ai/effects/image";
+  | "/api/ai/freepik/tasks"
+  | "/api/ai/freepik/video"
+  | "/api/ai/freepik/sound"
+  | "/api/ai/effects/video"
+  | "/api/ai/effects/image";
   payload: Record<string, unknown>;
   optimisticItem: CreationItem;
   buildPersistedItem: (result: RegenerationResultPayload) => CreationItem;
@@ -25,63 +25,64 @@ export type RegenerationPlan = {
 
 export type RepromptDraft =
   | {
-      kind: "text-to-image";
-      route: "/text-to-image";
-      prompt: string;
-      translatePrompt: boolean;
-      model: string;
-      aspectRatio?: string | null;
-      isPublic?: boolean;
-    }
+    kind: "text-to-image";
+    route: "/text-to-image";
+    prompt: string;
+    translatePrompt: boolean;
+    model: string;
+    aspectRatio?: string | null;
+    isPublic?: boolean;
+  }
   | {
-      kind: "image-to-image";
-      route: "/image-to-image";
-      prompt: string;
-      translatePrompt: boolean;
-      model: string;
-      referenceImageUrls: string[];
-      isPublic?: boolean;
-    }
+    kind: "image-to-image";
+    route: "/image-to-image";
+    prompt: string;
+    translatePrompt: boolean;
+    model: string;
+    referenceImageUrls: string[];
+    aspectRatio?: string | null;
+    isPublic?: boolean;
+  }
   | {
-      kind: "text-to-video";
-      route: "/text-to-video";
-      prompt: string;
-      translatePrompt: boolean;
-      model: string;
-      resolution?: string | null;
-      videoLength?: string;
-      duration?: number;
-      aspectRatio?: string | null;
-      isPublic?: boolean;
-    }
+    kind: "text-to-video";
+    route: "/text-to-video";
+    prompt: string;
+    translatePrompt: boolean;
+    model: string;
+    resolution?: string | null;
+    videoLength?: string;
+    duration?: number;
+    aspectRatio?: string | null;
+    isPublic?: boolean;
+  }
   | {
-      kind: "image-to-video";
-      route: "/image-to-video";
-      prompt: string;
-      translatePrompt: boolean;
-      model: string;
-      mode: NormalizedVideoMode;
-      resolution?: string | null;
-      videoLength?: string;
-      duration?: number;
-      aspectRatio?: string | null;
-      primaryImageUrl?: string | null;
-      introImageUrl?: string | null;
-      outroImageUrl?: string | null;
-      tailImageUrl?: string | null;
-      additionalAssets?: Record<string, string>;
-      isPublic?: boolean;
-    }
+    kind: "image-to-video";
+    route: "/image-to-video";
+    prompt: string;
+    translatePrompt: boolean;
+    model: string;
+    mode: NormalizedVideoMode;
+    resolution?: string | null;
+    videoLength?: string;
+    duration?: number;
+    aspectRatio?: string | null;
+    primaryImageUrl?: string | null;
+    introImageUrl?: string | null;
+    outroImageUrl?: string | null;
+    tailImageUrl?: string | null;
+    additionalAssets?: Record<string, string>;
+    isPublic?: boolean;
+  }
   | {
-      kind: "sound-effects";
-      route: "/sound-generation";
-      prompt: string;
-      translatePrompt: boolean;
-      durationSeconds?: number;
-      loop?: boolean;
-      promptInfluence?: number;
-      isPublic?: boolean;
-    };
+    kind: "sound-effects";
+    route: "/sound-generation";
+    prompt: string;
+    translatePrompt: boolean;
+    durationSeconds?: number;
+    loop?: boolean;
+    promptInfluence?: number;
+    isPublic?: boolean;
+  };
 
 type NormalizedVideoMode = "text" | "image" | "transition";
 
@@ -129,8 +130,8 @@ export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
       mode === "image" || mode === "transition"
         ? mode
         : modality === "i2v" || hasVideoReferenceImages(item)
-        ? "image"
-        : "text";
+          ? "image"
+          : "text";
 
     if (resolvedMode === "text") {
       return buildTextToVideoPlan(item);
@@ -178,8 +179,8 @@ export function buildRepromptDraft(item: CreationItem): RepromptDraft {
       mode === "image" || mode === "transition"
         ? mode
         : modality === "i2v" || hasVideoReferenceImages(item)
-        ? "image"
-        : "text";
+          ? "image"
+          : "text";
 
     if (resolvedMode === "text") {
       return buildTextToVideoReprompt(item);
@@ -655,6 +656,7 @@ function buildImageToImageReprompt(item: CreationItem): RepromptDraft {
     translatePrompt: typeof translatePromptValue === "boolean" ? translatePromptValue : false,
     model: resolveTextToImageUiModel(model, item),
     referenceImageUrls,
+    aspectRatio: getString(item.inputParams?.aspect_ratio ?? item.metadata?.aspect_ratio) ?? undefined,
     isPublic: typeof isPublicValue === "boolean" ? isPublicValue : undefined,
   };
 }
@@ -1046,9 +1048,9 @@ function buildEffectAssets(item: CreationItem): EffectAssets {
   addAsset(
     "primary",
     getString(item.metadata?.primary_image_url) ??
-      getString(item.inputParams?.primary_image_url) ??
-      getString(item.inputParams?.image_url) ??
-      referenceUrls[0]
+    getString(item.inputParams?.primary_image_url) ??
+    getString(item.inputParams?.image_url) ??
+    referenceUrls[0]
   );
   addAsset(
     "intro",
@@ -1061,8 +1063,8 @@ function buildEffectAssets(item: CreationItem): EffectAssets {
   addAsset(
     "tail",
     getString(item.inputParams?.tail_image_url) ??
-      getString(item.inputParams?.last_frame_image_url) ??
-      getString(item.metadata?.tail_image_url)
+    getString(item.inputParams?.last_frame_image_url) ??
+    getString(item.metadata?.tail_image_url)
   );
 
   const additionalAssetEntries = extractAdditionalEffectAssets(item);
@@ -1199,8 +1201,8 @@ function extractReferenceImageUrls(item: CreationItem): string[] {
   const urls = Array.isArray(item.metadata?.reference_image_urls)
     ? item.metadata.reference_image_urls
     : Array.isArray(item.inputParams?.reference_image_urls)
-    ? item.inputParams.reference_image_urls
-    : [];
+      ? item.inputParams.reference_image_urls
+      : [];
   return urls
     .map((url) => getString(url))
     .filter((url): url is string => Boolean(url));
