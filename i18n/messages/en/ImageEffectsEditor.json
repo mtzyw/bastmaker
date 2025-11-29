@@ -8,6 +8,7 @@
   "uploading": "Uploading...",
   "promptLabel": "Prompt",
   "aspectRatioLabel": "Aspect Ratio",
+  "aspectRatioDescription": "Choose the output ratio that best fits your scene.",
   "publicLabel": "Publish to Profile",
   "publicHint": "Only visible to you when disabled",
   "creditsLabel": "Credits required:",

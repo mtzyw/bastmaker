@@ -8,6 +8,7 @@
   "uploading": "アップロード中...",
   "promptLabel": "プロンプト",
   "aspectRatioLabel": "アスペクト比",
+  "aspectRatioDescription": "シーンに最適な出力比率を選択してください。",
   "publicLabel": "プロフィールに公開",
   "publicHint": "オフにすると自分だけが見られます",
   "creditsLabel": "必要クレジット：",

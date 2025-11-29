@@ -1,5 +1,6 @@
 "use client";
 
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +17,8 @@ import { toast } from "sonner";
 
 const DEFAULT_PREVIEW_IMAGE =
   "https://cdn.bestmaker.ai/static/placeholders/image-effect-preview.jpg";
+
+const ASPECT_RATIO_OPTIONS: string[] = ["1:1", "16:9", "9:16", "3:4", "4:3"];
 
 type LocalAsset = {
   file: File;
@@ -51,12 +54,15 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const [isPublic, setIsPublic] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const HIDDEN_PROMPT_SLUGS = new Set([
-    "jojo-ai-filter",
-    "3d-figurine-image-generation",
-  ]);
-  const isPromptHidden = HIDDEN_PROMPT_SLUGS.has(effect.slug);
-  const isAspectRatioHidden = isPromptHidden;
+const HIDDEN_PROMPT_SLUGS = new Set([
+  "jojo-ai-filter",
+  "3d-figurine-image-generation",
+]);
+const HIDDEN_ASPECT_RATIO_SLUGS = new Set([
+  "jojo-ai-filter",
+]);
+const isPromptHidden = HIDDEN_PROMPT_SLUGS.has(effect.slug);
+const isAspectRatioHidden = HIDDEN_ASPECT_RATIO_SLUGS.has(effect.slug);
 
   const resolvedPrompt = useMemo(
     () => (isPromptHidden ? defaultPrompt : prompt),
@@ -463,26 +469,14 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
             ) : null}
 
             {!isAspectRatioHidden ? (
-              <div className="space-y-2">
-                <h2 className="text-sm font-medium text-white/80">{t("aspectRatioLabel")}</h2>
-                <div className="flex flex-wrap gap-2">
-                  {["1:1", "3:4", "4:5", "9:16", "16:9"].map((ratio) => (
-                    <button
-                      key={ratio}
-                      type="button"
-                      onClick={() => setAspectRatio(ratio)}
-                      className={cn(
-                        "rounded-full border border-white/10 px-3 py-1 text-xs transition",
-                        aspectRatio === ratio
-                          ? "bg-white text-gray-900"
-                          : "bg-white/5 text-white/70 hover:bg-white/10"
-                      )}
-                    >
-                      {ratio}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <AspectRatioInlineSelector
+                value={aspectRatio}
+                options={ASPECT_RATIO_OPTIONS}
+                onChange={setAspectRatio}
+                label={t("aspectRatioLabel")}
+                description={t("aspectRatioDescription")}
+                className="w-full"
+              />
             ) : null}
           </section>
         </div>

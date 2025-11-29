@@ -8,6 +8,7 @@
   "uploading": "上传中...",
   "promptLabel": "提示词",
   "aspectRatioLabel": "纵横比",
+  "aspectRatioDescription": "选择最适合场景的输出比例。",
   "publicLabel": "公开到个人主页",
   "publicHint": "关闭后仅自己可见",
   "creditsLabel": "所需点数：",
