@@ -9,21 +9,54 @@ import {
   getEffectiveStatus,
   isAudioOutput,
   isProcessingStatus,
-  isVideoOutput
+  isVideoOutput,
 } from "@/components/ai/my-creations-helpers";
 import AudioPlayer from "@components/audio-player";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Copy, Crown, Download, Menu, Trash2 } from "lucide-react";
 
 const GRID_ROW_HEIGHT = 12; // matches auto-rows-[12px]
 const GRID_GAP = 16; // gap-4 => 1rem
+
+export type DownloadVariant = "watermark" | "clean";
 
 type MyCreationsCardProps = {
   item: CreationItem;
   onOpen: (item: CreationItem) => void;
   onMeasured?: () => void;
+  onDownload?: (variant: DownloadVariant) => void;
+  onCopyLink?: () => void;
+  onDelete?: () => void;
+  downloadAvailability?: {
+    watermark: boolean;
+    clean: boolean;
+  };
+  canCopyLink?: boolean;
+  actionsDisabled?: boolean;
 };
 
-export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardProps) {
+export function MyCreationsCard({
+  item,
+  onOpen,
+  onMeasured,
+  onDownload,
+  onCopyLink,
+  onDelete,
+  downloadAvailability,
+  canCopyLink = false,
+  actionsDisabled = false,
+}: MyCreationsCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const measurementNotifiedRef = useRef(false);
@@ -237,32 +270,139 @@ export function MyCreationsCard({ item, onOpen, onMeasured }: MyCreationsCardPro
     </div>
   );
 
+  const downloadLabel = historyT("viewer.download");
+  const downloadWatermarkLabel = historyT("actions.downloadWatermark");
+  const downloadCleanLabel = historyT("actions.downloadClean");
+  const copyLinkLabel = historyT("actions.copyLink");
+  const deleteLabel = historyT("actions.delete");
+  const moreActionsLabel = historyT("actions.more");
+
+  const canDownloadWatermark = Boolean(onDownload && downloadAvailability?.watermark);
+  const canDownloadClean = Boolean(onDownload && downloadAvailability?.clean);
+  const hasDownloadOption = canDownloadWatermark || canDownloadClean;
+  const showActionsButton =
+    !actionsDisabled && (hasDownloadOption || (onCopyLink && canCopyLink) || Boolean(onDelete));
+
+  const handleMenuTriggerPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+  };
+
   return (
     <div
       ref={cardRef}
       style={{ gridRowEnd: `span ${rowSpan}` }}
-      className="relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+      className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
     >
       {canOpenViewer ? (
         <button
           type="button"
           onClick={() => onOpen(item)}
-          className="group relative w-full flex-grow text-left focus:outline-none"
-          aria-label="查看详情"
+          className="relative w-full flex-grow text-left focus:outline-none"
+          aria-label={historyT("viewer.previewAlt")}
         >
-          {renderContentWrapper(
-            <>
-              {contentNode}
-              <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/20 bg-black/40 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100" />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
-                查看详情
-              </span>
-            </>
-          )}
+          {renderContentWrapper(contentNode)}
         </button>
       ) : (
         renderContentWrapper(contentNode, "flex-grow")
       )}
+
+      {showActionsButton ? (
+        <div className="pointer-events-none absolute bottom-3 right-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="pointer-events-auto h-9 w-9 rounded-full border border-white/20 bg-black/50 text-white/80 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"
+                aria-label={moreActionsLabel}
+                onPointerDown={handleMenuTriggerPointerDown}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-1 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger
+                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
+                  disabled={!hasDownloadOption}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="flex-1 text-left">{downloadLabel}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]">
+                  <DropdownMenuItem
+                    disabled={!canDownloadWatermark}
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      if (canDownloadWatermark) {
+                        onDownload?.("watermark");
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a]",
+                      canDownloadWatermark ? "cursor-pointer" : "opacity-40"
+                    )}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="flex-1">{downloadWatermarkLabel}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={!canDownloadClean}
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      if (canDownloadClean) {
+                        onDownload?.("clean");
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a]",
+                      canDownloadClean ? "cursor-pointer" : "opacity-40"
+                    )}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="flex-1">{downloadCleanLabel}</span>
+                    <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                      <Crown className="h-3 w-3 text-[#ffba49]" />
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              {(onCopyLink && canCopyLink) || onDelete ? <DropdownMenuSeparator className="my-1 bg-white/10" /> : null}
+              {onCopyLink && canCopyLink ? (
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    onCopyLink();
+                  }}
+                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="flex-1">{copyLinkLabel}</span>
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    onDelete();
+                  }}
+                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="flex-1">{deleteLabel}</span>
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ) : null}
     </div>
   );
 }

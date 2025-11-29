@@ -7,14 +7,16 @@ import { useLocale, useTranslations } from "next-intl";
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { MyCreationsCard } from "@/components/ai/MyCreationsCard";
+import { MyCreationsCard, type DownloadVariant } from "@/components/ai/MyCreationsCard";
 import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
 import type { MyCreationsFilterOption } from "@/components/ai/MyCreationsFilterTabs";
 import { getEffectiveStatus, isProcessingStatus } from "@/components/ai/my-creations-helpers";
-import type { CreationItem } from "@/lib/ai/creations";
+import type { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
+import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import { toast } from "sonner";
 
 type FilterKey = "all" | "video" | "image" | "sound";
 
@@ -46,6 +48,132 @@ type FilterState = {
 };
 
 type FilterStateMap = Record<FilterKey, FilterState>;
+
+type DownloadTargets = {
+  watermarkUrl: string | null;
+  originalUrl: string | null;
+  fallbackExtension: string;
+};
+
+function inferFileExtension(url?: string | null, fallback: string = "png") {
+  if (!url) {
+    return fallback;
+  }
+  const clean = url.split(/[?#]/)[0] ?? "";
+  const match = clean.match(/\.([a-zA-Z0-9]+)$/);
+  if (!match) {
+    return fallback;
+  }
+  const ext = match[1]?.toLowerCase();
+  if (!ext || ext.length > 6) {
+    return fallback;
+  }
+  return ext;
+}
+
+function sanitizeFileStem(raw?: string | null) {
+  if (!raw) {
+    return null;
+  }
+  const stem = raw
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-_]/g, "")
+    .toLowerCase()
+    .slice(0, 48)
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return stem.length > 0 ? stem : null;
+}
+
+function detectFallbackExtension(output?: CreationOutput | null, modalityCode?: string | null) {
+  const type = output?.type?.toLowerCase() ?? "";
+  if (type.startsWith("video")) {
+    return "mp4";
+  }
+  if (type.startsWith("audio")) {
+    return "mp3";
+  }
+  if (type.startsWith("image")) {
+    return "png";
+  }
+  if (modalityCode?.includes("a")) {
+    return "mp3";
+  }
+  if (modalityCode?.includes("v")) {
+    return "mp4";
+  }
+  return "png";
+}
+
+function firstNonEmpty(candidates: Array<string | null | undefined>) {
+  return candidates.find((value) => typeof value === "string" && value.trim().length > 0) ?? null;
+}
+
+function resolveDownloadTargets(item: CreationItem): DownloadTargets {
+  const outputs = Array.isArray(item.outputs) ? item.outputs : [];
+  const selectPrimary = (predicate: (output: CreationOutput) => boolean) =>
+    outputs.find((output) => {
+      if (!output || typeof output !== "object") {
+        return false;
+      }
+      return predicate(output);
+    });
+
+  const primaryImage = selectPrimary((output) => output.type?.toLowerCase().startsWith("image"));
+  const primaryVideo = selectPrimary((output) => output.type?.toLowerCase().startsWith("video"));
+  const primaryAudio = selectPrimary((output) => output.type?.toLowerCase().startsWith("audio"));
+
+  const primary = primaryImage ?? primaryVideo ?? primaryAudio ?? (outputs.length > 0 ? outputs[0] : undefined);
+  const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+
+  const originalCandidates: Array<string | null> = [
+    typeof primary?.url === "string" ? primary.url : null,
+    typeof metadata.output_url === "string" ? (metadata.output_url as string) : null,
+    typeof metadata.outputUrl === "string" ? (metadata.outputUrl as string) : null,
+    typeof metadata.download_url === "string" ? (metadata.download_url as string) : null,
+    typeof metadata.downloadUrl === "string" ? (metadata.downloadUrl as string) : null,
+    typeof metadata.asset_url === "string" ? (metadata.asset_url as string) : null,
+    typeof metadata.assetUrl === "string" ? (metadata.assetUrl as string) : null,
+    typeof metadata.original_url === "string" ? (metadata.original_url as string) : null,
+    typeof metadata.originalUrl === "string" ? (metadata.originalUrl as string) : null,
+    typeof metadata.result_url === "string" ? (metadata.result_url as string) : null,
+    typeof metadata.resultUrl === "string" ? (metadata.resultUrl as string) : null,
+  ];
+
+  const watermarkCandidates: Array<string | null> = [
+    typeof primary?.thumbUrl === "string" ? primary.thumbUrl : null,
+    typeof metadata.watermarked_url === "string" ? (metadata.watermarked_url as string) : null,
+    typeof metadata.watermarkedUrl === "string" ? (metadata.watermarkedUrl as string) : null,
+    typeof metadata.watermark_url === "string" ? (metadata.watermark_url as string) : null,
+    typeof metadata.watermarkUrl === "string" ? (metadata.watermarkUrl as string) : null,
+    typeof metadata.preview_url === "string" ? (metadata.preview_url as string) : null,
+    typeof metadata.previewUrl === "string" ? (metadata.previewUrl as string) : null,
+    typeof metadata.thumb_url === "string" ? (metadata.thumb_url as string) : null,
+    typeof metadata.thumbUrl === "string" ? (metadata.thumbUrl as string) : null,
+  ];
+
+  return {
+    originalUrl: firstNonEmpty(originalCandidates),
+    watermarkUrl: firstNonEmpty(watermarkCandidates),
+    fallbackExtension: detectFallbackExtension(primary, item.modalityCode),
+  };
+}
+
+function buildDownloadFileName(item: CreationItem, variant: DownloadVariant, extension: string) {
+  const metadataPrompt =
+    typeof item.metadata?.prompt === "string" && item.metadata.prompt.length > 0
+      ? (item.metadata.prompt as string)
+      : null;
+  const paramsPrompt =
+    typeof item.inputParams?.prompt === "string" && item.inputParams.prompt.length > 0
+      ? (item.inputParams.prompt as string)
+      : null;
+  const stem =
+    sanitizeFileStem(metadataPrompt ?? paramsPrompt ?? item.publicTitle ?? item.modelSlug) ??
+    `bestmaker-${item.jobId.slice(0, 6)}`;
+  const suffix = variant === "watermark" ? "-wm" : "-clean";
+  return `${stem}${suffix}.${extension}`;
+}
 
 type ApiResponse = {
   success: boolean;
@@ -225,6 +353,108 @@ export function MyCreationsContent({
       }
     },
     [previewItem, resetViewerState]
+  );
+
+  const handleDownload = useCallback(
+    async (item: CreationItem, targets: DownloadTargets, variant: DownloadVariant) => {
+      const targetUrl = variant === "watermark" ? targets.watermarkUrl : targets.originalUrl;
+      if (!targetUrl) {
+        toast.error(
+          variant === "watermark"
+            ? historyT("messages.downloadUnavailableWatermark")
+            : historyT("messages.downloadUnavailableClean")
+        );
+        return;
+      }
+      const extension = inferFileExtension(targetUrl, targets.fallbackExtension);
+      const fileName = buildDownloadFileName(item, variant, extension);
+
+      if (targetUrl.startsWith("data:")) {
+        downloadBase64File(targetUrl, fileName);
+        return;
+      }
+
+      const ok = await downloadViaProxy(targetUrl, fileName, {
+        jobId: item.jobId,
+        variant,
+      });
+      if (!ok) {
+        toast.error(historyT("messages.downloadFailed"));
+      }
+    },
+    [historyT]
+  );
+
+  const handleCopyLink = useCallback(
+    async (item: CreationItem) => {
+      if (!item.shareSlug) {
+        toast.error(historyT("messages.shareUnavailable"));
+        return;
+      }
+      const origin =
+        typeof window !== "undefined" && window.location?.origin
+          ? window.location.origin
+          : siteConfig.url.replace(/\/$/, "");
+      const shareUrl = `${origin}${localePrefix}/v/${item.shareSlug}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success(historyT("messages.linkCopied"));
+      } catch {
+        const fallback = window.prompt(historyT("messages.copyPrompt"), shareUrl);
+        if (fallback) {
+          toast.success(historyT("messages.linkCopied"));
+        } else {
+          toast.error(historyT("messages.linkCopyFailed"));
+        }
+      }
+    },
+    [historyT, localePrefix]
+  );
+
+  const handleDelete = useCallback(
+    async (item: CreationItem) => {
+      const confirmMessage = `${historyT("messages.deleteConfirmTitle")}\n${historyT("messages.deleteConfirmDescription")}`;
+      if (typeof window !== "undefined" && !window.confirm(confirmMessage)) {
+        return;
+      }
+      try {
+        const response = await fetch(`/api/ai/my-creations/${item.jobId}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result?.error ?? response.statusText ?? historyT("messages.deleteFailed"));
+        }
+
+        setFilterStates((prev) => {
+          const nextEntries = { ...prev } as FilterStateMap;
+          FILTER_KEYS.forEach((key) => {
+            const state = prev[key];
+            const exists = state.items.some((entry) => entry.jobId === item.jobId);
+            if (!exists) {
+              return;
+            }
+            const updatedItems = state.items.filter((entry) => entry.jobId !== item.jobId);
+            nextEntries[key] = {
+              ...state,
+              items: updatedItems,
+              totalCount: Math.max(0, state.totalCount - 1),
+            };
+          });
+          return nextEntries;
+        });
+
+        if (previewItem?.jobId === item.jobId) {
+          resetViewerState();
+        }
+
+        toast.success(historyT("messages.deleteSuccess"));
+      } catch (error: any) {
+        console.error("[my-creations] delete failed", error);
+        toast.error(error?.message ?? historyT("messages.deleteFailed"));
+      }
+    },
+    [historyT, previewItem?.jobId, resetViewerState]
   );
 
   const viewerShareSlug = viewerJob?.shareSlug ?? previewItem?.shareSlug ?? null;
@@ -553,14 +783,25 @@ export function MyCreationsContent({
           <div
             className={`grid auto-rows-[12px] grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 ${shouldShowInitialOverlay ? "invisible" : ""}`}
           >
-            {items.map((item) => (
-              <MyCreationsCard
-                key={item.jobId}
-                item={item}
-                onOpen={handleOpenViewer}
-                onMeasured={handleCardMeasured}
-              />
-            ))}
+            {items.map((item) => {
+              const downloadTargets = resolveDownloadTargets(item);
+              return (
+                <MyCreationsCard
+                  key={item.jobId}
+                  item={item}
+                  onOpen={handleOpenViewer}
+                  onMeasured={handleCardMeasured}
+                  onDownload={(variant) => handleDownload(item, downloadTargets, variant)}
+                  onCopyLink={() => handleCopyLink(item)}
+                  onDelete={() => handleDelete(item)}
+                  downloadAvailability={{
+                    watermark: Boolean(downloadTargets.watermarkUrl),
+                    clean: Boolean(downloadTargets.originalUrl),
+                  }}
+                  canCopyLink={Boolean(item.shareSlug)}
+                />
+              );
+            })}
           </div>
 
           {shouldShowInitialOverlay ? (

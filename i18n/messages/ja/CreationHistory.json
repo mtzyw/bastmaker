@@ -7,6 +7,7 @@
     "audio": "音声"
   },
   "status": {
+    "created": "作成済み",
     "pending": "待機中",
     "queued": "キュー待ち",
     "processing": "生成中",

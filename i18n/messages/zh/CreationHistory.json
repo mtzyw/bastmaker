@@ -7,10 +7,16 @@
     "audio": "音效"
   },
   "status": {
+    "created": "已创建",
+    "pending": "排队中",
+    "queued": "排队中",
     "processing": "生成中",
+    "running": "生成中",
+    "in_progress": "生成中",
     "completed": "已完成",
     "failed": "失败",
     "cancelled": "已取消",
+    "cancelled_insufficient_credits": "点数不足",
     "unknown": "未知状态"
   },
   "actions": {

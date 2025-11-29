@@ -7,6 +7,7 @@
     "audio": "Audio"
   },
   "status": {
+    "created": "Created",
     "pending": "Pending",
     "queued": "Queued",
     "processing": "Processing",
