@@ -132,6 +132,7 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(user);
 
   const rightSection = (
     <TextToImageRecentTasks
@@ -150,15 +151,17 @@ export default async function VideoEffectDetailPage({ params }: PageProps) {
       section2Left={<VideoEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        <HideIfAuthenticated>
-          <VideoEffectsDetailContent
-            effect={localizedTemplate}
-            allEffects={localizedAllEffects}
-            copy={copy}
-          />
-        </HideIfAuthenticated>
+        isAuthenticated ? null : (
+          <HideIfAuthenticated>
+            <VideoEffectsDetailContent
+              effect={localizedTemplate}
+              allEffects={localizedAllEffects}
+              copy={copy}
+            />
+          </HideIfAuthenticated>
+        )
       }
-      hideMergedSection={false}
+      hideMergedSection={isAuthenticated}
     />
   );
 }
