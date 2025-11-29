@@ -12,6 +12,7 @@ import {
   type ImageEffectTemplate,
 } from "@/lib/image-effects/templates";
 import { constructMetadata } from "@/lib/metadata";
+import { createClient } from "@/lib/supabase/server";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -157,6 +158,12 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
     />
   );
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(user);
+
   return (
     <PureFourSections
       leftWidth="13"
@@ -166,15 +173,17 @@ export default async function ImageEffectDetailPage({ params }: PageProps) {
       section2Left={<ImageEffectsEditorLeftPanel effect={localizedTemplate} />}
       section2Right={rightSection}
       mergedSectionContent={
-        <HideIfAuthenticated>
-          <ImageEffectsDetailContent
-            effect={localizedTemplate}
-            allEffects={localizedAllEffects}
-            copy={copy}
-          />
-        </HideIfAuthenticated>
+        isAuthenticated ? null : (
+          <HideIfAuthenticated>
+            <ImageEffectsDetailContent
+              effect={localizedTemplate}
+              allEffects={localizedAllEffects}
+              copy={copy}
+            />
+          </HideIfAuthenticated>
+        )
       }
-      hideMergedSection={false}
+      hideMergedSection={isAuthenticated}
     />
   );
 }
