@@ -6,6 +6,16 @@ import { useLocale, useTranslations } from "next-intl";
 
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MyCreationsCard, type DownloadVariant } from "@/components/ai/MyCreationsCard";
 import { MyCreationsFilterTabs } from "@/components/ai/MyCreationsFilterTabs";
@@ -204,6 +214,11 @@ export function MyCreationsContent({
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const locale = useLocale();
   const historyT = useTranslations("CreationHistory");
+  const deleteConfirmTitle = historyT("messages.deleteConfirmTitle");
+  const deleteConfirmDescription = historyT("messages.deleteConfirmDescription");
+  const deleteCancelLabel = historyT("messages.deleteCancel");
+  const deleteConfirmLabel = historyT("messages.deleteConfirm");
+  const deletingLabel = historyT("messages.deleting");
   const localePrefix = useMemo(() => (locale === DEFAULT_LOCALE ? "" : `/${locale}`), [locale]);
   const filterOptions: ReadonlyArray<MyCreationsFilterOption> = useMemo(() => {
     const translationKeys: Record<FilterKey, "all" | "video" | "image" | "audio"> = {
@@ -234,6 +249,8 @@ export function MyCreationsContent({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CreationItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setFilterStates((prev) => ({
@@ -412,51 +429,57 @@ export function MyCreationsContent({
     [historyT, localePrefix]
   );
 
-  const handleDelete = useCallback(
-    async (item: CreationItem) => {
-      const confirmMessage = `${historyT("messages.deleteConfirmTitle")}\n${historyT("messages.deleteConfirmDescription")}`;
-      if (typeof window !== "undefined" && !window.confirm(confirmMessage)) {
-        return;
+  const handleRequestDelete = useCallback((item: CreationItem) => {
+    setDeleteTarget(item);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/ai/my-creations/${deleteTarget.jobId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result?.error ?? response.statusText ?? historyT("messages.deleteFailed"));
       }
-      try {
-        const response = await fetch(`/api/ai/my-creations/${item.jobId}`, {
-          method: "DELETE",
+
+      setFilterStates((prev) => {
+        const nextEntries = { ...prev } as FilterStateMap;
+        FILTER_KEYS.forEach((key) => {
+          const state = prev[key];
+          const exists = state.items.some((entry) => entry.jobId === deleteTarget.jobId);
+          if (!exists) {
+            return;
+          }
+          const updatedItems = state.items.filter((entry) => entry.jobId !== deleteTarget.jobId);
+          nextEntries[key] = {
+            ...state,
+            items: updatedItems,
+            totalCount: Math.max(0, state.totalCount - 1),
+          };
         });
-        if (!response.ok) {
-          const result = await response.json().catch(() => ({}));
-          throw new Error(result?.error ?? response.statusText ?? historyT("messages.deleteFailed"));
-        }
+        return nextEntries;
+      });
 
-        setFilterStates((prev) => {
-          const nextEntries = { ...prev } as FilterStateMap;
-          FILTER_KEYS.forEach((key) => {
-            const state = prev[key];
-            const exists = state.items.some((entry) => entry.jobId === item.jobId);
-            if (!exists) {
-              return;
-            }
-            const updatedItems = state.items.filter((entry) => entry.jobId !== item.jobId);
-            nextEntries[key] = {
-              ...state,
-              items: updatedItems,
-              totalCount: Math.max(0, state.totalCount - 1),
-            };
-          });
-          return nextEntries;
-        });
-
-        if (previewItem?.jobId === item.jobId) {
-          resetViewerState();
-        }
-
-        toast.success(historyT("messages.deleteSuccess"));
-      } catch (error: any) {
-        console.error("[my-creations] delete failed", error);
-        toast.error(error?.message ?? historyT("messages.deleteFailed"));
+      if (previewItem?.jobId === deleteTarget.jobId) {
+        resetViewerState();
       }
-    },
-    [historyT, previewItem?.jobId, resetViewerState]
-  );
+
+      toast.success(historyT("messages.deleteSuccess"));
+      setDeleteTarget(null);
+    } catch (error: any) {
+      console.error("[my-creations] delete failed", error);
+      toast.error(error?.message ?? historyT("messages.deleteFailed"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteTarget, historyT, previewItem?.jobId, resetViewerState]);
 
   const viewerShareSlug = viewerJob?.shareSlug ?? previewItem?.shareSlug ?? null;
   const viewerShareUrl = useMemo(() => {
@@ -794,7 +817,7 @@ export function MyCreationsContent({
                   onMeasured={handleCardMeasured}
                   onDownload={(variant) => handleDownload(item, downloadTargets, variant)}
                   onCopyLink={() => handleCopyLink(item)}
-                  onDelete={() => handleDelete(item)}
+                  onDelete={() => handleRequestDelete(item)}
                   downloadAvailability={{
                     watermark: Boolean(downloadTargets.watermarkUrl),
                     clean: Boolean(downloadTargets.originalUrl),
@@ -856,6 +879,41 @@ export function MyCreationsContent({
           )}
         </DialogContent>
       </Dialog>
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) {
+            setDeleteTarget(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="border border-white/10 bg-[#1c1c1a] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{deleteConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              {deleteConfirmDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+            >
+              {deleteCancelLabel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleConfirmDelete();
+              }}
+              className="bg-[#dc2e5a] text-white hover:bg-[#f0446e]"
+            >
+              {isDeleting ? deletingLabel : deleteConfirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
