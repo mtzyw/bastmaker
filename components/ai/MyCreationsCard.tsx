@@ -361,7 +361,7 @@ export function MyCreationsCard({
           >
             <div
               className={cn(
-                "rounded-xl px-2 py-1.5 text-xs text-white/70",
+                "relative rounded-xl px-2 py-1.5 text-xs text-white/70",
                 !hasDownloadOption && "text-white/30"
               )}
               onMouseEnter={() => hasDownloadOption && setDownloadExpanded(true)}
@@ -369,44 +369,49 @@ export function MyCreationsCard({
               onFocusCapture={() => hasDownloadOption && setDownloadExpanded(true)}
               onBlurCapture={() => setDownloadExpanded(false)}
             >
-              <div className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                <span className="flex-1">{downloadLabel}</span>
-              </div>
-              <div
-                className={cn(
-                  "mt-1 space-y-1 overflow-hidden rounded-lg bg-white/5 px-2 py-1 transition-all",
-                  downloadExpanded ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
-                )}
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs hover:bg-white/10"
               >
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] text-white/80 hover:bg-white/10"
-                  onClick={() => {
-                    onDownload?.("watermark");
-                    setIsMenuOpen(false);
-                    setDownloadExpanded(false);
-                  }}
+                <Download className="h-4 w-4" />
+                <span className="flex-1 text-left">{downloadLabel}</span>
+              </button>
+              {hasDownloadOption ? (
+                <div
+                  className={cn(
+                    "absolute right-full top-1 mr-2 w-40 rounded-2xl border border-white/10 bg-[#111] px-2 py-2 text-white/80 shadow-[0_10px_25px_rgba(0,0,0,0.45)] transition",
+                    downloadExpanded ? "pointer-events-auto opacity-100 translate-x-0" : "pointer-events-none opacity-0 translate-x-1"
+                  )}
                 >
-                  <Download className="h-4 w-4" />
-                  <span className="flex-1">{downloadWatermarkLabel}</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] text-white/80 hover:bg-white/10"
-                  onClick={() => {
-                    onDownload?.("clean");
-                    setIsMenuOpen(false);
-                    setDownloadExpanded(false);
-                  }}
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="flex-1">{downloadCleanLabel}</span>
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2e5a]/20">
-                    <Crown className="h-3 w-3 text-[#ffba49]" />
-                  </span>
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
+                    onClick={() => {
+                      onDownload?.("watermark");
+                      setIsMenuOpen(false);
+                      setDownloadExpanded(false);
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="flex-1">{downloadWatermarkLabel}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
+                    onClick={() => {
+                      onDownload?.("clean");
+                      setIsMenuOpen(false);
+                      setDownloadExpanded(false);
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="flex-1">{downloadCleanLabel}</span>
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                      <Crown className="h-3 w-3 text-[#ffba49]" />
+                    </span>
+                  </button>
+                </div>
+              ) : null}
             </div>
             {onCopyLink && canCopyLink ? (
               <button
