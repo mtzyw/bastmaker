@@ -2,6 +2,7 @@ import PureFourSections, { SectionConfig } from "@/components/sections/PureFourS
 import TextToVideoLeftPanel from "@/components/ai/TextToVideoLeftPanel";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
 import TextToVideoGuestPreview from "@/components/ai/TextToVideoGuestPreview";
+import { HideIfAuthenticated } from "@/components/auth/HideIfAuthenticated";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
@@ -80,15 +81,19 @@ export default async function TextToVideoPage() {
         )
       }
       mergedSectionContent={
-        <TextToVideoSeoContent
-          badgeLabel={t("metaTitle")}
-          overviewTitle={t("sections.overview.title")}
-          overviewBody={t("sections.overview.body")}
-          overviewPoints={overviewPoints}
-          seoTitle={t("sections.seo.title")}
-          seoBody={t("sections.seo.body")}
-          seoHighlights={seoHighlights}
-        />
+        isAuthenticated ? null : (
+          <HideIfAuthenticated>
+            <TextToVideoSeoContent
+              badgeLabel={t("metaTitle")}
+              overviewTitle={t("sections.overview.title")}
+              overviewBody={t("sections.overview.body")}
+              overviewPoints={overviewPoints}
+              seoTitle={t("sections.seo.title")}
+              seoBody={t("sections.seo.body")}
+              seoHighlights={seoHighlights}
+            />
+          </HideIfAuthenticated>
+        )
       }
       hideMergedSection={isAuthenticated}
     />

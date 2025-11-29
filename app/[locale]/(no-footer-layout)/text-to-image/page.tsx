@@ -2,6 +2,7 @@ import PureFourSections, { SectionConfig } from "@/components/sections/PureFourS
 import TextToImageLeftPanel from "@/components/ai/TextToImageLeftPanel";
 import TextToImageGuestPreview from "@/components/ai/TextToImageGuestPreview";
 import TextToImageRecentTasks from "@/components/ai/TextToImageRecentTasks";
+import { HideIfAuthenticated } from "@/components/auth/HideIfAuthenticated";
 import { Locale } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
@@ -72,15 +73,19 @@ export default async function TextToImagePage() {
         )
       }
       mergedSectionContent={
-        <TextToImageSeoContent
-          badgeLabel={t("metaTitle")}
-          overviewTitle={t("sections.overview.title")}
-          overviewBody={t("sections.overview.body")}
-          overviewPoints={overviewPoints}
-          seoTitle={t("sections.seo.title")}
-          seoBody={t("sections.seo.body")}
-          seoHighlights={seoHighlights}
-        />
+        isAuthenticated ? null : (
+          <HideIfAuthenticated>
+            <TextToImageSeoContent
+              badgeLabel={t("metaTitle")}
+              overviewTitle={t("sections.overview.title")}
+              overviewBody={t("sections.overview.body")}
+              overviewPoints={overviewPoints}
+              seoTitle={t("sections.seo.title")}
+              seoBody={t("sections.seo.body")}
+              seoHighlights={seoHighlights}
+            />
+          </HideIfAuthenticated>
+        )
       }
       hideMergedSection={isAuthenticated}
     />
