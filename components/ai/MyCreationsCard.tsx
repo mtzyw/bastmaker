@@ -14,16 +14,6 @@ import {
 import AudioPlayer from "@components/audio-player";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Copy, Crown, Download, Menu, Trash2 } from "lucide-react";
 
 const GRID_ROW_HEIGHT = 12; // matches auto-rows-[12px]
@@ -59,14 +49,19 @@ export function MyCreationsCard({
 }: MyCreationsCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuContentRef = useRef<HTMLDivElement | null>(null);
   const measurementNotifiedRef = useRef(false);
   const [isMeasured, setIsMeasured] = useState(false);
   const [rowSpan, setRowSpan] = useState(1);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [downloadExpanded, setDownloadExpanded] = useState(false);
   const historyT = useTranslations("CreationHistory");
 
   useEffect(() => {
     measurementNotifiedRef.current = false;
     setIsMeasured(false);
+    setIsMenuOpen(false);
   }, [item.jobId]);
 
   const recalcRowSpan = useCallback(() => {
@@ -287,6 +282,38 @@ export function MyCreationsCard({
     event.stopPropagation();
   };
 
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        menuButtonRef.current?.contains(target) ||
+        menuContentRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setIsMenuOpen(false);
+      setDownloadExpanded(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+        setDownloadExpanded(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
+
   return (
     <div
       ref={cardRef}
@@ -308,87 +335,108 @@ export function MyCreationsCard({
 
       {showActionsButton ? (
         <div className="pointer-events-none absolute bottom-2 right-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                className="pointer-events-auto h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white/80 shadow-[0_5px_15px_rgba(0,0,0,0.45)]"
-                aria-label={moreActionsLabel}
-                onPointerDown={handleMenuTriggerPointerDown}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              sideOffset={6}
-              className="w-40 rounded-2xl border border-white/10 bg-[#1c1c1a] px-1 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]"
-              onPointerDown={(event) => event.stopPropagation()}
+          <Button
+            ref={menuButtonRef}
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="pointer-events-auto h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white/80 shadow-[0_5px_15px_rgba(0,0,0,0.45)]"
+            aria-label={moreActionsLabel}
+            onPointerDown={handleMenuTriggerPointerDown}
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsMenuOpen((prev) => !prev);
+              setDownloadExpanded(false);
+            }}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+          <div
+            ref={menuContentRef}
+            className={cn(
+              "pointer-events-auto absolute bottom-12 right-0 w-44 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-2 text-white/80 shadow-[0_15px_35px_rgba(0,0,0,0.55)] transition",
+              isMenuOpen ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-1"
+            )}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div
+              className={cn(
+                "rounded-xl px-2 py-1.5 text-xs text-white/70",
+                !hasDownloadOption && "text-white/30"
+              )}
+              onMouseEnter={() => hasDownloadOption && setDownloadExpanded(true)}
+              onMouseLeave={() => setDownloadExpanded(false)}
+              onFocusCapture={() => hasDownloadOption && setDownloadExpanded(true)}
+              onBlurCapture={() => setDownloadExpanded(false)}
             >
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger
-                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70"
-                  disabled={!hasDownloadOption}
+              <div className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                <span className="flex-1">{downloadLabel}</span>
+              </div>
+              <div
+                className={cn(
+                  "mt-1 space-y-1 overflow-hidden rounded-lg bg-white/5 px-2 py-1 transition-all",
+                  downloadExpanded ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] text-white/80 hover:bg-white/10"
+                  onClick={() => {
+                    onDownload?.("watermark");
+                    setIsMenuOpen(false);
+                    setDownloadExpanded(false);
+                  }}
                 >
                   <Download className="h-4 w-4" />
-                  <span className="flex-1 text-left">{downloadLabel}</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-40 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]">
-                  <DropdownMenuItem
-                    onSelect={(event) => {
-                      event.preventDefault();
-                      onDownload?.("watermark");
-                    }}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] cursor-pointer text-white/80"
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadWatermarkLabel}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={(event) => {
-                      event.preventDefault();
-                      onDownload?.("clean");
-                    }}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-white/80"
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadCleanLabel}</span>
-                    <span className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#dc2e5a]/20">
-                      <Crown className="h-3 w-3 text-[#ffba49]" />
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              {(onCopyLink && canCopyLink) || onDelete ? <DropdownMenuSeparator className="my-1 bg-white/10" /> : null}
-              {onCopyLink && canCopyLink ? (
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault();
-                    onCopyLink();
+                  <span className="flex-1">{downloadWatermarkLabel}</span>
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] text-white/80 hover:bg-white/10"
+                  onClick={() => {
+                    onDownload?.("clean");
+                    setIsMenuOpen(false);
+                    setDownloadExpanded(false);
                   }}
-                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
                 >
-                  <Copy className="h-4 w-4" />
-                  <span className="flex-1">{copyLinkLabel}</span>
-                </DropdownMenuItem>
-              ) : null}
-              {onDelete ? (
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault();
-                    onDelete();
-                  }}
-                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="flex-1">{deleteLabel}</span>
-                </DropdownMenuItem>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <Download className="h-4 w-4" />
+                  <span className="flex-1">{downloadCleanLabel}</span>
+                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2e5a]/20">
+                    <Crown className="h-3 w-3 text-[#ffba49]" />
+                  </span>
+                </button>
+              </div>
+            </div>
+            {onCopyLink && canCopyLink ? (
+              <button
+                type="button"
+                className="mt-1 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
+                onClick={() => {
+                  onCopyLink();
+                  setIsMenuOpen(false);
+                  setDownloadExpanded(false);
+                }}
+              >
+                <Copy className="h-4 w-4" />
+                <span className="flex-1">{copyLinkLabel}</span>
+              </button>
+            ) : null}
+            {onDelete ? (
+              <button
+                type="button"
+                className="mt-1 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
+                onClick={() => {
+                  onDelete();
+                  setIsMenuOpen(false);
+                  setDownloadExpanded(false);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="flex-1">{deleteLabel}</span>
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>
