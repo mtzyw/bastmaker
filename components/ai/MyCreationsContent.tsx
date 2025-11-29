@@ -125,6 +125,7 @@ function resolveDownloadTargets(item: CreationItem): DownloadTargets {
 
   const primary = primaryImage ?? primaryVideo ?? primaryAudio ?? (outputs.length > 0 ? outputs[0] : undefined);
   const metadata = (item.metadata ?? {}) as Record<string, unknown>;
+  const fallbackUrl = typeof primary?.url === "string" && primary.url.length > 0 ? primary.url : null;
 
   const originalCandidates: Array<string | null> = [
     typeof primary?.url === "string" ? primary.url : null,
@@ -153,8 +154,8 @@ function resolveDownloadTargets(item: CreationItem): DownloadTargets {
   ];
 
   return {
-    originalUrl: firstNonEmpty(originalCandidates),
-    watermarkUrl: firstNonEmpty(watermarkCandidates),
+    originalUrl: firstNonEmpty(originalCandidates) ?? fallbackUrl,
+    watermarkUrl: firstNonEmpty(watermarkCandidates) ?? fallbackUrl,
     fallbackExtension: detectFallbackExtension(primary, item.modalityCode),
   };
 }

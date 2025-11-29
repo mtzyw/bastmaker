@@ -307,14 +307,14 @@ export function MyCreationsCard({
       )}
 
       {showActionsButton ? (
-        <div className="pointer-events-none absolute bottom-3 right-3">
+        <div className="pointer-events-none absolute bottom-2 right-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="pointer-events-auto h-9 w-9 rounded-full border border-white/20 bg-black/50 text-white/80 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"
+                className="pointer-events-auto h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white/80 shadow-[0_5px_15px_rgba(0,0,0,0.45)]"
                 aria-label={moreActionsLabel}
                 onPointerDown={handleMenuTriggerPointerDown}
                 onClick={(event) => event.stopPropagation()}
@@ -324,47 +324,35 @@ export function MyCreationsCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              sideOffset={8}
-              className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-1 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]"
+              sideOffset={6}
+              className="w-40 rounded-2xl border border-white/10 bg-[#1c1c1a] px-1 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]"
               onPointerDown={(event) => event.stopPropagation()}
             >
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger
-                  className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm focus:bg-white/10 focus:text-[#dc2e5a]"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70"
                   disabled={!hasDownloadOption}
                 >
                   <Download className="h-4 w-4" />
                   <span className="flex-1 text-left">{downloadLabel}</span>
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-48 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]">
+                <DropdownMenuSubContent className="w-40 rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-1 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)]">
                   <DropdownMenuItem
-                    disabled={!canDownloadWatermark}
                     onSelect={(event) => {
                       event.preventDefault();
-                      if (canDownloadWatermark) {
-                        onDownload?.("watermark");
-                      }
+                      onDownload?.("watermark");
                     }}
-                    className={cn(
-                      "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a]",
-                      canDownloadWatermark ? "cursor-pointer" : "opacity-40"
-                    )}
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] cursor-pointer text-white/80"
                   >
                     <Download className="h-4 w-4" />
                     <span className="flex-1">{downloadWatermarkLabel}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    disabled={!canDownloadClean}
                     onSelect={(event) => {
                       event.preventDefault();
-                      if (canDownloadClean) {
-                        onDownload?.("clean");
-                      }
+                      onDownload?.("clean");
                     }}
-                    className={cn(
-                      "flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs focus:bg-white/10 focus:text-[#dc2e5a]",
-                      canDownloadClean ? "cursor-pointer" : "opacity-40"
-                    )}
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-white/80"
                   >
                     <Download className="h-4 w-4" />
                     <span className="flex-1">{downloadCleanLabel}</span>
