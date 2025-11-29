@@ -51,11 +51,13 @@ export function MyCreationsCard({
   const contentRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuContentRef = useRef<HTMLDivElement | null>(null);
+  const downloadHoverTimeoutRef = useRef<number | null>(null);
   const measurementNotifiedRef = useRef(false);
   const [isMeasured, setIsMeasured] = useState(false);
   const [rowSpan, setRowSpan] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [downloadExpanded, setDownloadExpanded] = useState(false);
+  const [downloadMenuDirection, setDownloadMenuDirection] = useState<"left" | "right">("right");
   const historyT = useTranslations("CreationHistory");
 
   useEffect(() => {
@@ -63,6 +65,37 @@ export function MyCreationsCard({
     setIsMeasured(false);
     setIsMenuOpen(false);
   }, [item.jobId]);
+
+  const updateDownloadMenuDirection = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const menuNode = menuContentRef.current ?? menuButtonRef.current;
+    if (!menuNode) {
+      setDownloadMenuDirection("right");
+      return;
+    }
+
+    const rect = menuNode.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const requiredWidth = 184;
+
+    const spaceRight = viewportWidth - rect.right;
+    const spaceLeft = rect.left;
+
+    if (spaceRight >= requiredWidth) {
+      setDownloadMenuDirection("right");
+      return;
+    }
+
+    if (spaceLeft >= requiredWidth) {
+      setDownloadMenuDirection("left");
+      return;
+    }
+
+    setDownloadMenuDirection(spaceRight >= spaceLeft ? "right" : "left");
+  }, []);
 
   const recalcRowSpan = useCallback(() => {
     const node = cardRef.current;
@@ -278,6 +311,32 @@ export function MyCreationsCard({
   const showActionsButton =
     !actionsDisabled && (hasDownloadOption || (onCopyLink && canCopyLink) || Boolean(onDelete));
 
+  const clearDownloadHoverTimeout = useCallback(() => {
+    if (downloadHoverTimeoutRef.current !== null) {
+      window.clearTimeout(downloadHoverTimeoutRef.current);
+      downloadHoverTimeoutRef.current = null;
+    }
+  }, []);
+
+  const handleDownloadHoverStart = useCallback(() => {
+    if (!hasDownloadOption) {
+      return;
+    }
+    clearDownloadHoverTimeout();
+    setDownloadExpanded(true);
+  }, [clearDownloadHoverTimeout, hasDownloadOption]);
+
+  const handleDownloadHoverEnd = useCallback(() => {
+    clearDownloadHoverTimeout();
+    if (!hasDownloadOption) {
+      return;
+    }
+    downloadHoverTimeoutRef.current = window.setTimeout(() => {
+      setDownloadExpanded(false);
+      downloadHoverTimeoutRef.current = null;
+    }, 200);
+  }, [clearDownloadHoverTimeout, hasDownloadOption]);
+
   const handleMenuTriggerPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.stopPropagation();
   };
@@ -306,19 +365,36 @@ export function MyCreationsCard({
       }
     };
 
+    updateDownloadMenuDirection();
+
+    const handleResize = () => {
+      updateDownloadMenuDirection();
+    };
+
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleResize);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, updateDownloadMenuDirection]);
+
+  useEffect(() => {
+    return () => {
+      clearDownloadHoverTimeout();
+    };
+  }, [clearDownloadHoverTimeout]);
 
   return (
     <div
       ref={cardRef}
       style={{ gridRowEnd: `span ${rowSpan}` }}
-      className="group relative flex w-full flex-col rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+      className={cn(
+        "group relative flex w-full flex-col rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm",
+        isMenuOpen && "z-10"
+      )}
     >
       {canOpenViewer ? (
         <button
@@ -334,7 +410,13 @@ export function MyCreationsCard({
       )}
 
       {showActionsButton ? (
-        <div className="pointer-events-none absolute bottom-2 right-2">
+        <div
+          className={cn(
+            "absolute bottom-2 right-2 z-10 opacity-0 pointer-events-none transition-opacity duration-150",
+            "group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto",
+            isMenuOpen && "opacity-100 pointer-events-auto"
+          )}
+        >
           <Button
             ref={menuButtonRef}
             type="button"
@@ -345,8 +427,14 @@ export function MyCreationsCard({
             onPointerDown={handleMenuTriggerPointerDown}
             onClick={(event) => {
               event.stopPropagation();
-              setIsMenuOpen((prev) => !prev);
               setDownloadExpanded(false);
+              setIsMenuOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  updateDownloadMenuDirection();
+                }
+                return next;
+              });
             }}
           >
             <Menu className="h-4 w-4" />
@@ -361,54 +449,58 @@ export function MyCreationsCard({
           >
             <div
               className={cn(
-                "relative rounded-xl px-2 py-1.5 text-xs text-white/70",
+                "relative rounded-xl py-1.5 text-xs text-white/70",
                 !hasDownloadOption && "text-white/30"
               )}
-              onMouseEnter={() => hasDownloadOption && setDownloadExpanded(true)}
-              onMouseLeave={() => setDownloadExpanded(false)}
-              onFocusCapture={() => hasDownloadOption && setDownloadExpanded(true)}
-              onBlurCapture={() => setDownloadExpanded(false)}
+              onMouseEnter={handleDownloadHoverStart}
+              onMouseLeave={handleDownloadHoverEnd}
+              onFocusCapture={handleDownloadHoverStart}
+              onBlurCapture={handleDownloadHoverEnd}
             >
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs hover:bg-white/10"
+                className="flex w-full items-center justify-start gap-2 rounded-xl px-2 py-1.5 text-xs hover:bg-white/10"
               >
                 <Download className="h-4 w-4" />
-                <span className="flex-1 text-left">{downloadLabel}</span>
+                <span className="flex-1 text-left whitespace-nowrap">{downloadLabel}</span>
               </button>
               {hasDownloadOption ? (
                 <div
                   className={cn(
-                    "absolute right-full top-1 mr-2 w-40 rounded-2xl border border-white/10 bg-[#111] px-2 py-2 text-white/80 shadow-[0_10px_25px_rgba(0,0,0,0.45)] transition",
-                    downloadExpanded ? "pointer-events-auto opacity-100 translate-x-0" : "pointer-events-none opacity-0 translate-x-1"
+                    downloadMenuDirection === "left"
+                      ? "absolute top-0 right-full mr-2"
+                      : "absolute top-0 left-full ml-2",
+                    "w-40 rounded-2xl border border-white/10 bg-[#111] px-2 py-2 text-white/80 shadow-[0_10px_25px_rgba(0,0,0,0.45)] transition",
+                    downloadExpanded
+                      ? "pointer-events-auto opacity-100 translate-x-0"
+                      : downloadMenuDirection === "left"
+                        ? "pointer-events-none opacity-0 -translate-x-1"
+                        : "pointer-events-none opacity-0 translate-x-1"
                   )}
+                  onMouseEnter={handleDownloadHoverStart}
+                  onMouseLeave={handleDownloadHoverEnd}
                 >
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
+                    className="flex w-full items-center justify-start gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
                     onClick={() => {
                       onDownload?.("watermark");
                       setIsMenuOpen(false);
                       setDownloadExpanded(false);
                     }}
                   >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadWatermarkLabel}</span>
+                    <span className="flex-1 text-left whitespace-nowrap">{downloadWatermarkLabel}</span>
                   </button>
                   <button
                     type="button"
-                    className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
+                    className="mt-1 flex w-full items-center justify-start gap-2 rounded-lg px-2 py-1 text-[11px] hover:bg-white/10"
                     onClick={() => {
                       onDownload?.("clean");
                       setIsMenuOpen(false);
                       setDownloadExpanded(false);
                     }}
                   >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadCleanLabel}</span>
-                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2e5a]/20">
-                      <Crown className="h-3 w-3 text-[#ffba49]" />
-                    </span>
+                    <span className="flex-1 text-left whitespace-nowrap">{downloadCleanLabel}</span>
                   </button>
                 </div>
               ) : null}
@@ -416,7 +508,7 @@ export function MyCreationsCard({
             {onCopyLink && canCopyLink ? (
               <button
                 type="button"
-                className="mt-1 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
+                className="mt-1 flex w-full items-center justify-start gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
                 onClick={() => {
                   onCopyLink();
                   setIsMenuOpen(false);
@@ -424,13 +516,13 @@ export function MyCreationsCard({
                 }}
               >
                 <Copy className="h-4 w-4" />
-                <span className="flex-1">{copyLinkLabel}</span>
+                <span className="flex-1 text-left whitespace-nowrap">{copyLinkLabel}</span>
               </button>
             ) : null}
             {onDelete ? (
               <button
                 type="button"
-                className="mt-1 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
+                className="mt-1 flex w-full items-center justify-start gap-2 rounded-xl px-2 py-1.5 text-xs text-white/70 hover:bg-white/10"
                 onClick={() => {
                   onDelete();
                   setIsMenuOpen(false);
@@ -438,7 +530,7 @@ export function MyCreationsCard({
                 }}
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="flex-1">{deleteLabel}</span>
+                <span className="flex-1 text-left whitespace-nowrap">{deleteLabel}</span>
               </button>
             ) : null}
           </div>
