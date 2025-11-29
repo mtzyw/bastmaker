@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { CreationItem } from "@/lib/ai/creations";
-import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
 import { cn } from "@/lib/utils";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
@@ -226,8 +226,10 @@ export default function ImageToVideoLeftPanel() {
   const allowedVideoLengths = getAllowedVideoLengths(model, resolution);
   const isSingleVideoLength = allowedVideoLengths.length === 1;
   const resolutionOptions = VIDEO_RESOLUTION_PRESETS[model] ?? [FALLBACK_RESOLUTION];
-  const selectedModel = getModelOption(model);
-  const creditsCost = videoModelConfig.creditsCost ?? selectedModel?.credits ?? 0;
+  const creditsCost = useMemo(
+    () => getVideoCreditsCost(model, resolution, videoLength),
+    [model, resolution, videoLength]
+  );
   const hasPrompt = prompt.trim().length > 0;
   const isImageMode = !isTransitionModel;
   const hasImage = Boolean(uploadedImage?.remoteUrl);
@@ -303,8 +305,7 @@ export default function ImageToVideoLeftPanel() {
       }): CreationItem => {
         const effectiveStatus = status || "processing";
         const effectiveLatest = latestStatus ?? effectiveStatus;
-        const effectiveCredits =
-          typeof costCredits === "number" ? costCredits : videoModelConfig.creditsCost;
+        const effectiveCredits = typeof costCredits === "number" ? costCredits : creditsCost;
 
         return {
           jobId,
@@ -431,9 +432,7 @@ export default function ImageToVideoLeftPanel() {
         const optimisticStatus = taskInfo.status ?? "processing";
         const latestStatus = taskInfo.freepikStatus ?? optimisticStatus;
         const credits =
-          typeof taskInfo.creditsCost === "number"
-            ? taskInfo.creditsCost
-            : videoModelConfig.creditsCost;
+          typeof taskInfo.creditsCost === "number" ? taskInfo.creditsCost : creditsCost;
 
         upsertHistoryItem(
           buildHistoryItem({
@@ -478,6 +477,7 @@ export default function ImageToVideoLeftPanel() {
     videoModelConfig,
     uploadedImage,
     isPublic,
+    creditsCost,
   ]);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { DEFAULT_SOUND_EFFECT_MODEL, getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
-import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
 
 export type RegenerationResultPayload = {
   jobId?: string | null;
@@ -440,11 +440,12 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
   };
 
   const modelConfig = safeGetVideoConfig(model);
+  const estimatedCredits = getVideoCreditsCost(model, resolution ?? undefined, videoLength);
   const optimistic = makeBaseOptimisticItem(item, {
     jobId: generateTempJobId(),
     modelSlug: model,
     providerCode: modelConfig?.providerCode ?? item.providerCode,
-    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    costCredits: estimatedCredits,
     metadata: {
       source: "video",
       mode: "text",
@@ -460,6 +461,7 @@ function buildTextToVideoPlan(item: CreationItem): RegenerationPlan {
       original_prompt: prompt,
       model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
       is_public: isPublic,
+      credits_cost: estimatedCredits,
     },
     inputParams: {
       model,
@@ -551,11 +553,12 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
   const referenceCount = Object.values(referenceInputs).filter(Boolean).length || referenceImageUrls.length;
 
   const modelConfig = safeGetVideoConfig(model);
+  const estimatedCredits = getVideoCreditsCost(model, resolution ?? undefined, videoLength);
   const optimistic = makeBaseOptimisticItem(item, {
     jobId: generateTempJobId(),
     modelSlug: model,
     providerCode: modelConfig?.providerCode ?? item.providerCode,
-    costCredits: modelConfig?.creditsCost ?? item.costCredits ?? 0,
+    costCredits: estimatedCredits,
     metadata: {
       source: "video",
       mode,
@@ -576,6 +579,7 @@ function buildImageToVideoPlan(item: CreationItem, mode: NormalizedVideoMode): R
       original_prompt: prompt,
       model_display_name: modelConfig?.displayName ?? item.metadata?.model_display_name ?? null,
       is_public: isPublic,
+      credits_cost: estimatedCredits,
     },
     inputParams: {
       model,

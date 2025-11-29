@@ -1,3 +1,5 @@
+import { getVideoCreditsCost } from "@/lib/ai/video-config";
+
 export type VideoLengthValue = "5" | "6" | "8" | "10";
 export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "auto";
 export type VideoResolutionValue =
@@ -209,13 +211,35 @@ export const VIDEO_MODEL_SELECT_OPTIONS: VideoModelSelectOption[] = VIDEO_MODEL_
       VIDEO_LENGTH_PRESETS[option.value] ??
       getAllowedVideoLengths(option.value, candidateResolutions[0]);
     const lengthTag = formatLengthTag(candidateLengths);
+    const minCredits = resolveMinimumCredits(option.value, candidateResolutions);
     const tags = [lengthTag].filter(Boolean) as string[];
     return {
       ...option,
+      credits: typeof minCredits === "number" ? minCredits : option.credits,
       tags,
     };
   }
 );
+
+function resolveMinimumCredits(
+  model: string,
+  candidateResolutions: VideoResolutionValue[]
+): number | null {
+  if (!candidateResolutions || candidateResolutions.length === 0) {
+    return null;
+  }
+  let min: number | null = null;
+  for (const resolution of candidateResolutions) {
+    const allowedLengths = getAllowedVideoLengths(model, resolution);
+    for (const length of allowedLengths) {
+      const cost = getVideoCreditsCost(model, resolution, length);
+      if (min === null || cost < min) {
+        min = cost;
+      }
+    }
+  }
+  return min;
+}
 
 export function getModelOption(value: string | null | undefined) {
   if (!value) {

@@ -10,7 +10,7 @@ import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
 import { CreationItem } from "@/lib/ai/creations";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
 import { useRepromptStore } from "@/stores/repromptStore";
-import { getVideoModelConfig } from "@/lib/ai/video-config";
+import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
 import { Switch } from "@/components/ui/switch";
 import {
   AspectRatio,
@@ -169,8 +169,10 @@ export default function TextToVideoLeftPanel() {
   const isSingleVideoLength = allowedVideoLengths.length === 1;
   const resolutionOptions = VIDEO_RESOLUTION_PRESETS[activeModel] ?? [FALLBACK_RESOLUTION];
   const aspectOptions = VIDEO_ASPECT_PRESETS[activeModel] ?? [FALLBACK_ASPECT_RATIO];
-  const selectedModel = textToVideoOptions.find((option) => option.value === activeModel);
-  const creditsCost = videoModelConfig.creditsCost ?? selectedModel?.credits ?? 0;
+  const creditsCost = useMemo(
+    () => getVideoCreditsCost(activeModel, resolution, videoLength),
+    [activeModel, resolution, videoLength]
+  );
   const hasPrompt = prompt.trim().length > 0;
 
   const handleCreate = useCallback(async () => {
@@ -208,8 +210,7 @@ export default function TextToVideoLeftPanel() {
     }): CreationItem => {
       const effectiveStatus = status || "processing";
       const effectiveLatest = latestStatus ?? effectiveStatus;
-      const effectiveCredits =
-        typeof costCredits === "number" ? costCredits : videoModelConfig.creditsCost;
+      const effectiveCredits = typeof costCredits === "number" ? costCredits : creditsCost;
 
       return {
         jobId,
@@ -325,9 +326,7 @@ export default function TextToVideoLeftPanel() {
         const optimisticStatus = taskInfo.status ?? "processing";
         const latestStatus = taskInfo.freepikStatus ?? optimisticStatus;
         const credits =
-          typeof taskInfo.creditsCost === "number"
-            ? taskInfo.creditsCost
-            : videoModelConfig.creditsCost;
+          typeof taskInfo.creditsCost === "number" ? taskInfo.creditsCost : creditsCost;
 
         const persistedItem = buildHistoryItem({
           jobId: taskInfo.jobId,
@@ -365,6 +364,7 @@ export default function TextToVideoLeftPanel() {
     commonT,
     user,
     openAuthDialog,
+    creditsCost,
   ]);
 
   return (

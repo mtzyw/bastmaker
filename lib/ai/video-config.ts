@@ -155,3 +155,96 @@ export function resolveVideoApiModel(
 
   return null;
 }
+
+type VideoCreditMatrix = Record<string, Record<string, Record<string, number>>>;
+
+const VIDEO_MODEL_CREDITS: VideoCreditMatrix = {
+  "Seedance 1.0 Pro": {
+    "480p": { "5": 10, "10": 20 },
+    "720p": { "5": 15, "10": 30 },
+    "1080p": { "5": 30, "10": 60 },
+  },
+  "Seedance 1.0 Lite": {
+    "480p": { "5": 10, "10": 20 },
+    "720p": { "5": 15, "10": 30 },
+    "1080p": { "5": 30, "10": 60 },
+  },
+  "wan2.2 Plus": {
+    "480p": { "5": 10, "10": 20 },
+    "580p": { "5": 10, "10": 20 },
+    "720p": { "5": 15, "10": 30 },
+  },
+  "PixVerse V5": {
+    "360p": { "5": 10, "8": 16 },
+    "540p": { "5": 10, "8": 16 },
+    "720p": { "5": 15, "8": 24 },
+    "1080p": { "5": 30 },
+  },
+  "PixVerse V5 Transition": {
+    "360p": { "5": 10, "8": 16 },
+    "540p": { "5": 10, "8": 16 },
+    "720p": { "5": 15, "8": 24 },
+    "1080p": { "5": 30 },
+  },
+  "Minimax Hailuo 2.0": {
+    "768p": { "6": 18, "10": 30 },
+    "1080p": { "6": 36 },
+  },
+  "Kling v2.1 Master": {
+    "720p": { "5": 15, "10": 30 },
+    "1080p": { "5": 30, "10": 60 },
+  },
+  "Kling v2.5 Pro": {
+    "720p": { "5": 15, "10": 30 },
+    "1080p": { "5": 30, "10": 60 },
+  },
+  "Kling Std v2.1": {
+    "360p": { "5": 10, "10": 20 },
+    "540p": { "5": 10, "10": 20 },
+    "720p": { "5": 15, "10": 30 },
+    "1080p": { "5": 30, "10": 60 },
+  },
+};
+
+function normalizeVideoLength(value?: string | number | null): string | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  if (typeof value === "number") {
+    return String(Math.trunc(value));
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeResolution(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed.toLowerCase();
+}
+
+export function getVideoCreditsCost(
+  model: string,
+  resolution?: string | null,
+  videoLength?: string | number | null
+): number {
+  const matrix = VIDEO_MODEL_CREDITS[model];
+  const normalizedResolution = normalizeResolution(resolution);
+  const normalizedLength = normalizeVideoLength(videoLength);
+
+  if (matrix && normalizedResolution && normalizedLength) {
+    const byResolution = matrix[normalizedResolution];
+    const resolved = byResolution?.[normalizedLength];
+    if (typeof resolved === "number") {
+      return resolved;
+    }
+  }
+
+  const fallback = VIDEO_MODEL_CONFIGS[model]?.creditsCost ?? 0;
+  return fallback;
+}

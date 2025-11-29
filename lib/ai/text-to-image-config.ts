@@ -2,31 +2,31 @@ const TEXT_TO_IMAGE_MODEL_CONFIG = {
   "gemini-2-5-flash-image-preview": {
     displayName: "Nano Banana Free",
     providerCode: "freepik",
-    creditsCost: 0,
+    creditsCost: 5,
     defaultModality: "t2i",
   },
   "flux-dev": {
     displayName: "Flux Dev",
     providerCode: "freepik",
-    creditsCost: 4,
+    creditsCost: 5,
     defaultModality: "t2i",
   },
   "flux-pro-v1-1": {
     displayName: "Flux Pro 1.1",
     providerCode: "freepik",
-    creditsCost: 6,
+    creditsCost: 5,
     defaultModality: "t2i",
   },
   "hyperflux": {
     displayName: "Hyperflux",
     providerCode: "freepik",
-    creditsCost: 6,
+    creditsCost: 5,
     defaultModality: "t2i",
   },
   "imagen3": {
     displayName: "Google Imagen4",
     providerCode: "freepik",
-    creditsCost: 8,
+    creditsCost: 5,
     defaultModality: "t2i",
   },
   "seedream-v4": {
@@ -61,7 +61,7 @@ export function getTextToImageModelConfig(model: string): TextToImageModelConfig
   return {
     displayName: model,
     providerCode: "freepik",
-    creditsCost: 0,
+    creditsCost: 5,
     defaultModality: "t2i",
   };
 }

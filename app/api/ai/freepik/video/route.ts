@@ -6,7 +6,7 @@ import {
 } from "@/lib/ai/freepik-client";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
 import { formatProviderError } from "@/lib/ai/provider-error";
-import { getVideoModelConfig, resolveVideoApiModel } from "@/lib/ai/video-config";
+import { getVideoCreditsCost, getVideoModelConfig, resolveVideoApiModel } from "@/lib/ai/video-config";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { toFreepikAspectRatio } from "@/lib/ai/freepik";
 import { apiResponse } from "@/lib/api-response";
@@ -629,10 +629,15 @@ export async function POST(req: NextRequest) {
     0
   );
 
+  const computedCreditsCost = getVideoCreditsCost(
+    resolvedModelName,
+    resolvedResolution ?? undefined,
+    duration.stringValue ?? duration.numberValue
+  );
   const effectiveCreditsCost =
     typeof effectTemplate?.pricingCreditsOverride === "number"
       ? effectTemplate.pricingCreditsOverride
-      : modelConfig.creditsCost;
+      : computedCreditsCost;
 
   let resolvedPrimaryImageUrl: string | undefined;
   let resolvedTailImageUrl: string | undefined;
