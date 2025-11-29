@@ -327,91 +327,11 @@ export function MyCreationsCard({
           className="relative w-full flex-grow text-left focus:outline-none"
           aria-label={historyT("viewer.previewAlt")}
         >
-      {renderContentWrapper(contentNode)}
-    </button>
-  ) : (
-    renderContentWrapper(contentNode, "flex-grow")
-  )}
-
-      {showActionsButton ? (
-        <div className="pointer-events-none absolute bottom-1 right-1 w-[176px] overflow-visible">
-          <Button
-            ref={menuButtonRef}
-            type="button"
-            variant="secondary"
-            size="icon"
-            className="pointer-events-auto ml-auto h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white/80 shadow-[0_5px_15px_rgba(0,0,0,0.45)]"
-            aria-label={moreActionsLabel}
-            onPointerDown={handleMenuTriggerPointerDown}
-            onClick={(event) => {
-              event.stopPropagation();
-              setIsMenuOpen((prev) => !prev);
-              setDownloadExpanded(false);
-            }}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
-          <div
-            ref={menuContentRef}
-            className={cn(
-              "pointer-events-auto relative mt-2 ml-auto w-full rounded-2xl border border-white/10 bg-[#1c1c1a] px-2 py-2 text-white/80 shadow-[0_15px_35px_rgba(0,0,0,0.55)]",
-              isMenuOpen ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-1"
-            )}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div
-              className={cn(
-                "relative rounded-xl px-2 py-1.5 text-xs text-white/70",
-                !hasDownloadOption && "text-white/30"
-              )}
-              onMouseEnter={() => hasDownloadOption && setDownloadExpanded(true)}
-              onMouseLeave={() => setDownloadExpanded(false)}
-              onFocusCapture={() => hasDownloadOption && setDownloadExpanded(true)}
-              onBlurCapture={() => setDownloadExpanded(false)}
-            >
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs hover:bg-white/10"
-              >
-                <Download className="h-4 w-4" />
-                <span className="flex-1 text-left">{downloadLabel}</span>
-              </button>
-              {hasDownloadOption ? (
-                <div
-                  className={cn(
-                    "absolute top-0 left-full ml-2 w-40 rounded-2xl border border-white/10 bg-[#0d0d0d] px-2 py-2 text-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)] transition",
-                    downloadExpanded ? "pointer-events-auto opacity-100 translate-x-0" : "pointer-events-none opacity-0 translate-x-1"
-                  )}
-                >
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] hover:bg-white/10"
-                    onClick={() => {
-                      onDownload?.("watermark");
-                      setIsMenuOpen(false);
-                      setDownloadExpanded(false);
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadWatermarkLabel}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] hover:bg-white/10"
-                    onClick={() => {
-                      onDownload?.("clean");
-                      setIsMenuOpen(false);
-                      setDownloadExpanded(false);
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="flex-1">{downloadCleanLabel}</span>
-                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#dc2e5a]/20">
-                      <Crown className="h-3 w-3 text-[#ffba49]" />
-                    </span>
-                  </button>
-                </div>
-              ) : null}
+          {renderContentWrapper(contentNode)}
+        </button>
+      ) : (
+        renderContentWrapper(contentNode, "flex-grow")
+      )}
 
       {showActionsButton ? (
         <div className="pointer-events-none absolute bottom-2 right-2">
