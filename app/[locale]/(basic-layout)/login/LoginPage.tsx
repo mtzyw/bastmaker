@@ -129,7 +129,19 @@ export default function LoginPage({
     try {
       await sendVerificationCode();
     } catch (error: any) {
-      toast.error(t("messages.sendCodeFailed"), { description: error?.message });
+      if (error?.message === "Registration with this email domain is not supported.") {
+        toast.error("Failed to send verification code", {
+          description: error.message,
+          style: {
+            background: "#ef4444", // red-500
+            color: "white",
+            border: "none",
+          },
+          descriptionClassName: "text-white",
+        });
+      } else {
+        toast.error(t("messages.sendCodeFailed"), { description: error?.message });
+      }
     } finally {
       setIsSending(false);
     }

@@ -156,6 +156,34 @@ export async function getUserBenefits(userId: string): Promise<UserBenefits> {
     }
 
     // ------------------------------------------
+    // Daily Free Credits Logic (Lazy Reset)
+    // ------------------------------------------
+    // Only check if we have usage data (meaning user exists)
+    if (finalUsageData) {
+      // We optimistically try to grant. The RPC handles all checks (free plan, time, balance < 10).
+      // If it returns TRUE, it means a grant happened, so we should refetch.
+      const { data: granted, error: grantError } = await supabaseAdmin.rpc('grant_daily_free_credits', {
+        p_user_id: userId,
+        p_daily_amount: 10 // Hardcoded to 10 as per requirement
+      });
+
+      if (grantError) {
+        console.error(`Error attempting to grant daily free credits for user ${userId}:`, grantError);
+      } else if (granted) {
+        console.log(`Daily free credits granted for user ${userId}. Refetching usage.`);
+        const { data: updatedUsageData, error: refetchError } = await supabase
+          .from('usage')
+          .select('subscription_credits_balance, one_time_credits_balance, balance_jsonb')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!refetchError && updatedUsageData) {
+          finalUsageData = updatedUsageData;
+        }
+      }
+    }
+
+    // ------------------------------------------
     // Start of Yearly Subscription Catch-up Logic
     // ------------------------------------------
     if (finalUsageData) {
