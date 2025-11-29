@@ -119,9 +119,9 @@ function resolveDownloadTargets(item: CreationItem): DownloadTargets {
       return predicate(output);
     });
 
-  const primaryImage = selectPrimary((output) => output.type?.toLowerCase().startsWith("image"));
-  const primaryVideo = selectPrimary((output) => output.type?.toLowerCase().startsWith("video"));
-  const primaryAudio = selectPrimary((output) => output.type?.toLowerCase().startsWith("audio"));
+  const primaryImage = selectPrimary((output) => output.type?.toLowerCase().startsWith("image") ?? false);
+  const primaryVideo = selectPrimary((output) => output.type?.toLowerCase().startsWith("video") ?? false);
+  const primaryAudio = selectPrimary((output) => output.type?.toLowerCase().startsWith("audio") ?? false);
 
   const primary = primaryImage ?? primaryVideo ?? primaryAudio ?? (outputs.length > 0 ? outputs[0] : undefined);
   const metadata = (item.metadata ?? {}) as Record<string, unknown>;
