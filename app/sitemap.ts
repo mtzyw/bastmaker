@@ -100,18 +100,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const uniqueBlogPostEntries = Array.from(
-    new Map(allBlogSitemapEntries.map((entry) => [entry.url, entry])).values()
-  );
-
-  return [
-    ...pages,
-    ...effectBaseEntries,
-    ...imageEffectDetailEntries,
-    ...uniqueBlogPostEntries,
-    ...viewerEntries,
-  ]
-}
   const effectBaseEntries = LOCALES.map((locale) => ({
     url: `${siteUrl}${locale === DEFAULT_LOCALE ? '' : `/${locale}`}/image-effects`,
     lastModified: new Date(),
@@ -151,3 +139,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
   });
+
+  const uniqueBlogPostEntries = Array.from(
+    new Map(allBlogSitemapEntries.map((entry) => [entry.url, entry])).values()
+  );
+
+  return [
+    ...pages,
+    ...effectBaseEntries,
+    ...imageEffectDetailEntries,
+    ...uniqueBlogPostEntries,
+    ...viewerEntries,
+  ]
+}
