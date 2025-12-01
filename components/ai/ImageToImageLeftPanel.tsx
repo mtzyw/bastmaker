@@ -638,9 +638,6 @@ export default function ImageToImageLeftPanel({
           >
             {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
-          {isUploading ? (
-            <p className="mt-3 text-sm text-white/70">{t("uploadingNotice")}</p>
-          ) : null}
           {errorMessage ? (
             <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
           ) : null}

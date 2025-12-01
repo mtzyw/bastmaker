@@ -2,6 +2,8 @@ import { listPublishedPostsAction } from '@/actions/blogs/posts'
 import { siteConfig } from '@/config/site'
 import { DEFAULT_LOCALE, LOCALES } from '@/i18n/routing'
 import { getPosts } from '@/lib/getBlogs'
+import { IMAGE_EFFECTS } from '@/lib/image-effects/effects'
+import { listActiveImageEffects } from '@/lib/image-effects/templates'
 import { MetadataRoute } from 'next'
 
 const siteUrl = siteConfig.url
@@ -28,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const allBlogSitemapEntries: MetadataRoute.Sitemap = [];
   const viewerEntries: MetadataRoute.Sitemap = [];
+  const imageEffectDetailEntries: MetadataRoute.Sitemap = [];
 
   // Viewer entries removed per user request
   // try {
@@ -103,7 +106,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...pages,
+    ...effectBaseEntries,
+    ...imageEffectDetailEntries,
     ...uniqueBlogPostEntries,
     ...viewerEntries,
   ]
 }
+  const effectBaseEntries = LOCALES.map((locale) => ({
+    url: `${siteUrl}${locale === DEFAULT_LOCALE ? '' : `/${locale}`}/image-effects`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as ChangeFrequency,
+    priority: 0.8,
+  }));
+
+  let effectSlugs: Array<{ slug: string; updatedAt?: string | null; createdAt?: string | null }> = [];
+  try {
+    const templates = await listActiveImageEffects();
+    if (templates.length > 0) {
+      effectSlugs = templates.map((template) => ({
+        slug: template.slug,
+        updatedAt: template.updatedAt,
+        createdAt: template.createdAt,
+      }));
+    }
+  } catch (error) {
+    console.error('[sitemap] failed to list active image effects', error);
+  }
+
+  if (effectSlugs.length === 0) {
+    effectSlugs = IMAGE_EFFECTS.map((effect) => ({
+      slug: effect.slug,
+      updatedAt: null,
+      createdAt: null,
+    }));
+  }
+
+  effectSlugs.forEach(({ slug, updatedAt, createdAt }) => {
+    LOCALES.forEach((locale) => {
+      imageEffectDetailEntries.push({
+        url: `${siteUrl}${locale === DEFAULT_LOCALE ? '' : `/${locale}`}/image-effects/${slug}`,
+        lastModified: updatedAt ? new Date(updatedAt) : createdAt ? new Date(createdAt) : new Date(),
+        changeFrequency: 'weekly' as ChangeFrequency,
+        priority: 0.75,
+      });
+    });
+  });
