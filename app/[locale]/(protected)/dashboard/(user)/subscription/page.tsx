@@ -2,6 +2,7 @@ import {
   getDetailedSubscriptionInfo,
   getUserBenefits,
 } from "@/actions/usage/benefits";
+import { SubscriptionManagementButtons } from "@/components/subscription/SubscriptionManagementButtons";
 import { Button } from "@/components/ui/button";
 import { Link as I18nLink } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
@@ -77,19 +78,28 @@ export default async function SubscriptionPage() {
               {t("management.description")}
             </p>
 
-            <form action={createStripePortalSession} className="space-y-4">
-              <Button
-                type="submit"
-                variant="outline"
-                className="h-11 px-6 gap-2 font-medium"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>{t("management.manageButton")}</span>
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                {t("management.redirectNotice")}
-              </p>
-            </form>
+            <div className="flex flex-wrap gap-4 items-center">
+              {detailedInfo.subscription?.stripe_subscription_id && (
+                <SubscriptionManagementButtons
+                  subscriptionId={detailedInfo.subscription.stripe_subscription_id}
+                  cancelAtPeriodEnd={detailedInfo.subscription.cancel_at_period_end}
+                />
+              )}
+
+              <form action={createStripePortalSession}>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="h-11 px-6 gap-2 font-medium text-white"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>{t("management.manageButton")}</span>
+                </Button>
+              </form>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("management.redirectNotice")}
+            </p>
           </div>
         </div>
       ) : (

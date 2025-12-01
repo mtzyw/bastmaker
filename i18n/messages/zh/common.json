@@ -127,7 +127,8 @@
     "Button": {
       "signIn": "登录",
       "signOut": "退出",
-      "signUp": "注册账号"
+      "signUp": "注册账号",
+      "upgradePlan": "升级会员"
     },
     "UserMenus": [
       {

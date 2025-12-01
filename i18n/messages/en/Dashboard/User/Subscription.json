@@ -30,6 +30,8 @@
     "title": "Subscription Management",
     "description": "Access your Stripe customer portal to manage your subscription, update payment methods, and view billing history.",
     "manageButton": "Manage Subscription & Billing",
+    "resumeButton": "Resume Subscription",
+    "cancelButton": "Cancel Subscription",
     "redirectNotice": "You will be securely redirected to Stripe to manage your subscription details."
   },
   "noSubscription": {

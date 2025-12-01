@@ -127,7 +127,8 @@
     "Button": {
       "signIn": "Sign In",
       "signOut": "Sign Out",
-      "signUp": "Create Account"
+      "signUp": "Create Account",
+      "upgradePlan": "Upgrade Plan"
     },
     "UserMenus": [
       {

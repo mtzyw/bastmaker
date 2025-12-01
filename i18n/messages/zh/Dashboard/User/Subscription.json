@@ -30,6 +30,8 @@
     "title": "订阅管理",
     "description": "访问 Stripe 客户门户来管理你的订阅、更新付款方式和查看账单历史。",
     "manageButton": "管理订阅和账单",
+    "resumeButton": "恢复订阅",
+    "cancelButton": "取消订阅",
     "redirectNotice": "你将被安全地重定向到 Stripe 来管理你的订阅详情。"
   },
   "noSubscription": {

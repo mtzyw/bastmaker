@@ -82,5 +82,10 @@
       "errorTitle": "Google Login Failed",
       "errorDescription": "Could not complete login with Google. Please try again later."
     }
+  },
+  "Button": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "upgradePlan": "Upgrade Plan"
   }
 }

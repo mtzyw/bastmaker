@@ -286,6 +286,7 @@ export interface DetailedSubscriptionInfo {
     current_period_start: string | null;
     current_period_end: string | null;
     cancel_at_period_end: boolean;
+    stripe_subscription_id: string | null;
   } | null;
   plan: {
     id: string;
@@ -339,7 +340,8 @@ export async function getDetailedSubscriptionInfo(userId: string): Promise<Detai
         status,
         current_period_start,
         current_period_end,
-        cancel_at_period_end
+        cancel_at_period_end,
+        stripe_subscription_id
       `)
       .eq('user_id', userId)
       .in('status', ['active'])
@@ -409,6 +411,7 @@ export async function getDetailedSubscriptionInfo(userId: string): Promise<Detai
         current_period_start: subscription.current_period_start,
         current_period_end: subscription.current_period_end,
         cancel_at_period_end: subscription.cancel_at_period_end,
+        stripe_subscription_id: subscription.stripe_subscription_id,
       } : null,
       plan: planDetails,
       yearlyAllocation: yearlyAllocation,

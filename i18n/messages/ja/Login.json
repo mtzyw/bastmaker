@@ -38,7 +38,9 @@
   },
   "actions": {
     "login": "ログイン",
-    "signUp": "今すぐ登録",
+    "signOut": "ログアウト",
+    "signUp": "アカウント作成",
+    "upgradePlan": "プランをアップグレード",
     "sendCode": "コードを送信",
     "directLogin": "直接ログイン",
     "verifyEmail": "メールを認証",
@@ -82,5 +84,10 @@
       "errorTitle": "Googleログイン失敗",
       "errorDescription": "Googleでのログインを完了できませんでした。後でもう一度お試しください。"
     }
+  },
+  "Button": {
+    "signIn": "ログイン",
+    "signOut": "ログアウト",
+    "upgradePlan": "プランをアップグレード"
   }
 }

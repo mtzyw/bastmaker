@@ -2,6 +2,7 @@
 
 import { DynamicIcon } from "@/components/DynamicIcon";
 import CurrentUserBenefitsDisplay from "@/components/layout/CurrentUserBenefitsDisplay";
+import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { useRouter } from "@/i18n/routing";
-import { ExternalLink } from "lucide-react";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useMemo, useState, type ReactNode, type ReactElement, isValidElement, cloneElement, MouseEvent } from "react";
-import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { cloneElement, isValidElement, MouseEvent, useEffect, useMemo, useState, type ReactElement, type ReactNode } from "react";
 
 type Menu = {
   name: string;
@@ -48,9 +48,8 @@ export function UserInfo({ mobile = false, renderContainer, openAuthDialog = fal
       <Button
         onClick={() => router.push("/sign-up")}
         variant="outline"
-        className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
-          mobile ? "w-full" : ""
-        }`}
+        className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${mobile ? "w-full" : ""
+          }`}
       >
         {t("Button.signIn")}
       </Button>
@@ -196,8 +195,8 @@ function AuthenticatedUserInfo({
           className="mt-2 w-full justify-center rounded-2xl bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] text-white shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
           asChild
         >
-          <Link href="/dashboard/subscription">
-            升级会员
+          <Link href="/pricing">
+            {t("Button.upgradePlan")}
           </Link>
         </Button>
       </div>
@@ -303,9 +302,8 @@ export function AuthDialogTrigger({
     <Button
       variant="outline"
       onClick={handleOpen}
-      className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${
-        mobile ? "w-full" : ""
-      }`}
+      className={`gradient-bg border-main text-white hover:text-white rounded-lg font-medium text-center hover:opacity-90 shadow-lg ${mobile ? "w-full" : ""
+        }`}
     >
       {t("Button.signIn")}
     </Button>

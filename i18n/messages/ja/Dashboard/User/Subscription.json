@@ -30,6 +30,8 @@
     "title": "サブスクリプション管理",
     "description": "Stripe カスタマーポータルにアクセスして、サブスクリプションの管理、支払い方法の更新、請求履歴の確認を行えます。",
     "manageButton": "サブスクリプションと請求を管理",
+    "resumeButton": "サブスクリプションを再開",
+    "cancelButton": "サブスクリプションをキャンセル",
     "redirectNotice": "Stripe に安全にリダイレクトされ、サブスクリプション詳細を管理できます。"
   },
   "noSubscription": {

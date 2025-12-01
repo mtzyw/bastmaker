@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
+// PricingDialog import removed as we will navigate directly to /pricing
 import { cn } from "@/lib/utils";
 
 type CreditsBadgeProps = {
@@ -17,6 +20,8 @@ type CreditsPayload = {
 export function CreditsBadge({ className }: CreditsBadgeProps) {
   const [data, setData] = useState<CreditsPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
     let cancelled = false;
@@ -54,24 +59,36 @@ export function CreditsBadge({ className }: CreditsBadgeProps) {
     };
   }, []);
 
+  const handleClick = () => {
+    // Always navigate to pricing page regardless of screen size
+    router.push("/pricing");
+  };
+
   const creditsDisplay =
     data?.credits !== undefined ? data.credits.toLocaleString() : "0";
   const labelDisplay = data?.label ?? "Free";
 
   return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-sm text-white/80",
-        className
-      )}
-      aria-live="polite"
-    >
-      <Sparkles className="h-4 w-4 text-[#dc2e5a]" />
-      <span className="font-semibold text-white">
-        {loading ? "—" : creditsDisplay}
-      </span>
-      <span className="text-white/40">|</span>
-      <span className="text-white/80">{loading ? "..." : labelDisplay}</span>
-    </div>
+    <>
+      <div
+        onClick={handleClick}
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-sm text-white/80 cursor-pointer hover:bg-white/20 transition-colors",
+          className
+        )}
+        aria-live="polite"
+        role="button"
+        tabIndex={0}
+      >
+        <Sparkles className="h-4 w-4 text-[#dc2e5a]" />
+        <span className="font-semibold text-white">
+          {loading ? "—" : creditsDisplay}
+        </span>
+        <span className="text-white/40">|</span>
+        <span className="text-white/80">{loading ? "..." : labelDisplay}</span>
+      </div>
+
+      {/* PricingDialog component removed */}
+    </>
   );
 }

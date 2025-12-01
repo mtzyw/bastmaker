@@ -38,7 +38,9 @@
   },
   "actions": {
     "login": "登录",
-    "signUp": "立即注册",
+    "signOut": "退出登录",
+    "signUp": "注册账号",
+    "upgradePlan": "升级会员",
     "sendCode": "发送验证码",
     "directLogin": "直接登录",
     "verifyEmail": "验证邮箱",
@@ -82,5 +84,10 @@
       "errorTitle": "Google 登录失败",
       "errorDescription": "无法通过 Google 完成登录，请稍后重试。"
     }
+  },
+  "Button": {
+    "signIn": "登录",
+    "signOut": "退出登录",
+    "upgradePlan": "升级会员"
   }
 }
