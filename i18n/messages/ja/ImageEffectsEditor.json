@@ -1,5 +1,6 @@
 {
   "title": "AI画像エフェクト",
+  "backToEffects": "エフェクト一覧に戻る",
   "uploadLabel": "参考画像をアップロード",
   "uploadHint": "PNG、JPG、WEBP形式に対応。1024x1024以上の解像度を推奨します。",
   "previewAlt": "参考プレビュー",

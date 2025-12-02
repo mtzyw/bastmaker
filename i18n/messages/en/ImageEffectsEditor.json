@@ -1,5 +1,6 @@
 {
   "title": "AI Image Effects",
+  "backToEffects": "Back to Effects",
   "uploadLabel": "Upload Reference Image",
   "uploadHint": "Supports PNG, JPG, WEBP. Recommended resolution > 1024x1024.",
   "previewAlt": "Reference Preview",

@@ -98,19 +98,50 @@ export function ImageEffectsDetailContent({
   const gallerySubheading =
     copy?.gallery?.subheading ??
     "查看不同风格的生成案例，快速评估模板是否适合你的项目。";
+
+  const DEFAULT_GALLERY_ITEMS: GalleryItem[] = Array(6)
+    .fill(null)
+    .map((_, i) => ({
+      title: `Example ${i + 1}`,
+      description: "To be filled",
+    }));
+
   const galleryItems: GalleryItem[] =
     copy?.galleryItems ??
     legacyContent?.GALLERY_ITEMS?.map((item: any) => ({
       title: item.title,
       description: item.description,
     })) ??
-    [];
+    DEFAULT_GALLERY_ITEMS;
 
-  const stepsHeading = copy?.steps?.heading;
-  const stepsSubheading = copy?.steps?.subheading;
-  const stepsItems = copy?.steps?.items ?? [];
+  // Ensure we always have 6 items for the carousel
+  const finalGalleryItems =
+    galleryItems.length < 6
+      ? [...galleryItems, ...DEFAULT_GALLERY_ITEMS.slice(galleryItems.length)]
+      : galleryItems;
 
-  const featureItems: FeatureItem[] = (copy?.features?.items ??
+  const stepsHeading = copy?.steps?.heading ?? "How to Use";
+  const stepsSubheading = copy?.steps?.subheading ?? "Create in 3 simple steps";
+
+  const DEFAULT_STEPS_ITEMS = [
+    { title: "Step 1: Upload", description: "Upload your photo (To be filled)" },
+    { title: "Step 2: Generate", description: "AI processing (To be filled)" },
+    { title: "Step 3: Download", description: "Save result (To be filled)" },
+  ];
+
+  const stepsItems = copy?.steps?.items ?? DEFAULT_STEPS_ITEMS;
+
+  const DEFAULT_FEATURE_ITEMS: FeatureItem[] = Array(4)
+    .fill(null)
+    .map((_, i) => ({
+      title: `Feature ${i + 1}`,
+      description: "Feature description to be filled.",
+      ctaLabel: "Try Now",
+      ctaHref: "#editor",
+    }));
+
+  const featureItems: FeatureItem[] = (
+    copy?.features?.items ??
     legacyContent?.IMMERSIVE_FEATURES ??
     []
   ).map((item: any) => ({
@@ -119,6 +150,9 @@ export function ImageEffectsDetailContent({
     ctaLabel: item.ctaLabel ?? heroCtaLabel,
     ctaHref: item.ctaHref ?? "#",
   }));
+
+  const finalFeatureItems =
+    featureItems.length > 0 ? featureItems : DEFAULT_FEATURE_ITEMS;
 
   const valueHeading =
     copy?.valueProps?.heading ?? `我们的 ${displayTitle} 模板优势`;
@@ -176,38 +210,36 @@ export function ImageEffectsDetailContent({
           </div>
         </section>
 
-        {stepsItems.length > 0 && (
-          <section className="space-y-6">
-            <div className="space-y-2 text-center">
-              {stepsHeading && (
-                <h3 className="text-2xl font-semibold md:text-3xl">
-                  {stepsHeading}
-                </h3>
-              )}
-              {stepsSubheading && (
-                <p className="text-sm text-white/60">{stepsSubheading}</p>
-              )}
-            </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {stepsItems.map((item, index) => (
-                <article
-                  key={`${item.title}-${index}`}
-                  className="rounded-2xl border border-white/10 bg-black/40 p-6"
-                >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg font-bold">
-                    {index + 1}
-                  </div>
-                  <h4 className="text-lg font-semibold">{item.title}</h4>
-                  {item.description ? (
-                    <p className="mt-2 text-sm text-white/60">
-                      {item.description}
-                    </p>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+        <section className="space-y-6">
+          <div className="space-y-2 text-center">
+            {stepsHeading && (
+              <h3 className="text-2xl font-semibold md:text-3xl">
+                {stepsHeading}
+              </h3>
+            )}
+            {stepsSubheading && (
+              <p className="text-sm text-white/60">{stepsSubheading}</p>
+            )}
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {stepsItems.map((item, index) => (
+              <article
+                key={`${item.title}-${index}`}
+                className="rounded-2xl border border-white/10 bg-black/40 p-6"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg font-bold">
+                  {index + 1}
+                </div>
+                <h4 className="text-lg font-semibold">{item.title}</h4>
+                {item.description ? (
+                  <p className="mt-2 text-sm text-white/60">
+                    {item.description}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
 
         <section className="space-y-6">
           <div className="space-y-2 text-center">
@@ -219,7 +251,7 @@ export function ImageEffectsDetailContent({
             )}
           </div>
           <NativeCarousel>
-            {galleryItems.map((item, index) => (
+            {finalGalleryItems.map((item, index) => (
               <NativeCarouselItem key={`${item.title}-${index}`}>
                 <article className="overflow-hidden rounded-2xl border border-white/10 bg-black/30">
                   <div className="relative aspect-[3/4] overflow-hidden">
@@ -237,13 +269,13 @@ export function ImageEffectsDetailContent({
           </NativeCarousel>
         </section>
 
-        {featureItems.length > 0 ? (
+        {finalFeatureItems.length > 0 ? (
           <section className="grid gap-12 lg:grid-cols-2 lg:items-start">
             {/* Left Column: Representative Image */}
             <div className="relative aspect-[3/4] overflow-hidden rounded-3xl border border-white/10 bg-black/30 lg:sticky lg:top-24">
               <Image
                 src={galleryImageUrls[0] ?? PLACEHOLDER_IMAGE}
-                alt={featureItems[0].title}
+                alt={finalFeatureItems[0].title}
                 fill
                 className="object-cover"
               />
@@ -252,7 +284,7 @@ export function ImageEffectsDetailContent({
 
             {/* Right Column: Feature Grid */}
             <div className="grid gap-6 sm:grid-cols-2">
-              {featureItems.map((feature, index) => (
+              {finalFeatureItems.map((feature, index) => (
                 <article
                   key={feature.title}
                   className="flex flex-col justify-between space-y-4 rounded-2xl border border-white/10 bg-black/40 p-6"

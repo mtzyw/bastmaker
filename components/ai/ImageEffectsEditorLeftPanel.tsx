@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "@/i18n/routing";
 import type { CreationItem } from "@/lib/ai/creations";
 import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
 import { cn } from "@/lib/utils";
 import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { Coins, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, Coins, Trash2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -370,9 +371,13 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     <div id="editor" className="flex h-full min-h-0 flex-col text-white">
       <ScrollArea className="flex-1 min-h-0 md:mr-[-1.5rem]">
         <div className="pr-1 md:pr-7">
-          <p className="text-sm uppercase tracking-[0.3em] text-white/40">
-            {t("title")}
-          </p>
+          <Link
+            href="/image-effects"
+            className="flex items-center gap-2 text-sm uppercase tracking-[0.1em] text-white/40 transition-colors hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            {t("backToEffects")}
+          </Link>
           <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
             {effect.title}
           </h1>

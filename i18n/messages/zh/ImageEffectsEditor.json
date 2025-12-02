@@ -1,5 +1,6 @@
 {
   "title": "AI 图片特效",
+  "backToEffects": "返回特效列表",
   "uploadLabel": "上传参考图",
   "uploadHint": "支持 PNG、JPG、WEBP 格式，建议分辨率大于 1024×1024。",
   "previewAlt": "参考图预览",
