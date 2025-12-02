@@ -23,6 +23,15 @@ export type ImageEffectCopy = {
     title: string;
     description?: string;
   }>;
+  galleryImageAlts?: string[];
+  steps?: {
+    heading?: string;
+    subheading?: string;
+    items?: Array<{
+      title: string;
+      description?: string;
+    }>;
+  };
   features?: {
     heading?: string;
     items?: Array<{

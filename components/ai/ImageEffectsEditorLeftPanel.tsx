@@ -54,15 +54,14 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const [isPublic, setIsPublic] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-const HIDDEN_PROMPT_SLUGS = new Set([
-  "jojo-ai-filter",
-  "3d-figurine-image-generation",
-]);
-const HIDDEN_ASPECT_RATIO_SLUGS = new Set([
-  "jojo-ai-filter",
-]);
-const isPromptHidden = HIDDEN_PROMPT_SLUGS.has(effect.slug);
-const isAspectRatioHidden = HIDDEN_ASPECT_RATIO_SLUGS.has(effect.slug);
+  const HIDDEN_PROMPT_SLUGS = new Set([
+    "jojo-ai-filter",
+    "3d-figurine-image-generation",
+  ]);
+  const HIDDEN_ASPECT_RATIO_SLUGS = new Set<string>([
+  ]);
+  const isPromptHidden = HIDDEN_PROMPT_SLUGS.has(effect.slug);
+  const isAspectRatioHidden = HIDDEN_ASPECT_RATIO_SLUGS.has(effect.slug);
 
   const resolvedPrompt = useMemo(
     () => (isPromptHidden ? defaultPrompt : prompt),

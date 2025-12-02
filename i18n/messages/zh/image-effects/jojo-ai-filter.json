@@ -1,0 +1,145 @@
+{
+  "displayTitle": "AI JoJo 滤镜",
+  "seoTitle": "AI JoJo 滤镜 – 瞬间将您的照片变成 JoJo 风格艺术",
+  "seoDescription": "使用我们先进的 AI 生成器将您的照片变成正宗的 JoJo 风格艺术作品。几秒钟内即可创建大胆、戏剧化且高度风格化的 JoJo 插图。",
+  "hero": {
+    "heading": "瞬间将您的照片变成 JoJo 风格艺术",
+    "description": "正在寻找最强大的 AI JoJo 滤镜？我们先进的生成器可以将任何图像转换为大胆、戏剧化且高度风格化的 JoJo 插图——包含标志性的线条艺术、锐利的阴影和富有表现力的漫画细节。",
+    "cta": {
+      "label": "立即创作 JoJo 艺术",
+      "href": "#editor"
+    }
+  },
+  "steps": {
+    "heading": "如何使用 AI JoJo 滤镜",
+    "subheading": "快速、简单且完全自动化。",
+    "items": [
+      {
+        "title": "第 1 步：上传",
+        "description": "选择任何肖像或特写图像以获得最佳效果。"
+      },
+      {
+        "title": "第 2 步：创作",
+        "description": "我们的系统使用 JoJo AI 模型即时处理您的图像。"
+      },
+      {
+        "title": "第 3 步：下载",
+        "description": "在 Instagram、TikTok 上分享您的 JoJo 风格图像，或将其用作头像。"
+      }
+    ]
+  },
+  "gallery": {
+    "heading": "JoJo 风格示例",
+    "subheading": "看看我们的 AI 能为您创作什么。"
+  },
+  "galleryItems": [
+    {
+      "title": "示例 1",
+      "description": "戏剧性的阴影和大胆的线条。"
+    },
+    {
+      "title": "示例 2",
+      "description": "鲜艳的色彩和独特的姿势。"
+    },
+    {
+      "title": "示例 3",
+      "description": "完整的场景转换。"
+    },
+    {
+      "title": "示例 4",
+      "description": "带有风格化音效的动作姿势。"
+    },
+    {
+      "title": "示例 5",
+      "description": "背景中有替身的角色。"
+    },
+    {
+      "title": "示例 6",
+      "description": "JoJo 艺术风格的群像。"
+    }
+  ],
+  "galleryImageAlts": [
+    "转换为 JoJo 动漫风格的男子肖像，带有戏剧性的阴影",
+    "原始照片与 JoJo 风格结果的特写对比",
+    "站在风格化街道场景中的全身 JoJo 角色",
+    "带有风格化音效的动作姿势",
+    "背景中有替身的各个角色",
+    "JoJo 艺术风格的群像"
+  ],
+  "features": {
+    "heading": "AI JoJo 滤镜功能",
+    "items": [
+      {
+        "title": "什么是 AI JoJo 滤镜？",
+        "description": "一种智能动漫转换工具，可分析面部结构并使用深邃的阴影、戏剧性的高光和鲜艳的色彩重新设计您的图像风格。",
+        "ctaLabel": "立即试用",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "一键转换",
+        "description": "只需上传照片，点击“创作”，我们的 JoJo AI 生成器就会在几秒钟内自动将其转换为风格化的动漫肖像。",
+        "ctaLabel": "开始创作",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "超逼真渲染",
+        "description": "您的 JoJo 面孔保留了真实的五官特征，同时通过标志性的 JoJo 美学增强了表情、轮廓和阴影。",
+        "ctaLabel": "查看示例",
+        "ctaHref": "#gallery"
+      },
+      {
+        "title": "全场景转换",
+        "description": "不仅是主体——我们的 AI JoJo 滤镜还将背景转换为动态的漫画风格环境，以获得完整的 JoJo 漫画外观。",
+        "ctaLabel": "转换场景",
+        "ctaHref": "#editor"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "为什么我们的 AI JoJo 滤镜是最佳选择",
+    "description": "与其他基础动漫滤镜相比，我们的 AI JoJo 生成器使用了增强的面部映射和漫画风格化算法。",
+    "items": [
+      {
+        "title": "真实的 JoJo 阴影",
+        "description": "复制该系列标志性的深邃阴影和戏剧性高光。",
+        "icon": "Sparkles"
+      },
+      {
+        "title": "正宗的漫画线条",
+        "description": "生成锐利、风格化的面部结构和独特的面部夸张效果。",
+        "icon": "Palette"
+      },
+      {
+        "title": "高对比度调色板",
+        "description": "提供鲜艳的色彩和风格化的漫画背景，呈现真正的动漫外观。",
+        "icon": "Camera"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "探索更多动漫风格",
+    "description": "发现其他漫画和动漫模板，构建您独特的作品集。",
+    "linkLabel": "查看所有特效"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "什么是 AI JoJo 滤镜？",
+        "answer": "AI JoJo 滤镜是一种工具，使用旨在复制独特漫画美学的先进 AI 模型，将您的照片转换为 JoJo 风格的动漫图像。"
+      },
+      {
+        "question": "AI JoJo 滤镜是免费使用的吗？",
+        "answer": "是的！您可以免费试用 JoJo AI 生成器。如需更高分辨率的图像或额外积分，请根据需要升级。"
+      },
+      {
+        "question": "JoJo 滤镜会同时改变面部和背景吗？",
+        "answer": "绝对会——我们的 AI 会将您的整个图像转换为 JoJo 风格，包括五官特征、阴影、色彩和背景。"
+      },
+      {
+        "question": "生成 JoJo 风格照片需要多长时间？",
+        "answer": "该过程只需几秒钟。上传 → 点击 → 完成。"
+      }
+    ]
+  }
+}

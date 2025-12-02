@@ -1,13 +1,16 @@
-import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
-import type { ImageEffectCopy } from "@/lib/image-effects/content";
+import {
+  NativeCarousel,
+  NativeCarouselItem,
+} from "@/components/ui/native-carousel";
 import { getImageEffectContent } from "@/config/image-effects-content";
 import { getVideoEffectContent } from "@/config/video-effects-content";
+import type { ImageEffectCopy } from "@/lib/image-effects/content";
+import type { ImageEffectTemplate } from "@/lib/image-effects/templates";
 import type { LucideIcon } from "lucide-react";
-import { Sparkles, Palette, Camera } from "lucide-react";
+import { Camera, Palette, Sparkles } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const PLACEHOLDER_IMAGE =
   "https://cdn.bestmaker.ai/static/placeholders/image-effect-detail.jpg";
@@ -103,6 +106,10 @@ export function ImageEffectsDetailContent({
     })) ??
     [];
 
+  const stepsHeading = copy?.steps?.heading;
+  const stepsSubheading = copy?.steps?.subheading;
+  const stepsItems = copy?.steps?.items ?? [];
+
   const featureItems: FeatureItem[] = (copy?.features?.items ??
     legacyContent?.IMMERSIVE_FEATURES ??
     []
@@ -146,9 +153,9 @@ export function ImageEffectsDetailContent({
   const faqItems: FaqItem[] = copy?.faq?.items
     ? copy.faq.items
     : (fallbackFaqSource ?? []).map((item: any) => ({
-        question: item.q,
-        answer: item.a,
-      }));
+      question: item.q,
+      answer: item.a,
+    }));
 
   return (
     <div className="header-bg text-white">
@@ -169,6 +176,39 @@ export function ImageEffectsDetailContent({
           </div>
         </section>
 
+        {stepsItems.length > 0 && (
+          <section className="space-y-6">
+            <div className="space-y-2 text-center">
+              {stepsHeading && (
+                <h3 className="text-2xl font-semibold md:text-3xl">
+                  {stepsHeading}
+                </h3>
+              )}
+              {stepsSubheading && (
+                <p className="text-sm text-white/60">{stepsSubheading}</p>
+              )}
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {stepsItems.map((item, index) => (
+                <article
+                  key={`${item.title}-${index}`}
+                  className="rounded-2xl border border-white/10 bg-black/40 p-6"
+                >
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg font-bold">
+                    {index + 1}
+                  </div>
+                  <h4 className="text-lg font-semibold">{item.title}</h4>
+                  {item.description ? (
+                    <p className="mt-2 text-sm text-white/60">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="space-y-6">
           <div className="space-y-2 text-center">
             <h3 className="text-2xl font-semibold md:text-3xl">
@@ -178,75 +218,61 @@ export function ImageEffectsDetailContent({
               <p className="text-sm text-white/60">{gallerySubheading}</p>
             )}
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <NativeCarousel>
             {galleryItems.map((item, index) => (
-              <article
-                key={`${item.title}-${index}`}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-black/30"
-              >
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={galleryImageUrls[index] ?? PLACEHOLDER_IMAGE}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="pointer-events-none absolute inset-0 border border-white/10" />
-                </div>
-                <div className="space-y-1 px-4 py-3">
-                  <h4 className="text-sm font-semibold">{item.title}</h4>
-                  {item.description ? (
-                    <p className="text-xs text-white/60">{item.description}</p>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {featureItems.length > 0 ? (
-          <section className="space-y-14">
-            {featureItems.map((feature, index) => {
-              const isReverse = index % 2 !== 0;
-              const anchorId = extractAnchorId(feature.ctaHref);
-              const safeAnchorId =
-                anchorId && anchorId !== "editor" ? anchorId : null;
-              return (
-                <div
-                  key={feature.title}
-                  id={safeAnchorId ?? undefined}
-                  className={cn(
-                    "grid items-center gap-10 scroll-mt-24",
-                    "lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]",
-                    isReverse &&
-                      "lg:[&>*:first-child]:col-start-2 lg:[&>*:last-child]:col-start-1 lg:[&>*]:row-start-1"
-                  )}
-                >
-                  <div className="relative aspect-square overflow-hidden rounded-3xl border border-white/10 bg-black/30">
+              <NativeCarouselItem key={`${item.title}-${index}`}>
+                <article className="overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                  <div className="relative aspect-[3/4] overflow-hidden">
                     <Image
                       src={galleryImageUrls[index] ?? PLACEHOLDER_IMAGE}
-                      alt={feature.title}
+                      alt={copy?.galleryImageAlts?.[index] ?? item.title}
                       fill
-                      className="object-cover scale-125"
+                      className="object-cover"
                     />
                     <div className="pointer-events-none absolute inset-0 border border-white/10" />
                   </div>
-                  <div className="space-y-4">
-                    <h4 className="text-2xl font-semibold md:text-3xl">
-                      {feature.title}
-                    </h4>
+                </article>
+              </NativeCarouselItem>
+            ))}
+          </NativeCarousel>
+        </section>
+
+        {featureItems.length > 0 ? (
+          <section className="grid gap-12 lg:grid-cols-2 lg:items-start">
+            {/* Left Column: Representative Image */}
+            <div className="relative aspect-[3/4] overflow-hidden rounded-3xl border border-white/10 bg-black/30 lg:sticky lg:top-24">
+              <Image
+                src={galleryImageUrls[0] ?? PLACEHOLDER_IMAGE}
+                alt={featureItems[0].title}
+                fill
+                className="object-cover"
+              />
+              <div className="pointer-events-none absolute inset-0 border border-white/10" />
+            </div>
+
+            {/* Right Column: Feature Grid */}
+            <div className="grid gap-6 sm:grid-cols-2">
+              {featureItems.map((feature, index) => (
+                <article
+                  key={feature.title}
+                  className="flex flex-col justify-between space-y-4 rounded-2xl border border-white/10 bg-black/40 p-6"
+                >
+                  <div className="space-y-3">
+                    <h4 className="text-xl font-semibold">{feature.title}</h4>
                     {feature.description ? (
                       <p className="text-sm leading-relaxed text-white/70">
                         {feature.description}
                       </p>
                     ) : null}
-                    <Button asChild variant="secondary" size="lg">
+                  </div>
+                  <div className="pt-2">
+                    <Button asChild variant="secondary" size="sm" className="w-full">
                       <Link href={feature.ctaHref}>{feature.ctaLabel}</Link>
                     </Button>
                   </div>
-                </div>
-              );
-            })}
+                </article>
+              ))}
+            </div>
           </section>
         ) : null}
 

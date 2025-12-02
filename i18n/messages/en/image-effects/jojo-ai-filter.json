@@ -1,0 +1,145 @@
+{
+  "displayTitle": "AI JoJo Filter",
+  "seoTitle": "AI JoJo Filter – Transform Your Photos into JoJo Style Art Instantly",
+  "seoDescription": "Turn your photos into authentic JoJo-style artwork with our advanced AI generator. Create bold, dramatic, and highly stylized JoJo illustrations in seconds.",
+  "hero": {
+    "heading": "Transform Your Photos into JoJo Style Art Instantly",
+    "description": "Looking for the most powerful AI JoJo filter? Our advanced generator converts any image into a bold, dramatic, and highly stylized JoJo illustration—complete with signature line art, sharp shading, and expressive manga-inspired details.",
+    "cta": {
+      "label": "Create JoJo Art Now",
+      "href": "#editor"
+    }
+  },
+  "steps": {
+    "heading": "How to Use the AI JoJo Filter",
+    "subheading": "It’s fast, simple, and fully automated.",
+    "items": [
+      {
+        "title": "Step 1: Upload",
+        "description": "Choose any portrait or close-up image for the best results."
+      },
+      {
+        "title": "Step 2: Create",
+        "description": "Our system instantly processes your image using the JoJo AI model."
+      },
+      {
+        "title": "Step 3: Download",
+        "description": "Share your JoJo-style image on Instagram, TikTok, or use as a profile picture."
+      }
+    ]
+  },
+  "gallery": {
+    "heading": "JoJo Style Examples",
+    "subheading": "See what our AI can create for you."
+  },
+  "galleryItems": [
+    {
+      "title": "Example 1",
+      "description": "Dramatic shading and bold lines."
+    },
+    {
+      "title": "Example 2",
+      "description": "Vibrant colors and unique poses."
+    },
+    {
+      "title": "Example 3",
+      "description": "Complete scene transformation."
+    },
+    {
+      "title": "Example 4",
+      "description": "Action pose with stylized sound effects."
+    },
+    {
+      "title": "Example 5",
+      "description": "Character with a Stand in the background."
+    },
+    {
+      "title": "Example 6",
+      "description": "Group shot in JoJo art style."
+    }
+  ],
+  "galleryImageAlts": [
+    "Portrait of a man transformed into JoJo anime style with dramatic shading",
+    "Close-up comparison of original photo and JoJo style result",
+    "Full body JoJo character standing in a stylized street scene",
+    "Action pose with stylized sound effects",
+    "Character with a Stand in the background",
+    "Group shot in JoJo art style"
+  ],
+  "features": {
+    "heading": "AI JoJo Filter Features",
+    "items": [
+      {
+        "title": "What Is an AI JoJo Filter?",
+        "description": "An intelligent anime transformation tool that analyzes facial structure and restyles your image with deep shadows, dramatic highlights, and vibrant colors.",
+        "ctaLabel": "Try It Now",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "One-Click Conversion",
+        "description": "Simply upload a photo, hit “Create,” and our JoJo AI generator automatically transforms it into a stylized anime portrait within seconds.",
+        "ctaLabel": "Start Creating",
+        "ctaHref": "#editor"
+      },
+      {
+        "title": "Ultra-Realistic Rendering",
+        "description": "Your JoJo face retains your real facial features while enhancing expression, contouring, and shading with signature JoJo aesthetics.",
+        "ctaLabel": "See Examples",
+        "ctaHref": "#gallery"
+      },
+      {
+        "title": "Full-Scene Transformation",
+        "description": "Not only the subject—our AI JoJo filter also converts the background into a dynamic manga-style environment for a complete JoJo comic look.",
+        "ctaLabel": "Transform Scene",
+        "ctaHref": "#editor"
+      }
+    ]
+  },
+  "valueProps": {
+    "heading": "Why Our AI JoJo Filter Is the Best Choice",
+    "description": "Compared to other basic anime filters, our AI JoJo generator uses enhanced face-mapping and manga-stylization algorithms.",
+    "items": [
+      {
+        "title": "True JoJo Shading",
+        "description": "Replicates the deep shadows and dramatic highlights iconic to the series.",
+        "icon": "Sparkles"
+      },
+      {
+        "title": "Authentic Manga Linework",
+        "description": "Produces sharp, stylized facial structures and unique facial exaggerations.",
+        "icon": "Palette"
+      },
+      {
+        "title": "High-Contrast Palette",
+        "description": "Delivers vibrant colors and stylized comic backgrounds for a true anime look.",
+        "icon": "Camera"
+      }
+    ]
+  },
+  "moreEffects": {
+    "heading": "Explore More Anime Styles",
+    "description": "Discover other manga and anime templates to build your unique portfolio.",
+    "linkLabel": "View All Effects"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "What is an AI JoJo filter?",
+        "answer": "An AI JoJo filter is a tool that converts your photo into a JoJo-style anime image using advanced AI models designed to replicate the unique manga aesthetic."
+      },
+      {
+        "question": "Is the AI JoJo filter free to use?",
+        "answer": "Yes! You can try the JoJo AI generator for free. For higher resolution images or additional credits, upgrade when needed."
+      },
+      {
+        "question": "Does the JoJo filter change both face and background?",
+        "answer": "Absolutely—our AI transforms your entire image into JoJo style, including facial features, shading, colors, and background."
+      },
+      {
+        "question": "How long does it take to generate a JoJo-style photo?",
+        "answer": "The process takes just a few seconds. Upload → Click → Done."
+      }
+    ]
+  }
+}
