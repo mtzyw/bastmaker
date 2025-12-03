@@ -1,3 +1,4 @@
+import { getUserBenefits } from "@/actions/usage/benefits";
 import { deductCredits } from "@/actions/usage/deduct";
 import { toFreepikAspectRatio, toFreepikModelValue } from "@/lib/ai/freepik";
 import {
@@ -156,6 +157,30 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
+
+  // Check concurrency limit
+  const userBenefits = await getUserBenefits(user.id);
+  const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
+  const concurrencyLimit = isPaidUser ? 3 : 1;
+
+  const { data: isAllowed, error: concurrencyError } = await adminSupabase.rpc('check_user_concurrency_limit', {
+    p_user_id: user.id,
+    p_limit: concurrencyLimit,
+  });
+
+  if (concurrencyError) {
+    console.error("[image-effects] failed to check concurrency limit", concurrencyError);
+    // Fail open or closed? Let's fail open but log error, or fail closed. 
+    // Safest to fail closed for limits.
+    return apiResponse.serverError("Failed to check system limits");
+  }
+
+  if (isAllowed === false) {
+    return apiResponse.error(
+      `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
+      429
+    );
+  }
 
   const template = await fetchImageEffectTemplate(effect_slug);
   if (!template) {

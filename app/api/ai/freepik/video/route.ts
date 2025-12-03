@@ -1,27 +1,28 @@
+import { getUserBenefits } from "@/actions/usage/benefits";
 import { deductCredits } from "@/actions/usage/deduct";
+import { toFreepikAspectRatio } from "@/lib/ai/freepik";
 import {
   createFreepikVideoTask,
   FreepikRequestError,
   FreepikTaskResponse,
 } from "@/lib/ai/freepik-client";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
+import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { formatProviderError } from "@/lib/ai/provider-error";
 import { getVideoCreditsCost, getVideoModelConfig, resolveVideoApiModel } from "@/lib/ai/video-config";
-import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
-import { toFreepikAspectRatio } from "@/lib/ai/freepik";
 import { apiResponse } from "@/lib/api-response";
-import { createClient } from "@/lib/supabase/server";
-import type { Database, Json } from "@/lib/supabase/types";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { NextRequest } from "next/server";
-import { z } from "zod";
-import { ensureJobShareMetadata } from "@/lib/share/job-share";
-import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
 import {
   generateR2Key,
   getDataFromDataUrl,
   serverUploadFile,
 } from "@/lib/cloudflare/r2";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
+import { createClient } from "@/lib/supabase/server";
+import type { Database, Json } from "@/lib/supabase/types";
+import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { NextRequest } from "next/server";
+import { z } from "zod";
 
 const requestSchema = z.object({
   mode: z.enum(["text", "image", "transition"]).optional(),
@@ -498,7 +499,7 @@ export async function POST(req: NextRequest) {
 
     resolvedModelName =
       (typeof effectTemplate.metadata?.model_display_name === "string" &&
-      effectTemplate.metadata.model_display_name.length > 0
+        effectTemplate.metadata.model_display_name.length > 0
         ? effectTemplate.metadata.model_display_name
         : effectTemplate.providerModel) ?? data.model;
     apiModelOverride = effectTemplate.providerModel;
@@ -575,6 +576,28 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
+
+  // Check concurrency limit
+  const userBenefits = await getUserBenefits(user.id);
+  const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
+  const concurrencyLimit = isPaidUser ? 3 : 1;
+
+  const { data: isAllowed, error: concurrencyError } = await adminSupabase.rpc('check_user_concurrency_limit', {
+    p_user_id: user.id,
+    p_limit: concurrencyLimit,
+  });
+
+  if (concurrencyError) {
+    console.error("[freepik-video] failed to check concurrency limit", concurrencyError);
+    return apiResponse.serverError("Failed to check system limits");
+  }
+
+  if (isAllowed === false) {
+    return apiResponse.error(
+      `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
+      429
+    );
+  }
 
   const modelConfig = getVideoModelConfig(resolvedModelName);
 
@@ -908,9 +931,9 @@ export async function POST(req: NextRequest) {
     if (internalStatus === "failed") {
       const providerError = formatProviderError(
         (taskData as any)?.error ??
-          (taskData as any)?.message ??
-          (freepikResponse as any)?.error ??
-          (freepikResponse as any)?.message
+        (taskData as any)?.message ??
+        (freepikResponse as any)?.error ??
+        (freepikResponse as any)?.message
       );
       const errorMessage = providerError ?? "Generation failed. Please try again.";
       updates.error_message = errorMessage;

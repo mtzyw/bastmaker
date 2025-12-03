@@ -1403,6 +1403,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_user_concurrency_limit: {
+        Args: {
+          p_user_id: string
+          p_limit: number
+        }
+        Returns: boolean
+      }
       deduct_credits_and_log: {
         Args: { p_deduct_amount: number; p_notes: string; p_user_id: string }
         Returns: boolean
