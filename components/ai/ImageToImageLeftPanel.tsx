@@ -8,6 +8,8 @@ import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
   getTextToImageApiModel,
+  getTextToImageOptionValue,
+  getTextToImageStorageModel,
 } from "@/components/ai/text-image-models";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -140,12 +142,14 @@ export default function ImageToImageLeftPanel({
 
     if (repromptDraft.model) {
       const allowedValues = availableOptions.map((option) => option.value);
+      const aliasCandidate = getTextToImageOptionValue(repromptDraft.model);
       const matchedModel =
         allowedValues.includes(repromptDraft.model)
           ? repromptDraft.model
           : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
-          allowedValues[0] ??
-          TEXT_TO_IMAGE_DEFAULT_MODEL;
+            (aliasCandidate && allowedValues.includes(aliasCandidate) ? aliasCandidate : null) ??
+            allowedValues[0] ??
+            TEXT_TO_IMAGE_DEFAULT_MODEL;
       setModel(matchedModel);
     }
 
@@ -302,7 +306,11 @@ export default function ImageToImageLeftPanel({
   }, [maxCount]);
 
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
-  const modelConfig = useMemo(() => getTextToImageModelConfig(apiModel), [apiModel]);
+  const storageModel = useMemo(() => getTextToImageStorageModel(model), [model]);
+  const modelConfig = useMemo(
+    () => getTextToImageModelConfig(storageModel),
+    [storageModel]
+  );
   const isUploading = referenceImages.some((item) => item.uploading);
   const hasPendingUploads = referenceImages.some((item) => !item.remoteUrl);
   const disableSubmit =
@@ -417,7 +425,7 @@ export default function ImageToImageLeftPanel({
             aspect_ratio: apiAspectRatio,
           },
           inputParams: {
-            model: apiModel,
+            model: storageModel,
             prompt: trimmedPrompt,
             reference_images: referenceUrls,
             translate_prompt: translatePrompt,
@@ -427,7 +435,7 @@ export default function ImageToImageLeftPanel({
             aspect_ratio: apiAspectRatio,
           },
           modalityCode: "i2i",
-          modelSlug: apiModel,
+          modelSlug: storageModel,
           errorMessage: null,
           seed: null,
           isImageToImage: true,
@@ -451,6 +459,8 @@ export default function ImageToImageLeftPanel({
 
       const payload = {
         model: apiModel,
+        ui_model_slug: storageModel,
+        ui_model_label: model,
         prompt: trimmedPrompt,
         reference_images: referenceUrls,
         translate_prompt: translatePrompt,

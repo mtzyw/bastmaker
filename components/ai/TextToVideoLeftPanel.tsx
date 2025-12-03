@@ -1,17 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Coins } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
 import { AIModelDropdown } from "@/components/ai/AIModelDropdown";
-import { CreationItem } from "@/lib/ai/creations";
-import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
-import { useRepromptStore } from "@/stores/repromptStore";
-import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
-import { Switch } from "@/components/ui/switch";
+import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   AspectRatio,
   DEFAULT_VIDEO_LENGTH,
@@ -24,11 +17,20 @@ import {
   VideoResolutionValue,
   getAllowedVideoLengths,
 } from "@/components/ai/video-models";
-import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
-import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
-import { useTranslations } from "next-intl";
-import { useAuth } from "@/components/providers/AuthProvider";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { CreationItem } from "@/lib/ai/creations";
+import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
+import { cn } from "@/lib/utils";
+import { useCreationHistoryStore } from "@/stores/creationHistoryStore";
+import { useRepromptStore } from "@/stores/repromptStore";
+import { Coins, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const FALLBACK_ASPECT_RATIO: AspectRatio = "16:9";
 const FALLBACK_RESOLUTION: VideoResolutionValue = "720p";
@@ -62,7 +64,6 @@ export default function TextToVideoLeftPanel() {
   });
   const [resolution, setResolution] = useState<VideoResolutionValue>(DEFAULT_VIDEO_RESOLUTION);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.TextToVideo");
   const commonT = useTranslations("CreationTools.Common");
@@ -130,8 +131,8 @@ export default function TextToVideoLeftPanel() {
       repromptDraft.model && optionValues.includes(repromptDraft.model)
         ? repromptDraft.model
         : textToVideoOptions.find((option) => option.label === repromptDraft.model)?.value ??
-          optionValues[0] ??
-          DEFAULT_VIDEO_MODEL;
+        optionValues[0] ??
+        DEFAULT_VIDEO_MODEL;
     setModel(matchedModel);
 
     const resolutionCandidates = VIDEO_RESOLUTION_PRESETS[matchedModel] ?? [FALLBACK_RESOLUTION];
@@ -188,7 +189,6 @@ export default function TextToVideoLeftPanel() {
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
     let tempJobId: string | null = null;
@@ -344,7 +344,7 @@ export default function TextToVideoLeftPanel() {
         removeHistoryItem(tempJobId);
       }
       const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
-      setErrorMessage(message);
+      toast.error(message, { duration: 3000 });
       console.error("[text-to-video] submit error", error);
     } finally {
       setIsSubmitting(false);
@@ -511,7 +511,7 @@ export default function TextToVideoLeftPanel() {
             className={cn(
               "w-full h-12 text-white transition-colors bg-gray-900 disabled:bg-gray-900 disabled:text-white/50 disabled:opacity-100",
               hasPrompt &&
-                "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
+              "bg-[#dc2e5a] hover:bg-[#dc2e5a]/90 shadow-[0_0_12px_rgba(220,46,90,0.25)]",
               isSubmitting && "cursor-wait"
             )}
             disabled={!hasPrompt || isSubmitting}
@@ -519,9 +519,7 @@ export default function TextToVideoLeftPanel() {
           >
             {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
-          {errorMessage ? (
-            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
+          {/* Error message removed, using toast instead */}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

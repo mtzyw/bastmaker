@@ -5,8 +5,8 @@ import PlausibleAnalytics from "@/app/PlausibleAnalytics";
 import ToltScript from "@/app/ToltScript";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import { LanguageDetectionAlert } from "@/components/LanguageDetectionAlert";
-import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AuthDialogProvider } from "@/components/providers/AuthDialogProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { TailwindIndicator } from "@/components/TailwindIndicator";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/config/site";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import "@/styles/loading.css";
 import { Analytics } from "@vercel/analytics/react";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import {
@@ -24,8 +26,6 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import { notFound } from "next/navigation";
 
 type MetadataProps = {
@@ -107,7 +107,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           </AuthProvider>
         </NextIntlClientProvider>
         <GoogleOneTap />
-        <Toaster />
+        <Toaster position="top-center" />
         <TailwindIndicator />
         {process.env.NODE_ENV === "development" ? (
           <></>

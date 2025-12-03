@@ -1,4 +1,10 @@
 const TEXT_TO_IMAGE_MODEL_CONFIG = {
+  NanoBanana: {
+    displayName: "Nano Banana Free",
+    providerCode: "freepik",
+    creditsCost: 5,
+    defaultModality: "t2i",
+  },
   "gemini-2-5-flash-image-preview": {
     displayName: "Nano Banana Free",
     providerCode: "freepik",

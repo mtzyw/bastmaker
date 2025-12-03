@@ -1,3 +1,4 @@
+import { getUserBenefits } from "@/actions/usage/benefits";
 import { deductCredits } from "@/actions/usage/deduct";
 import {
   createFreepikImageTask,
@@ -24,6 +25,8 @@ const requestSchema = z.object({
   reference_images: z.array(z.string().min(1)).max(5).optional(),
   translate_prompt: z.boolean().optional(),
   is_public: z.boolean().optional(),
+  ui_model_slug: z.string().min(1).optional(),
+  ui_model_label: z.string().min(1).optional(),
 });
 
 type FreepikTaskPayload = {
@@ -81,6 +84,17 @@ export async function POST(req: NextRequest) {
     return apiResponse.unauthorized();
   }
 
+  const normalizedUiSlug =
+    typeof data.ui_model_slug === "string" && data.ui_model_slug.trim().length > 0
+      ? data.ui_model_slug.trim()
+      : null;
+  const normalizedUiLabel =
+    typeof data.ui_model_label === "string" && data.ui_model_label.trim().length > 0
+      ? data.ui_model_label.trim()
+      : null;
+  const providerModelSlug = data.model.trim();
+  const uiModelSlug = normalizedUiSlug ?? providerModelSlug;
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error("Supabase service role credentials are not configured");
     return apiResponse.serverError("Server configuration error");
@@ -91,7 +105,8 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  const modelConfig = getTextToImageModelConfig(data.model);
+  const modelConfig = getTextToImageModelConfig(uiModelSlug);
+  const modelDisplayName = normalizedUiLabel ?? modelConfig.displayName;
   const isImageToImage = (data.reference_images?.length ?? 0) > 0;
   const modalityCode = isImageToImage ? "i2i" : modelConfig.defaultModality;
   const referenceImageCount = data.reference_images?.length ?? 0;
@@ -104,7 +119,9 @@ export async function POST(req: NextRequest) {
     credits_cost: modelConfig.creditsCost,
     prompt: trimmedPrompt,
     original_prompt: trimmedPrompt,
-    model_display_name: modelConfig.displayName,
+    model_display_name: modelDisplayName,
+    ui_model_slug: uiModelSlug,
+    provider_model_slug: providerModelSlug,
     modality_code: modalityCode,
     ...(referenceImageCount > 0
       ? {
@@ -124,7 +141,8 @@ export async function POST(req: NextRequest) {
   };
 
   const inputParams = {
-    model: data.model,
+    model: uiModelSlug,
+    provider_model: providerModelSlug,
     prompt: trimmedPrompt,
     aspect_ratio: data.aspect_ratio ?? null,
     reference_image_count: referenceImageCount,
@@ -132,22 +150,39 @@ export async function POST(req: NextRequest) {
     primary_image_url: referenceImageUrls[0] ?? null,
   };
 
-  const { data: jobRecord, error: insertError } = await adminSupabase
-    .from("ai_jobs")
-    .insert({
-      user_id: user.id,
-      provider_code: modelConfig.providerCode,
-      modality_code: modalityCode,
-      model_slug_at_submit: data.model,
-      status: "pending",
-      input_params_json: inputParams,
-      metadata_json: metadataJson,
-      cost_estimated_credits: modelConfig.creditsCost,
-      pricing_snapshot_json: pricingSnapshot,
-      is_public: isPublic,
-    })
-    .select()
-    .single();
+  // Check concurrency limit
+  const userBenefits = await getUserBenefits(user.id);
+  const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
+  const concurrencyLimit = isPaidUser ? 4 : 1;
+
+  console.log(`[freepik-debug] User ${user.id} (Paid: ${isPaidUser}) requesting job. Limit: ${concurrencyLimit}`);
+
+  const { data: jobRecordJson, error: insertError } = await adminSupabase
+    .rpc('create_ai_job_secure', {
+      p_user_id: user.id,
+      p_limit: concurrencyLimit,
+      p_provider_code: modelConfig.providerCode,
+      p_modality_code: modalityCode,
+      p_model_slug: uiModelSlug,
+      p_input_params: inputParams,
+      p_metadata: metadataJson,
+      p_cost_estimated: modelConfig.creditsCost,
+      p_pricing_snapshot: pricingSnapshot,
+      p_is_public: isPublic,
+    });
+
+  if (insertError) {
+    console.error("[freepik] failed to create job via RPC", insertError);
+    if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
+      return apiResponse.error(
+        `3 tasks are running. Please wait before adding new ones.`,
+        429
+      );
+    }
+    return apiResponse.serverError("Failed to create job record");
+  }
+
+  const jobRecord = jobRecordJson as Database['public']['Tables']['ai_jobs']['Row'];
 
   if (insertError || !jobRecord) {
     console.error("[freepik] failed to insert ai_jobs record", insertError);
@@ -155,13 +190,13 @@ export async function POST(req: NextRequest) {
   }
 
   const publicTitle = trimmedPrompt.length > 80 ? `${trimmedPrompt.slice(0, 77)}...` : trimmedPrompt;
-  const publicSummary = `${modelConfig.displayName} • ${isImageToImage ? "Image to Image" : "Text to Image"}`;
+  const publicSummary = `${modelDisplayName} • ${isImageToImage ? "Image to Image" : "Text to Image"}`;
 
   await ensureJobShareMetadata({
     adminClient: adminSupabase,
     jobId: jobRecord.id,
     currentShareSlug: jobRecord.share_slug,
-    publicTitle: publicTitle || modelConfig.displayName,
+    publicTitle: publicTitle || modelDisplayName,
     publicSummary,
     publicAssets: [],
     isPublic,
@@ -193,7 +228,7 @@ export async function POST(req: NextRequest) {
   let updatedBenefits: any = null;
 
   if (modelConfig.creditsCost > 0) {
-    const deductionNote = `AI image generation - ${modelConfig.displayName}`;
+    const deductionNote = `AI image generation - ${modelDisplayName}`;
     const deducted = await deductCredits(modelConfig.creditsCost, deductionNote);
 
     if (!deducted.success) {
@@ -234,9 +269,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    let providerModel = data.model;
+    let providerModel = providerModelSlug;
     if (!isImageToImage) {
-      if (data.model === "seedream-v4-edit" || data.model === "imagen3") {
+      if (providerModelSlug === "seedream-v4-edit" || providerModelSlug === "imagen3") {
         providerModel = "seedream-v4";
       }
     }

@@ -35,7 +35,7 @@ export function fromFreepikAspectRatio(value: string): string {
 }
 
 const TEXT_TO_IMAGE_MODEL_API_MAP: Record<string, string> = {
-  "Nano Banana Free": "seedream-v4-edit",
+  "Nano Banana Free": "seedream-v4",
   "Flux Dev": "flux-dev",
   "Flux Pro 1.1": "flux-pro-v1-1",
   Hyperflux: "hyperflux",
@@ -46,7 +46,7 @@ const TEXT_TO_IMAGE_MODEL_API_MAP: Record<string, string> = {
 
 /**
  * 将界面选择的模型名称映射为实际请求使用的模型标识。
- * 未在映射中出现的模型会回退为原值（例如暂未公布的 Nano Banana Free）。
+ * 未在映射中出现的模型会回退为原值。
  */
 export function toFreepikModelValue(value: string): string {
   return TEXT_TO_IMAGE_MODEL_API_MAP[value] ?? value;

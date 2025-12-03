@@ -1,4 +1,5 @@
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
+import { getTextToImageApiModel } from "@/components/ai/text-image-models";
 import { DEFAULT_SOUND_EFFECT_MODEL, getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoCreditsCost, getVideoModelConfig } from "@/lib/ai/video-config";
@@ -202,6 +203,8 @@ export function buildRepromptDraft(item: CreationItem): RepromptDraft {
 
 function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
   const model = resolveTextToImageModel(item);
+  const providerModel = getTextToImageApiModel(model);
+  const uiModelLabel = resolveTextToImageUiModel(model, item);
   const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
   if (!prompt) {
     throw new Error("原始任务缺少提示词，无法重新生成");
@@ -213,7 +216,9 @@ function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
   const referenceImageUrls = extractReferenceImageUrls(item);
 
   const payload: Record<string, unknown> = {
-    model,
+    model: providerModel,
+    ui_model_slug: model,
+    ui_model_label: uiModelLabel,
     prompt,
     aspect_ratio: aspectRatio ?? undefined,
     translate_prompt: translatePrompt,
@@ -268,6 +273,8 @@ function buildTextToImagePlan(item: CreationItem): RegenerationPlan {
 
 function buildImageToImagePlan(item: CreationItem): RegenerationPlan {
   const model = resolveTextToImageModel(item);
+  const providerModel = getTextToImageApiModel(model);
+  const uiModelLabel = resolveTextToImageUiModel(model, item);
   const prompt = getString(item.inputParams?.prompt ?? item.metadata?.prompt);
   if (!prompt) {
     throw new Error("原始任务缺少提示词，无法重新生成");
@@ -282,7 +289,9 @@ function buildImageToImagePlan(item: CreationItem): RegenerationPlan {
   const isPublic = getBoolean(item.metadata?.is_public, true);
 
   const payload: Record<string, unknown> = {
-    model,
+    model: providerModel,
+    ui_model_slug: model,
+    ui_model_label: uiModelLabel,
     prompt,
     reference_images: referenceImageUrls,
     translate_prompt: translatePrompt,

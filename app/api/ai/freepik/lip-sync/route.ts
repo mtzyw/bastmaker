@@ -1,3 +1,4 @@
+import { getUserBenefits } from "@/actions/usage/benefits";
 import { deductCredits } from "@/actions/usage/deduct";
 import {
   createFreepikLipSyncTask,
@@ -6,13 +7,13 @@ import {
   type FreepikTaskResponse,
 } from "@/lib/ai/freepik-client";
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
-import { formatProviderError } from "@/lib/ai/provider-error";
-import { getLipSyncModelConfig, DEFAULT_LIP_SYNC_MODEL } from "@/lib/ai/lip-sync-config";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
+import { DEFAULT_LIP_SYNC_MODEL, getLipSyncModelConfig } from "@/lib/ai/lip-sync-config";
+import { formatProviderError } from "@/lib/ai/provider-error";
 import { apiResponse } from "@/lib/api-response";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/types";
-import { ensureJobShareMetadata } from "@/lib/share/job-share";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 import { z } from "zod";
@@ -118,22 +119,37 @@ export async function POST(req: NextRequest) {
     return_private_url: data.return_private_url ?? false,
   };
 
-  const { data: jobRecord, error: insertError } = await adminSupabase
-    .from("ai_jobs")
-    .insert({
-      user_id: user.id,
-      provider_code: modelConfig.providerCode,
-      modality_code: modelConfig.defaultModality,
-      model_slug_at_submit: resolvedModel,
-      status: "pending",
-      input_params_json: inputParams,
-      metadata_json: metadataJson,
-      cost_estimated_credits: modelConfig.creditsCost,
-      pricing_snapshot_json: pricingSnapshot,
-      is_public: isPublic,
-    })
-    .select()
-    .single();
+  // Check concurrency limit
+  const userBenefits = await getUserBenefits(user.id);
+  const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
+  const concurrencyLimit = isPaidUser ? 4 : 1;
+
+  const { data: jobRecordJson, error: insertError } = await adminSupabase
+    .rpc('create_ai_job_secure', {
+      p_user_id: user.id,
+      p_limit: concurrencyLimit,
+      p_provider_code: modelConfig.providerCode,
+      p_modality_code: modelConfig.defaultModality,
+      p_model_slug: resolvedModel,
+      p_input_params: inputParams,
+      p_metadata: metadataJson,
+      p_cost_estimated: modelConfig.creditsCost,
+      p_pricing_snapshot: pricingSnapshot,
+      p_is_public: isPublic,
+    });
+
+  if (insertError) {
+    console.error("[lip-sync] failed to create job via RPC", insertError);
+    if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
+      return apiResponse.error(
+        `3 tasks are running. Please wait before adding new ones.`,
+        429
+      );
+    }
+    return apiResponse.serverError("Failed to create job record");
+  }
+
+  const jobRecord = jobRecordJson as Database['public']['Tables']['ai_jobs']['Row'];
 
   if (insertError || !jobRecord) {
     console.error("[lip-sync] failed to insert ai_jobs record", insertError);
@@ -229,9 +245,9 @@ export async function POST(req: NextRequest) {
     if (internalStatus === "failed") {
       const providerError = formatProviderError(
         (taskData as any)?.error ??
-          (taskData as any)?.message ??
-          (freepikResponse as any)?.error ??
-          (freepikResponse as any)?.message,
+        (taskData as any)?.message ??
+        (freepikResponse as any)?.error ??
+        (freepikResponse as any)?.message,
       );
       const errorMessage = providerError ?? "Lip sync failed. Please try again.";
       updates.error_message = errorMessage;

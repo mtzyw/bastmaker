@@ -7,6 +7,8 @@ import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
   getTextToImageApiModel,
+  getTextToImageOptionValue,
+  getTextToImageStorageModel,
 } from "@/components/ai/text-image-models";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -99,11 +101,13 @@ export default function TextToImageLeftPanel({
 
     if (repromptDraft.model) {
       const allowedValues = availableOptions.map((option) => option.value);
+      const aliasCandidate = getTextToImageOptionValue(repromptDraft.model);
       const matchByValue = allowedValues.includes(repromptDraft.model)
         ? repromptDraft.model
         : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
-        allowedValues[0] ??
-        TEXT_TO_IMAGE_DEFAULT_MODEL;
+          (aliasCandidate && allowedValues.includes(aliasCandidate) ? aliasCandidate : null) ??
+          allowedValues[0] ??
+          TEXT_TO_IMAGE_DEFAULT_MODEL;
       setModel(matchByValue);
     }
 
@@ -120,7 +124,11 @@ export default function TextToImageLeftPanel({
 
   const apiAspectRatio = useMemo(() => toFreepikAspectRatio(aspectRatio), [aspectRatio]);
   const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
-  const modelConfig = useMemo(() => getTextToImageModelConfig(apiModel), [apiModel]);
+  const storageModel = useMemo(() => getTextToImageStorageModel(model), [model]);
+  const modelConfig = useMemo(
+    () => getTextToImageModelConfig(storageModel),
+    [storageModel]
+  );
 
   const handleCreate = useCallback(async () => {
     const trimmedPrompt = prompt.trim();
@@ -182,7 +190,7 @@ export default function TextToImageLeftPanel({
           primary_image_url: null,
         },
         inputParams: {
-          model: apiModel,
+          model: storageModel,
           prompt: trimmedPrompt,
           aspect_ratio: apiAspectRatio,
           translate_prompt: translatePrompt,
@@ -191,7 +199,7 @@ export default function TextToImageLeftPanel({
           primary_image_url: null,
         },
         modalityCode: modelConfig.defaultModality,
-        modelSlug: apiModel,
+        modelSlug: storageModel,
         errorMessage: null,
         seed: null,
         isImageToImage: isImageToImageModel,
@@ -218,6 +226,8 @@ export default function TextToImageLeftPanel({
 
     const payload = {
       model: apiModel,
+      ui_model_slug: storageModel,
+      ui_model_label: model,
       prompt: trimmedPrompt,
       aspect_ratio: apiAspectRatio,
       translate_prompt: translatePrompt,

@@ -8,9 +8,14 @@ const MODEL_ICON_PATHS = {
   nano: "/images/modessvg/google.jpg",
 } as const;
 
+type TextToImageModelOption = VideoModelSelectOption & {
+  /** Canonical slug that we persist to the job history */
+  storageValue?: string;
+};
+
 export const TEXT_TO_IMAGE_DEFAULT_MODEL = "Nano Banana Free";
 
-export const TEXT_TO_IMAGE_MODEL_OPTIONS: VideoModelSelectOption[] = [
+export const TEXT_TO_IMAGE_MODEL_OPTIONS: TextToImageModelOption[] = [
   {
     value: "Nano Banana Free",
     label: "Nano Banana Free",
@@ -20,6 +25,7 @@ export const TEXT_TO_IMAGE_MODEL_OPTIONS: VideoModelSelectOption[] = [
     description: "免费入门模型，适合快速尝试。",
     tags: ["免费", "极速"],
     apiValue: FREEPIK_MODEL_MAP["Nano Banana Free"],
+    storageValue: "NanoBanana",
   },
   {
     value: "Flux Dev",
@@ -77,8 +83,32 @@ export const TEXT_TO_IMAGE_MODEL_OPTIONS: VideoModelSelectOption[] = [
   },
 ];
 
-export function getTextToImageApiModel(model: string): string {
-  return (
-    TEXT_TO_IMAGE_MODEL_OPTIONS.find((option) => option.value === model)?.apiValue ?? model
+function findTextToImageOption(model?: string | null) {
+  if (!model) {
+    return undefined;
+  }
+
+  return TEXT_TO_IMAGE_MODEL_OPTIONS.find(
+    (option) =>
+      option.value === model ||
+      option.label === model ||
+      option.storageValue === model ||
+      option.apiValue === model
   );
+}
+
+export function getTextToImageApiModel(model: string): string {
+  return findTextToImageOption(model)?.apiValue ?? model;
+}
+
+export function getTextToImageStorageModel(model: string): string {
+  const option = findTextToImageOption(model);
+  if (!option) {
+    return model;
+  }
+  return option.storageValue ?? option.apiValue ?? option.value;
+}
+
+export function getTextToImageOptionValue(model: string): string | null {
+  return findTextToImageOption(model)?.value ?? null;
 }

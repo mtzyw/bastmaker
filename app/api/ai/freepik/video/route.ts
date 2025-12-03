@@ -580,7 +580,7 @@ export async function POST(req: NextRequest) {
   // Concurrency check moved to atomic creation step
   const userBenefits = await getUserBenefits(user.id);
   const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
-  const concurrencyLimit = isPaidUser ? 3 : 1;
+  const concurrencyLimit = isPaidUser ? 4 : 1;
 
   const modelConfig = getVideoModelConfig(resolvedModelName);
 
@@ -705,6 +705,8 @@ export async function POST(req: NextRequest) {
     is_public: isPublic,
   };
 
+  console.log(`[freepik-video-debug] User ${user.id} (Paid: ${isPaidUser}) requesting job. Limit: ${concurrencyLimit}`);
+
   const { data: jobRecordJson, error: insertError } = await adminSupabase
     .rpc('create_ai_job_secure', {
       p_user_id: user.id,
@@ -723,7 +725,7 @@ export async function POST(req: NextRequest) {
     console.error("[freepik-video] failed to create job via RPC", insertError);
     if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
       return apiResponse.error(
-        `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
+        `3 tasks are running. Please wait before adding new ones.`,
         429
       );
     }
@@ -738,7 +740,7 @@ export async function POST(req: NextRequest) {
   }
 
   const publicTitle = prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt;
-  const publicSummary = `${modelConfig.displayName} • ${mode === "text" ? "Text to Video" : "Image to Video"}`;
+  const publicSummary = `${modelConfig.displayName} • ${mode === "text" ? "Text to Video" : "Image to Video"} `;
 
   await ensureJobShareMetadata({
     adminClient: adminSupabase,
@@ -757,7 +759,7 @@ export async function POST(req: NextRequest) {
   let updatedBenefits: any = null;
 
   if (effectiveCreditsCost > 0) {
-    const deductionNote = `AI video generation - ${modelConfig.displayName}`;
+    const deductionNote = `AI video generation - ${modelConfig.displayName} `;
     const deducted = await deductCredits(effectiveCreditsCost, deductionNote);
 
     if (!deducted.success) {

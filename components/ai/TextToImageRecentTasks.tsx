@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 import type { ViewerJob } from "@/actions/ai-jobs/public";
 import { getUserCreationsHistory } from "@/actions/creations";
-import { TEXT_TO_IMAGE_DEFAULT_MODEL } from "@/components/ai/text-image-models";
+import { TEXT_TO_IMAGE_DEFAULT_MODEL, getTextToImageOptionValue } from "@/components/ai/text-image-models";
 import { DEFAULT_VIDEO_MODEL } from "@/components/ai/video-models";
 import { ShareDialog } from "@/components/ShareDialog";
 import {
@@ -745,13 +745,16 @@ export default function TextToImageRecentTasks({
       const modelSlug =
         (typeof original.modelSlug === "string" && original.modelSlug.length > 0 && original.modelSlug) ||
         (typeof original.inputParams?.model === "string" ? original.inputParams.model : TEXT_TO_IMAGE_DEFAULT_MODEL);
+      const uiModelValue =
+        getTextToImageOptionValue(modelSlug) ??
+        (typeof modelSlug === "string" && modelSlug.length > 0 ? modelSlug : TEXT_TO_IMAGE_DEFAULT_MODEL);
 
       const draft: RepromptDraft = {
         kind: "image-to-image",
         route: "/image-to-image",
         prompt: "",
         translatePrompt: false,
-        model: modelSlug,
+        model: uiModelValue,
         referenceImageUrls: [imageUrl],
       };
 

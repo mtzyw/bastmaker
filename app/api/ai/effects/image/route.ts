@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
   // Concurrency check moved to atomic creation step
   const userBenefits = await getUserBenefits(user.id);
   const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
-  const concurrencyLimit = isPaidUser ? 3 : 1;
+  const concurrencyLimit = isPaidUser ? 4 : 1;
 
   const template = await fetchImageEffectTemplate(effect_slug);
   if (!template) {
@@ -310,7 +310,7 @@ export async function POST(req: NextRequest) {
     console.error("[image-effects] failed to create job via RPC", insertError);
     if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
       return apiResponse.error(
-        `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
+        `3 tasks are running. Please wait before adding new ones.`,
         429
       );
     }

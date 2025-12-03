@@ -1,3 +1,4 @@
+import { getUserBenefits } from "@/actions/usage/benefits";
 import { deductCredits } from "@/actions/usage/deduct";
 import {
   createFreepikVideoTask,
@@ -7,19 +8,19 @@ import {
 import { mapFreepikStatus } from "@/lib/ai/freepik-status";
 import { attachJobToLatestCreditLog, refundCreditsForJob } from "@/lib/ai/job-finance";
 import { apiResponse } from "@/lib/api-response";
-import { ensureJobShareMetadata } from "@/lib/share/job-share";
-import { shareModalityDisplayName } from "@/lib/share/job-metadata";
-import { createClient } from "@/lib/supabase/server";
-import { Database } from "@/lib/supabase/types";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { NextRequest } from "next/server";
-import { z } from "zod";
-import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
 import {
   generateR2Key,
   getDataFromDataUrl,
   serverUploadFile,
 } from "@/lib/cloudflare/r2";
+import { shareModalityDisplayName } from "@/lib/share/job-metadata";
+import { ensureJobShareMetadata } from "@/lib/share/job-share";
+import { createClient } from "@/lib/supabase/server";
+import { Database } from "@/lib/supabase/types";
+import { fetchVideoEffectTemplate } from "@/lib/video-effects/templates";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { NextRequest } from "next/server";
+import { z } from "zod";
 
 // Simplified request schema from frontend
 const requestSchema = z.object({
@@ -140,9 +141,9 @@ export async function POST(req: NextRequest) {
     slug,
     title,
   } = effectTemplate;
-  
+
   const modelDisplayName = metadata?.model_display_name ?? apiModel;
-  
+
   // 1. Start with the base payload from the database
   let payload: Record<string, any> = { ...(metadata?.freepik_params ?? {}) };
 
@@ -193,8 +194,8 @@ export async function POST(req: NextRequest) {
     const payloadKey = typeof input.metadata?.param === "string" && input.metadata.param.length > 0
       ? input.metadata.param
       : typeof input.metadata?.payload_param === "string" && input.metadata.payload_param.length > 0
-      ? input.metadata.payload_param
-      : undefined;
+        ? input.metadata.payload_param
+        : undefined;
 
     await assignAsset(input.slot, providedUrl, {
       required: input.isRequired,
@@ -263,15 +264,19 @@ export async function POST(req: NextRequest) {
     is_public: isPublic,
   };
 
-  const { data: jobRecord, error: insertError } = await adminSupabase
-    .from("ai_jobs")
-    .insert({
-      user_id: user.id,
-      provider_code: providerCode,
-      modality_code: modalityCode,
-      model_slug_at_submit: modelDisplayName,
-      status: "pending",
-      input_params_json: {
+  // Check concurrency limit
+  const userBenefits = await getUserBenefits(user.id);
+  const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
+  const concurrencyLimit = isPaidUser ? 4 : 1;
+
+  const { data: jobRecordJson, error: insertError } = await adminSupabase
+    .rpc('create_ai_job_secure', {
+      p_user_id: user.id,
+      p_limit: concurrencyLimit,
+      p_provider_code: providerCode,
+      p_modality_code: modalityCode,
+      p_model_slug: modelDisplayName,
+      p_input_params: {
         effect_slug: slug,
         reference_image_urls: referenceImageUrls,
         reference_image_count: referenceImageUrls.length,
@@ -280,13 +285,24 @@ export async function POST(req: NextRequest) {
         ...payload,
         is_public: isPublic,
       },
-      metadata_json: metadataJsonForJob,
-      cost_estimated_credits: effectiveCreditsCost,
-      pricing_snapshot_json: { credits_cost: effectiveCreditsCost, currency: "credits", captured_at: new Date().toISOString() },
-      is_public: isPublic,
-    })
-    .select()
-    .single();
+      p_metadata: metadataJsonForJob,
+      p_cost_estimated: effectiveCreditsCost,
+      p_pricing_snapshot: { credits_cost: effectiveCreditsCost, currency: "credits", captured_at: new Date().toISOString() },
+      p_is_public: isPublic,
+    });
+
+  if (insertError) {
+    console.error("[effects-video] failed to create job via RPC", insertError);
+    if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
+      return apiResponse.error(
+        `3 tasks are running. Please wait before adding new ones.`,
+        429
+      );
+    }
+    return apiResponse.serverError("Failed to create job record");
+  }
+
+  const jobRecord = jobRecordJson as Database['public']['Tables']['ai_jobs']['Row'];
 
   if (insertError || !jobRecord) {
     console.error("[effects-video] failed to insert ai_jobs record", insertError);
