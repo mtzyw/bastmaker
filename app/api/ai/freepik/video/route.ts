@@ -577,27 +577,10 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Check concurrency limit
+  // Concurrency check moved to atomic creation step
   const userBenefits = await getUserBenefits(user.id);
   const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
   const concurrencyLimit = isPaidUser ? 3 : 1;
-
-  const { data: isAllowed, error: concurrencyError } = await adminSupabase.rpc('check_user_concurrency_limit', {
-    p_user_id: user.id,
-    p_limit: concurrencyLimit,
-  });
-
-  if (concurrencyError) {
-    console.error("[freepik-video] failed to check concurrency limit", concurrencyError);
-    return apiResponse.serverError("Failed to check system limits");
-  }
-
-  if (isAllowed === false) {
-    return apiResponse.error(
-      `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
-      429
-    );
-  }
 
   const modelConfig = getVideoModelConfig(resolvedModelName);
 
@@ -722,22 +705,32 @@ export async function POST(req: NextRequest) {
     is_public: isPublic,
   };
 
-  const { data: jobRecord, error: insertError } = await adminSupabase
-    .from("ai_jobs")
-    .insert({
-      user_id: user.id,
-      provider_code: modelConfig.providerCode,
-      modality_code: modalityCode,
-      model_slug_at_submit: resolvedModelName,
-      status: "pending",
-      input_params_json: inputParams,
-      metadata_json: metadataJson,
-      cost_estimated_credits: effectiveCreditsCost,
-      pricing_snapshot_json: pricingSnapshot,
-      is_public: isPublic,
-    })
-    .select()
-    .single();
+  const { data: jobRecordJson, error: insertError } = await adminSupabase
+    .rpc('create_ai_job_secure', {
+      p_user_id: user.id,
+      p_limit: concurrencyLimit,
+      p_provider_code: modelConfig.providerCode,
+      p_modality_code: modalityCode,
+      p_model_slug: resolvedModelName,
+      p_input_params: inputParams,
+      p_metadata: metadataJson,
+      p_cost_estimated: effectiveCreditsCost,
+      p_pricing_snapshot: pricingSnapshot,
+      p_is_public: isPublic,
+    });
+
+  if (insertError) {
+    console.error("[freepik-video] failed to create job via RPC", insertError);
+    if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
+      return apiResponse.error(
+        `You have reached your concurrent job limit (${concurrencyLimit}). Please wait for existing jobs to finish.`,
+        429
+      );
+    }
+    return apiResponse.serverError("Failed to create job record");
+  }
+
+  const jobRecord = jobRecordJson as Database['public']['Tables']['ai_jobs']['Row'];
 
   if (insertError || !jobRecord) {
     console.error("[freepik-video] failed to insert ai_jobs record", insertError);

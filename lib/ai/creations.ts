@@ -1,5 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/lib/supabase/types";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export type CreationOutput = {
   id: string;
@@ -123,7 +123,8 @@ export async function fetchUserCreations(
     const metadata = (job.metadata_json ?? {}) as Record<string, any>;
     const inputParams = (job.input_params_json ?? {}) as Record<string, any>;
     const outputs = outputsByJob.get(job.id) ?? [];
-    const isImageToImage = Boolean(metadata.is_image_to_image) || (metadata.reference_image_count ?? 0) > 0;
+    const refUrls = (metadata.reference_image_urls as string[] | undefined) ?? [];
+    const isImageToImage = Boolean(metadata.is_image_to_image) || refUrls.length > 0;
     const latestStatus = (metadata.freepik_latest_status as string | undefined) ?? null;
     const estimatedCost = typeof job.cost_estimated_credits === "number" ? job.cost_estimated_credits : 0;
     const metadataCost = typeof metadata.credits_cost === "number" ? Number(metadata.credits_cost) : undefined;

@@ -1410,6 +1410,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_ai_job_secure: {
+        Args: {
+          p_user_id: string
+          p_limit: number
+          p_provider_code: string | null
+          p_modality_code: string | null
+          p_model_slug: string | null
+          p_input_params: Json
+          p_metadata: Json
+          p_cost_estimated: number | null
+          p_pricing_snapshot: Json
+          p_is_public: boolean
+        }
+        Returns: Json
+      }
       deduct_credits_and_log: {
         Args: { p_deduct_amount: number; p_notes: string; p_user_id: string }
         Returns: boolean

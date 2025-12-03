@@ -118,7 +118,16 @@ export function buildRegenerationPlan(item: CreationItem): RegenerationPlan {
   }
 
   if (!isVideoLike && (source === "image-to-image" || modality === "i2i" || (item.isImageToImage && isImageGenerationLike))) {
-    return buildImageToImagePlan(item);
+    // Fallback: if no reference images are found, try text-to-image
+    try {
+      return buildImageToImagePlan(item);
+    } catch (error: any) {
+      if (error?.message?.includes("缺少参考图")) {
+        console.warn("[retry] fallback to text-to-image due to missing reference images");
+        return buildTextToImagePlan(item);
+      }
+      throw error;
+    }
   }
 
   if (!isVideoLike && (source === "text-to-image" || modality === "t2i" || isImageGenerationLike)) {
