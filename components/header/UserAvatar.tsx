@@ -22,9 +22,9 @@ export function UserAvatar({ openAuthDialog = false }: { openAuthDialog?: boolea
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-8 w-8 bg-gradient-to-r from-amber-500 to-orange-500">
           <AvatarImage src={user.user_metadata?.avatar_url} />
-          <AvatarFallback>{fallbackLetter}</AvatarFallback>
+          <AvatarFallback className="bg-transparent text-white">{fallbackLetter}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

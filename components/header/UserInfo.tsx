@@ -166,9 +166,9 @@ function AuthenticatedUserInfo({
     <>
       <div>
         <div className="flex items-center space-x-2 pb-2">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 bg-gradient-to-r from-amber-500 to-orange-500">
             <AvatarImage src={user.user_metadata?.avatar_url} />
-            <AvatarFallback>{fallbackLetter}</AvatarFallback>
+            <AvatarFallback className="bg-transparent text-white">{fallbackLetter}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-0.5">
             <p className="text-sm font-medium leading-none">

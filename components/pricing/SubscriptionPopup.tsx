@@ -201,7 +201,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[85vh] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl h-[520px] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
         <DialogTitle className="sr-only">{t("SubscriptionTitle")}</DialogTitle>
 
         <div className="flex flex-col md:flex-row h-full overflow-hidden">

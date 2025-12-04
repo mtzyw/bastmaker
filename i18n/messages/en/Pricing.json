@@ -86,7 +86,7 @@
     "price": "$0",
     "priceSuffix": "/Month",
     "features": {
-      "credits": "30 credits/month",
+      "credits": "10 credits/day",
       "textToImage": "Text-to-image generation",
       "imageToImage": "Image-to-image generation",
       "editingTools": "20+ Advanced AI editing tools",

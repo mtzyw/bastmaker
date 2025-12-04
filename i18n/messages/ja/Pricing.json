@@ -97,7 +97,7 @@
     "price": "¥0",
     "priceSuffix": "/月",
     "features": {
-      "credits": "1か月30クレジット",
+      "credits": "1日10クレジット",
       "textToImage": "テキストから画像の生成",
       "imageToImage": "画像から画像の生成",
       "editingTools": "20種類以上の高度なAI編集ツール",
