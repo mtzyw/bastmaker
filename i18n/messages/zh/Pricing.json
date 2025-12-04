@@ -104,7 +104,8 @@
   },
   "vipBenefits": {
     "title": "VIP会员享有哪些特权?",
-    "terms": "一旦您订阅，即表示您同意",
-    "termsLink": "服务条款"
+    "terms": "订阅即表示您同意我们的",
+    "termsLink": "服务条款",
+    "getItNow": "立即获取"
   }
 }

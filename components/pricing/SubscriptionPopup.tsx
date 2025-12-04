@@ -25,6 +25,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   const [loading, setLoading] = useState(true);
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const locale = useLocale();
   const router = useRouter();
@@ -37,18 +38,30 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
           const result = await getPublicPricingPlans();
           if (result.success && result.data) {
             const allPlans = result.data;
+            const annualPlans = allPlans.filter(
+              (p) =>
+                p.payment_type === "recurring" &&
+                p.recurring_interval === "year"
+            );
+            const monthlyPlans = allPlans.filter(
+              (p) =>
+                p.payment_type === "recurring" &&
+                p.recurring_interval === "month"
+            );
+
             setPlans({
-              annual: allPlans.filter(
-                (p) =>
-                  p.payment_type === "recurring" &&
-                  p.recurring_interval === "year"
-              ),
-              monthly: allPlans.filter(
-                (p) =>
-                  p.payment_type === "recurring" &&
-                  p.recurring_interval === "month"
-              ),
+              annual: annualPlans,
+              monthly: monthlyPlans,
             });
+
+            // Set initial selected plan (highlighted or first)
+            const defaultPlans = billingCycle === "monthly" ? monthlyPlans : annualPlans;
+            const highlighted = defaultPlans.find(p => p.is_highlighted);
+            if (highlighted) {
+              setSelectedPlanId(highlighted.id);
+            } else if (defaultPlans.length > 0) {
+              setSelectedPlanId(defaultPlans[0].id);
+            }
           }
         } catch (error) {
           console.error("Failed to fetch pricing plans:", error);
@@ -59,6 +72,31 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
       fetchPlans();
     }
   }, [open]);
+
+  // Update selected plan when billing cycle changes
+  useEffect(() => {
+    const currentPlansList = billingCycle === "monthly" ? plans.monthly : plans.annual;
+    if (currentPlansList.length > 0) {
+      const highlighted = currentPlansList.find(p => p.is_highlighted);
+      if (highlighted) {
+        setSelectedPlanId(highlighted.id);
+      } else {
+        setSelectedPlanId(currentPlansList[0].id);
+      }
+    }
+  }, [billingCycle, plans]);
+
+
+  const handleSubscribe = async () => {
+    if (selectedPlanId === "free") {
+      return;
+    }
+
+    const plan = currentPlans.find(p => p.id === selectedPlanId);
+    if (plan) {
+      await handleCheckout(plan);
+    }
+  };
 
   const handleCheckout = async (plan: PricingPlan) => {
     const stripePriceId = plan.stripe_price_id ?? null;
@@ -133,12 +171,14 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   // Determine which plan's benefits to show
   let displayFeatures: any[] = [];
 
-  if (hoveredPlanId === "free") {
+  // Use hovered plan if available, otherwise use selected plan
+  const activePlanId = hoveredPlanId || selectedPlanId;
+
+  if (activePlanId === "free") {
     displayFeatures = freeFeatures;
   } else {
-    // Priority: Hovered Plan -> Highlighted Plan -> First Plan
     const displayPlan =
-      currentPlans.find(p => p.id === hoveredPlanId) ||
+      currentPlans.find(p => p.id === activePlanId) ||
       currentPlans.find(p => p.is_highlighted) ||
       currentPlans[0];
 
@@ -162,12 +202,12 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[85vh] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
         <DialogTitle className="sr-only">{t("SubscriptionTitle")}</DialogTitle>
 
-        <div className="flex flex-col md:flex-row h-full">
+        <div className="flex flex-col md:flex-row h-full overflow-hidden">
           {/* Left Side - Plans */}
-          <div className="flex-1 p-6 md:p-8 space-y-6 bg-[#18181b]">
+          <div className="flex-1 p-6 md:p-8 space-y-6 bg-[#18181b] overflow-y-auto">
             {/* Toggle */}
             <div className="flex items-center gap-4 mb-6">
               <div className="inline-flex rounded-lg bg-[#27272a] p-1">
@@ -209,12 +249,12 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                 <>
                   {/* Free Plan Card */}
                   <div
-                    onClick={() => router.push("/sign-up")}
+                    onClick={() => setSelectedPlanId("free")}
                     onMouseEnter={() => setHoveredPlanId("free")}
                     className={cn(
                       "relative p-5 rounded-2xl border transition-all cursor-pointer group",
-                      hoveredPlanId === "free"
-                        ? "bg-[#27272a] border-white/20"
+                      selectedPlanId === "free"
+                        ? "bg-[#27272a] border-white/40 shadow-md"
                         : "bg-[#27272a] border-transparent hover:border-white/10"
                     )}
                   >
@@ -243,12 +283,12 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                     const creditFeature = features.find(f => f.description.toLowerCase().includes("credit") || f.description.includes("积分"));
                     const credits = creditFeature ? creditFeature.description.replace(/[^0-9]/g, '') : "0";
 
-                    const isSelected = hoveredPlanId === plan.id || (!hoveredPlanId && plan.is_highlighted);
+                    const isSelected = selectedPlanId === plan.id;
 
                     return (
                       <div
                         key={plan.id}
-                        onClick={() => handleCheckout(plan)}
+                        onClick={() => setSelectedPlanId(plan.id)}
                         onMouseEnter={() => setHoveredPlanId(plan.id)}
                         className={cn(
                           "relative p-5 rounded-2xl border transition-all cursor-pointer group",
@@ -298,22 +338,38 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
           </div>
 
           {/* Right Side - Benefits */}
-          <div className="flex-1 bg-[#27272a] p-6 md:p-8 border-l border-white/5">
-            <h3 className="text-lg font-semibold mb-6 text-white">
+          <div className="flex-1 bg-[#27272a] p-6 md:p-8 border-l border-white/5 flex flex-col overflow-hidden">
+            <h3 className="text-lg font-semibold mb-6 text-white shrink-0">
               {t("vipBenefits.title")}
             </h3>
-            <ul className="space-y-4">
-              {displayFeatures.map((feature: any, index: number) => (
-                <li key={index} className="flex items-start gap-3 text-sm text-gray-300">
-                  <Check className="w-5 h-5 text-[#10b981] shrink-0" />
-                  <span>
-                    {highlightText(feature.description)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className="flex-1 overflow-y-auto pr-2">
+              <ul className="space-y-4">
+                {displayFeatures.map((feature: any, index: number) => (
+                  <li key={index} className="flex items-start gap-3 text-sm text-gray-300">
+                    <Check className="w-5 h-5 text-[#10b981] shrink-0" />
+                    <span>
+                      {highlightText(feature.description)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <div className="mt-8 pt-6 border-t border-white/10 text-xs text-gray-500 text-center">
+            <div className="mt-6 shrink-0">
+              <button
+                onClick={handleSubscribe}
+                disabled={!!processingPlanId}
+                className="w-full rounded-xl bg-[#10b981] py-3 text-center text-base font-bold text-black shadow-lg transition-all hover:bg-[#059669] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {processingPlanId ? (
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                ) : (
+                  t("vipBenefits.getItNow")
+                )}
+              </button>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-white/10 text-xs text-gray-500 text-center shrink-0">
               {t("vipBenefits.terms")}
               <Link
                 href="/terms-of-service"

@@ -104,7 +104,8 @@
   },
   "vipBenefits": {
     "title": "What privileges do VIP members enjoy?",
-    "terms": "Once you subscribe, you agree to our Terms of Service",
-    "termsLink": "Terms of Service"
+    "terms": "By subscribing, you agree to our",
+    "termsLink": "Terms of Service",
+    "getItNow": "Get it now"
   }
 }
