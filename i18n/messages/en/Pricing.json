@@ -77,8 +77,7 @@
       "discord": "Join Discord Community",
       "email": "Contact Support Team"
     }
-  }
-  ,
+  },
   "freePlan": {
     "badge": "Start now",
     "ctaLoggedIn": "Current subscription",
@@ -102,5 +101,10 @@
       "commercial": "Commercial use rights",
       "adFree": "Ad-free experience"
     }
+  },
+  "vipBenefits": {
+    "title": "What privileges do VIP members enjoy?",
+    "terms": "Once you subscribe, you agree to our Terms of Service",
+    "termsLink": "Terms of Service"
   }
 }

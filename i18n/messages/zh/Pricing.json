@@ -77,8 +77,7 @@
       "discord": "加入Discord社区",
       "email": "联系客服团队"
     }
-  }
-  ,
+  },
   "freePlan": {
     "badge": "立即体验",
     "ctaLoggedIn": "当前订阅",
@@ -102,5 +101,10 @@
       "commercial": "商业使用授权",
       "adFree": "无广告体验"
     }
+  },
+  "vipBenefits": {
+    "title": "VIP会员享有哪些特权?",
+    "terms": "一旦您订阅，即表示您同意",
+    "termsLink": "服务条款"
   }
 }

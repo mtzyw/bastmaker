@@ -112,5 +112,10 @@
       "commercial": "商用利用権",
       "adFree": "広告なし体験"
     }
+  },
+  "vipBenefits": {
+    "title": "VIP会員にはどのような特典がありますか？",
+    "terms": "購読すると、以下に同意したことになります",
+    "termsLink": "利用規約"
   }
 }

@@ -1,12 +1,11 @@
 "use client";
 
+import { SubscriptionPopup } from "@/components/pricing/SubscriptionPopup";
+import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-// PricingDialog import removed as we will navigate directly to /pricing
-import { cn } from "@/lib/utils";
 
 type CreditsBadgeProps = {
   className?: string;
@@ -20,6 +19,7 @@ type CreditsPayload = {
 export function CreditsBadge({ className }: CreditsBadgeProps) {
   const [data, setData] = useState<CreditsPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const router = useRouter();
   const locale = useLocale();
 
@@ -60,8 +60,7 @@ export function CreditsBadge({ className }: CreditsBadgeProps) {
   }, []);
 
   const handleClick = () => {
-    // Always navigate to pricing page regardless of screen size
-    router.push("/pricing");
+    setIsPopupOpen(true);
   };
 
   const creditsDisplay =
@@ -88,7 +87,7 @@ export function CreditsBadge({ className }: CreditsBadgeProps) {
         <span className="text-white/80">{loading ? "..." : labelDisplay}</span>
       </div>
 
-      {/* PricingDialog component removed */}
+      <SubscriptionPopup open={isPopupOpen} onOpenChange={setIsPopupOpen} />
     </>
   );
 }
