@@ -24,7 +24,6 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   }>({ annual: [], monthly: [] });
   const [loading, setLoading] = useState(true);
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [hoveredPlanId, setHoveredPlanId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const locale = useLocale();
@@ -171,8 +170,8 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   // Determine which plan's benefits to show
   let displayFeatures: any[] = [];
 
-  // Use hovered plan if available, otherwise use selected plan
-  const activePlanId = hoveredPlanId || selectedPlanId;
+  // Use selected plan
+  const activePlanId = selectedPlanId;
 
   if (activePlanId === "free") {
     displayFeatures = freeFeatures;
@@ -202,7 +201,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl h-[85vh] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
         <DialogTitle className="sr-only">{t("SubscriptionTitle")}</DialogTitle>
 
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
@@ -250,7 +249,6 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                   {/* Free Plan Card */}
                   <div
                     onClick={() => setSelectedPlanId("free")}
-                    onMouseEnter={() => setHoveredPlanId("free")}
                     className={cn(
                       "relative p-5 rounded-2xl border transition-all cursor-pointer group",
                       selectedPlanId === "free"
@@ -289,7 +287,6 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                       <div
                         key={plan.id}
                         onClick={() => setSelectedPlanId(plan.id)}
-                        onMouseEnter={() => setHoveredPlanId(plan.id)}
                         className={cn(
                           "relative p-5 rounded-2xl border transition-all cursor-pointer group",
                           isSelected
