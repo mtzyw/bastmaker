@@ -10,6 +10,7 @@ import {
   getTextToImageOptionValue,
   getTextToImageStorageModel,
 } from "@/components/ai/text-image-models";
+import { SubscriptionPopup } from "@/components/pricing/SubscriptionPopup";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ export default function TextToImageLeftPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const t = useTranslations("CreationTools.TextToImage");
   const commonT = useTranslations("CreationTools.Common");
   const { user } = useAuth();
@@ -105,9 +107,9 @@ export default function TextToImageLeftPanel({
       const matchByValue = allowedValues.includes(repromptDraft.model)
         ? repromptDraft.model
         : availableOptions.find((option) => option.label === repromptDraft.model)?.value ??
-          (aliasCandidate && allowedValues.includes(aliasCandidate) ? aliasCandidate : null) ??
-          allowedValues[0] ??
-          TEXT_TO_IMAGE_DEFAULT_MODEL;
+        (aliasCandidate && allowedValues.includes(aliasCandidate) ? aliasCandidate : null) ??
+        allowedValues[0] ??
+        TEXT_TO_IMAGE_DEFAULT_MODEL;
       setModel(matchByValue);
     }
 
@@ -244,6 +246,9 @@ export default function TextToImageLeftPanel({
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          setShowSubscriptionPopup(true);
+        }
         const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
@@ -409,6 +414,7 @@ export default function TextToImageLeftPanel({
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
+      <SubscriptionPopup open={showSubscriptionPopup} onOpenChange={setShowSubscriptionPopup} />
     </div>
   );
 }

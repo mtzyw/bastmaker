@@ -31,46 +31,44 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   const t = useTranslations("Pricing");
 
   useEffect(() => {
-    if (open) {
-      const fetchPlans = async () => {
-        try {
-          const result = await getPublicPricingPlans();
-          if (result.success && result.data) {
-            const allPlans = result.data;
-            const annualPlans = allPlans.filter(
-              (p) =>
-                p.payment_type === "recurring" &&
-                p.recurring_interval === "year"
-            );
-            const monthlyPlans = allPlans.filter(
-              (p) =>
-                p.payment_type === "recurring" &&
-                p.recurring_interval === "month"
-            );
+    const fetchPlans = async () => {
+      try {
+        const result = await getPublicPricingPlans();
+        if (result.success && result.data) {
+          const allPlans = result.data;
+          const annualPlans = allPlans.filter(
+            (p) =>
+              p.payment_type === "recurring" &&
+              p.recurring_interval === "year"
+          );
+          const monthlyPlans = allPlans.filter(
+            (p) =>
+              p.payment_type === "recurring" &&
+              p.recurring_interval === "month"
+          );
 
-            setPlans({
-              annual: annualPlans,
-              monthly: monthlyPlans,
-            });
+          setPlans({
+            annual: annualPlans,
+            monthly: monthlyPlans,
+          });
 
-            // Set initial selected plan (highlighted or first)
-            const defaultPlans = billingCycle === "monthly" ? monthlyPlans : annualPlans;
-            const highlighted = defaultPlans.find(p => p.is_highlighted);
-            if (highlighted) {
-              setSelectedPlanId(highlighted.id);
-            } else if (defaultPlans.length > 0) {
-              setSelectedPlanId(defaultPlans[0].id);
-            }
+          // Set initial selected plan (highlighted or first)
+          const defaultPlans = billingCycle === "monthly" ? monthlyPlans : annualPlans;
+          const highlighted = defaultPlans.find(p => p.is_highlighted);
+          if (highlighted) {
+            setSelectedPlanId(highlighted.id);
+          } else if (defaultPlans.length > 0) {
+            setSelectedPlanId(defaultPlans[0].id);
           }
-        } catch (error) {
-          console.error("Failed to fetch pricing plans:", error);
-        } finally {
-          setLoading(false);
         }
-      };
-      fetchPlans();
-    }
-  }, [open]);
+      } catch (error) {
+        console.error("Failed to fetch pricing plans:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   // Update selected plan when billing cycle changes
   useEffect(() => {

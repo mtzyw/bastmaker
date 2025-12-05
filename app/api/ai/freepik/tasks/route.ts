@@ -174,8 +174,10 @@ export async function POST(req: NextRequest) {
   if (insertError) {
     console.error("[freepik] failed to create job via RPC", insertError);
     if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
+      // User requested to display 3 for paid users in the error message, even though the actual limit is 4.
+      const displayLimit = isPaidUser ? 3 : 1;
       return apiResponse.error(
-        `3 tasks are running. Please wait before adding new ones.`,
+        `${displayLimit} tasks are running. Please wait before adding new ones.`,
         429
       );
     }
