@@ -4,7 +4,7 @@ import { getPublicPricingPlans } from "@/actions/prices/public";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { PricingPlan, PricingPlanTranslation } from "@/types/pricing";
+import { PricingPlan, PricingPlanFeature, PricingPlanTranslation } from "@/types/pricing";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -276,9 +276,14 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                     const title = getLocalized(plan, "card_title");
                     const price = getLocalized(plan, "display_price");
                     const highlightText = getLocalized(plan, "highlight_text");
-                    const features = plan.features || [];
+                    const features = (getLocalized(plan, "features") as PricingPlanFeature[]) || [];
                     // Find credit feature to display
-                    const creditFeature = features.find(f => f.description.toLowerCase().includes("credit") || f.description.includes("积分"));
+                    const creditFeature = features.find(f =>
+                      f.description.toLowerCase().includes("credit") ||
+                      f.description.includes("积分") ||
+                      f.description.includes("点数") ||
+                      f.description.includes("クレジット")
+                    );
                     const credits = creditFeature ? creditFeature.description.replace(/[^0-9]/g, '') : "0";
 
                     const isSelected = selectedPlanId === plan.id;
