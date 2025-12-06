@@ -1,6 +1,7 @@
 "use client";
 
 import { AspectRatioInlineSelector } from "@/components/ai/AspectRatioInlineSelector";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -54,6 +55,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const HIDDEN_PROMPT_SLUGS = new Set([
     "jojo-ai-filter",
@@ -314,6 +316,9 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const message =
           result?.error ?? response.statusText ?? t("errors.submitFailed");
         throw new Error(message);
@@ -362,7 +367,8 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     resolvedAspectRatio,
     upsertHistoryItem,
     providerReady,
-    t
+    t,
+    openSubscriptionPopup,
   ]);
 
   const previewImage = effect.previewImageUrl ?? DEFAULT_PREVIEW_IMAGE;

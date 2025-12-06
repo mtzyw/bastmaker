@@ -19,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -38,6 +37,7 @@ import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { buildRegenerationPlan, buildRepromptDraft, type RegenerationPlan, type RepromptDraft } from "@/lib/ai/creation-retry";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { CreationItem, CreationOutput } from "@/lib/ai/creations";
 import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
@@ -494,6 +494,7 @@ export default function TextToImageRecentTasks({
   const localePrefix = useMemo(() => (locale === DEFAULT_LOCALE ? "" : `/${locale}`), [locale]);
   const router = useRouter();
   const historyT = useTranslations("CreationHistory");
+  const { openSubscriptionPopup } = useSubscriptionPopup();
   const promptLabel = historyT("labels.prompt");
   const negativeLabel = historyT("labels.negative");
   const categoryFilterLabel = historyT("labels.categoryFilter");
@@ -928,6 +929,9 @@ export default function TextToImageRecentTasks({
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok || !result?.success) {
+          if (response.status === 429) {
+            openSubscriptionPopup();
+          }
           const message = result?.error ?? response.statusText ?? historyT("messages.retryFailed");
           throw new Error(message);
         }
@@ -960,7 +964,7 @@ export default function TextToImageRecentTasks({
         });
       }
     },
-    [itemMap, isRegenerating, upsertItem, removeItem, historyT]
+    [itemMap, isRegenerating, upsertItem, removeItem, historyT, openSubscriptionPopup]
   );
 
   const loadHistory = useCallback(
@@ -1785,12 +1789,7 @@ export default function TextToImageRecentTasks({
                   className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 space-y-4"
                 >
                   <header className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8 border border-white/10 bg-white/10 text-white">
-                      <AvatarFallback className="text-xs font-semibold bg-transparent text-white">
-                        {task.provider.slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-1 flex-col justify-center gap-1">
+                    <div className="flex flex-col flex-1 justify-center gap-1">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium leading-none text-white">

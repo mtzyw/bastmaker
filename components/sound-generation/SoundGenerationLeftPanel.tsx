@@ -17,6 +17,7 @@ import { useRepromptStore } from "@/stores/repromptStore";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 
 const MIN_DURATION = 0.5;
 const MAX_DURATION = 22;
@@ -35,6 +36,7 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
   const panelTitle = title ?? t("title");
   const { user } = useAuth();
   const { openAuthDialog } = useAuthDialog();
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const modelConfig = useMemo(
     () => getSoundEffectModelConfig(DEFAULT_SOUND_EFFECT_MODEL),
@@ -191,6 +193,9 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const fallbackMessage = commonT("errors.submitFailed");
         const message =
           typeof result?.error === "string" && result.error.length > 0
@@ -252,6 +257,7 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
     commonT,
     user,
     openAuthDialog,
+    openSubscriptionPopup,
   ]);
 
   const handleDurationChange = (value: number) => {

@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
   const userBenefits = await getUserBenefits(user.id);
   const isPaidUser = userBenefits.subscriptionStatus === 'active' || userBenefits.subscriptionStatus === 'trialing';
   const concurrencyLimit = isPaidUser ? 4 : 1;
+  const displayLimit = isPaidUser ? 3 : 1;
 
   const { data: jobRecordJson, error: insertError } = await adminSupabase
     .rpc('create_ai_job_secure', {
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
     console.error("[sound-generation] failed to create job via RPC", insertError);
     if (insertError.message === 'CONCURRENCY_LIMIT_EXCEEDED') {
       return apiResponse.error(
-        `3 tasks are running. Please wait before adding new ones.`,
+        `${displayLimit} tasks are running. Please wait before adding new ones.`,
         429
       );
     }

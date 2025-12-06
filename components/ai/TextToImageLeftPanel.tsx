@@ -10,9 +10,9 @@ import {
   getTextToImageOptionValue,
   getTextToImageStorageModel,
 } from "@/components/ai/text-image-models";
-import { SubscriptionPopup } from "@/components/pricing/SubscriptionPopup";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -48,11 +48,11 @@ export default function TextToImageLeftPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
-  const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const t = useTranslations("CreationTools.TextToImage");
   const commonT = useTranslations("CreationTools.Common");
   const { user } = useAuth();
   const { openAuthDialog } = useAuthDialog();
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const availableOptions = useMemo(() => {
     const excludeSet = new Set(excludeModels ?? []);
@@ -247,7 +247,7 @@ export default function TextToImageLeftPanel({
 
       if (!response.ok || !result?.success) {
         if (response.status === 429) {
-          setShowSubscriptionPopup(true);
+          openSubscriptionPopup();
         }
         const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
@@ -302,6 +302,7 @@ export default function TextToImageLeftPanel({
     commonT,
     user,
     openAuthDialog,
+    openSubscriptionPopup,
   ]);
 
   return (
@@ -414,7 +415,6 @@ export default function TextToImageLeftPanel({
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
-      <SubscriptionPopup open={showSubscriptionPopup} onOpenChange={setShowSubscriptionPopup} />
     </div>
   );
 }

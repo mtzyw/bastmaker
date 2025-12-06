@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -41,6 +42,7 @@ export default function LipSyncLeftPanel() {
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.LipSync");
   const commonT = useTranslations("CreationTools.Common");
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const audioInputRef = useRef<HTMLInputElement | null>(null);
@@ -282,6 +284,9 @@ export default function LipSyncLeftPanel() {
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const fallback = t("errors.taskFailed");
         const message =
           typeof result?.error === "string"
@@ -323,7 +328,7 @@ export default function LipSyncLeftPanel() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [audio, buildHistoryItem, isPublic, removeHistoryItem, t, upsertHistoryItem, video]);
+  }, [audio, buildHistoryItem, isPublic, removeHistoryItem, t, upsertHistoryItem, video, openSubscriptionPopup]);
 
   useEffect(() => {
     return () => {

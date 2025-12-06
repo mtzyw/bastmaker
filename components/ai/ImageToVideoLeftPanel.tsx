@@ -16,6 +16,7 @@ import {
 } from "@/components/ai/video-models";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -88,6 +89,7 @@ export default function ImageToVideoLeftPanel() {
   const commonT = useTranslations("CreationTools.Common");
   const { user } = useAuth();
   const { openAuthDialog } = useAuthDialog();
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const isTransitionModel = model === TRANSITION_MODEL;
   const videoModelConfig = useMemo(() => getVideoModelConfig(model), [model]);
@@ -413,6 +415,9 @@ export default function ImageToVideoLeftPanel() {
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
@@ -478,6 +483,7 @@ export default function ImageToVideoLeftPanel() {
     uploadedImage,
     isPublic,
     creditsCost,
+    openSubscriptionPopup,
   ]);
 
   useEffect(() => {

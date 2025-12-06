@@ -1,6 +1,7 @@
 "use client";
 
 import ImageCropperDialog from "@/components/ai/ImageCropperDialog";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -47,6 +48,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
   const [cropSource, setCropSource] = useState<{ src: string; fileName: string; fileType: string } | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   useEffect(() => {
     return () => {
@@ -325,6 +327,9 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
       });
       const json = await response.json().catch(() => ({}));
       if (!response.ok || !json?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const message = json?.error ?? response.statusText ?? t("errors.submitFailed");
         throw new Error(message);
       }
@@ -367,7 +372,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
     } finally {
       setIsSubmitting(false);
     }
-  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem, isPublic, t]);
+  }, [effect, isSubmitting, localAsset, pricing, removeHistoryItem, upsertHistoryItem, isPublic, t, openSubscriptionPopup]);
 
   return (
     <div className="flex h-full w-full flex-col text-white">

@@ -13,6 +13,7 @@ import {
 } from "@/components/ai/text-image-models";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
@@ -66,6 +67,7 @@ export default function ImageToImageLeftPanel({
   const commonT = useTranslations("CreationTools.Common");
   const { user } = useAuth();
   const { openAuthDialog } = useAuthDialog();
+  const { openSubscriptionPopup } = useSubscriptionPopup();
   const referenceImagesRef = useRef<ReferenceImage[]>([]);
   const imageUploaderLabels = useMemo(() => ({
     title: t("imageUploader.title"),
@@ -477,6 +479,9 @@ export default function ImageToImageLeftPanel({
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
+        if (response.status === 429) {
+          openSubscriptionPopup();
+        }
         const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
         throw new Error(message);
       }
@@ -539,6 +544,7 @@ export default function ImageToImageLeftPanel({
     user,
     openAuthDialog,
     aspectRatio,
+    openSubscriptionPopup,
   ]);
 
   return (
