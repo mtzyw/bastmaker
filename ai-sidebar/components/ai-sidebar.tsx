@@ -2,15 +2,16 @@
 
 import type React from "react";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, usePathname } from "@/i18n/routing";
-import { Button } from "@/components/ui/button";
 import { AuthDialogTrigger } from "@/components/header/UserInfo";
-import { FileText, Search, Type, ImageIcon, Video, Volume2, MessageCircle, Monitor, Folder } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { cn } from "@/lib/utils";
+import { FileText, Folder, ImageIcon, MessageCircle, Monitor, Search, Type, Volume2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 
 interface MenuItem {
   id: string
@@ -29,6 +30,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
   const { user } = useAuth();
   const isGuest = !user;
   const t = useTranslations("CreationNav");
+  const { openSubscriptionPopup } = useSubscriptionPopup();
 
   const menuSections: MenuSection[] = useMemo(() => {
     const videoItems: MenuItem[] = [
@@ -176,57 +178,57 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
 
 
   return (
-    <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900") }>
+    <div className={cn("w-64 text-white flex flex-col h-full overflow-x-hidden", className ? className : "bg-gray-900")}>
       {/* Scrollable menu content */}
       <ScrollArea className="flex-1">
         <div className="py-7">
-        {menuSections.map((section, sectionIndex) => (
-          <div
-            key={sectionIndex}
-            className={cn(
-              "mb-7",
-              section.items.some((it) => it.id === "assets") && "mt-4",
-              sectionIndex === 0 && "mt-6"
-            )}
-          >
-            {/* Top divider before first titled section (e.g., video AI) */}
-            {section.title && sectionIndex > 0 && !menuSections[sectionIndex - 1].title && (
-              <div className="mx-6 mb-5 border-t border-white/10" />
-            )}
-            {section.title && (
-              <div className="px-6 mb-4">
-                <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{section.title}</h3>
-              </div>
-            )}
-            <nav
+          {menuSections.map((section, sectionIndex) => (
+            <div
+              key={sectionIndex}
               className={cn(
-                section.variant === "dense" ? "space-y-1" : "space-y-2"
+                "mb-7",
+                section.items.some((it) => it.id === "assets") && "mt-4",
+                sectionIndex === 0 && "mt-6"
               )}
             >
-              {section.items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
-                  className={cn(
-                    "w-full flex items-center px-6 py-3 text-left text-sm font-medium transition-colors duration-200 relative",
-                    activeId === item.id
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white",
-                  )}
-                >
-                  <span className="mr-3 flex-shrink-0">{item.icon}</span>
-                  <span className="truncate">{item.label}</span>
-                  {activeId === item.id && (
-                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-500" />
-                  )}
-                </button>
-              ))}
-            </nav>
-            {sectionIndex < menuSections.length - 1 && section.title && (
-              <div className="mx-6 mt-5 border-t border-white/10" />
-            )}
-          </div>
-        ))}
+              {/* Top divider before first titled section (e.g., video AI) */}
+              {section.title && sectionIndex > 0 && !menuSections[sectionIndex - 1].title && (
+                <div className="mx-6 mb-5 border-t border-white/10" />
+              )}
+              {section.title && (
+                <div className="px-6 mb-4">
+                  <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">{section.title}</h3>
+                </div>
+              )}
+              <nav
+                className={cn(
+                  section.variant === "dense" ? "space-y-1" : "space-y-2"
+                )}
+              >
+                {section.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemClick(item.id)}
+                    className={cn(
+                      "w-full flex items-center px-6 py-3 text-left text-sm font-medium transition-colors duration-200 relative",
+                      activeId === item.id
+                        ? "bg-gray-800 text-white"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white",
+                    )}
+                  >
+                    <span className="mr-3 flex-shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                    {activeId === item.id && (
+                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-500" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+              {sectionIndex < menuSections.length - 1 && section.title && (
+                <div className="mx-6 mt-5 border-t border-white/10" />
+              )}
+            </div>
+          ))}
         </div>
       </ScrollArea>
       {/* Fixed bottom login */}
@@ -246,7 +248,7 @@ export function AISidebar({ className, onNavigate }: { className?: string, onNav
             <Button
               className="w-full h-11 text-base text-white bg-[linear-gradient(to_right,rgb(18,194,233),rgb(196,113,237),rgb(246,79,89))] shadow-lg shadow-[#f64f59]/30 hover:opacity-90"
               onClick={() => {
-                router.push("/dashboard/subscription");
+                openSubscriptionPopup();
                 onNavigate && onNavigate();
               }}
             >
