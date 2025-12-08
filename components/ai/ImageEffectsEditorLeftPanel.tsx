@@ -52,7 +52,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { openSubscriptionPopup } = useSubscriptionPopup();
@@ -93,7 +92,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
   useEffect(() => {
     setLocalAsset(null);
     setStatusMessage(null);
-    setErrorMessage(null);
     setIsPublic(true);
   }, [effect.id]);
 
@@ -135,7 +133,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       const previewUrl = URL.createObjectURL(file);
       setLocalAsset({ file, previewUrl, remoteUrl: null });
       setStatusMessage(null);
-      setErrorMessage(null);
       setIsUploading(true);
 
       try {
@@ -276,7 +273,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
     setStatusMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
@@ -351,7 +347,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
     } catch (error: any) {
       removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : t("errors.submitFailed");
-      setErrorMessage(message);
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -527,9 +522,6 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
           >
             {providerReady ? (isSubmitting ? t("generating") : t("create")) : t("templateNotConfigured")}
           </Button>
-          {errorMessage ? (
-            <p className="text-xs text-red-400">{errorMessage}</p>
-          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

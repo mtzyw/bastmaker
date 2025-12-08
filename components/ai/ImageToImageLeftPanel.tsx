@@ -27,6 +27,7 @@ import { useRepromptStore } from "@/stores/repromptStore";
 import { Coins, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const DEFAULT_MAX = 8;
 function getMaxCountByModel(model: string) {
@@ -59,7 +60,6 @@ export default function ImageToImageLeftPanel({
   const [model, setModel] = useState(TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   const [aspectRatio, setAspectRatio] = useState("1:1");
@@ -123,13 +123,6 @@ export default function ImageToImageLeftPanel({
       setModel(allowedValues[0] ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
     }
   }, [availableOptions, model]);
-
-  useEffect(() => {
-    const missingMessage = commonT("errors.uploadMissing");
-    if (referenceImages.length > 0 && errorMessage === missingMessage) {
-      setErrorMessage(null);
-    }
-  }, [referenceImages.length, errorMessage, commonT]);
 
   useEffect(() => {
     if (!repromptDraft || repromptDraft.kind !== "image-to-image") {
@@ -229,7 +222,7 @@ export default function ImageToImageLeftPanel({
             : item
         )
       );
-      setErrorMessage(message);
+      toast.error(message);
     }
   }, [commonT]);
 
@@ -264,9 +257,6 @@ export default function ImageToImageLeftPanel({
 
       setReferenceImages((prev) => [...prev, ...newImages]);
 
-      if (errorMessage) {
-        setErrorMessage(null);
-      }
       setStatusMessage(null);
 
       newImages.forEach((image) => {
@@ -275,7 +265,7 @@ export default function ImageToImageLeftPanel({
         }
       });
     },
-    [maxCount, referenceImages.length, errorMessage, uploadReferenceImage]
+    [maxCount, referenceImages.length, uploadReferenceImage]
   );
 
   const handleRemoveImage = useCallback((id: string) => {
@@ -287,10 +277,7 @@ export default function ImageToImageLeftPanel({
       return prev.filter((item) => item.id !== id);
     });
     setStatusMessage(null);
-    if (errorMessage) {
-      setErrorMessage(null);
-    }
-  }, [errorMessage]);
+  }, []);
 
   useEffect(() => {
     setReferenceImages((prev) => {
@@ -336,19 +323,19 @@ export default function ImageToImageLeftPanel({
     }
 
     if (referenceImages.length === 0) {
-      setErrorMessage(commonT("errors.uploadMissing"));
+      toast.error(commonT("errors.uploadMissing"));
       return;
     }
 
     if (isUploading) {
-      setErrorMessage(commonT("errors.uploadPending"));
+      toast.error(commonT("errors.uploadPending"));
       return;
     }
 
     const unresolved = referenceImages.filter((item) => !item.remoteUrl);
     if (unresolved.length > 0) {
       const firstError = unresolved.find((item) => item.error)?.error;
-      setErrorMessage(firstError ?? commonT("errors.uploadProcessing"));
+      toast.error(firstError ?? commonT("errors.uploadProcessing"));
       return;
     }
 
@@ -358,7 +345,6 @@ export default function ImageToImageLeftPanel({
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
     setStatusMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
@@ -524,7 +510,7 @@ export default function ImageToImageLeftPanel({
         removeHistoryItem(tempJobId);
       }
       const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
-      setErrorMessage(message);
+      toast.error(message);
       console.error("[image-to-image] submit error", error);
     } finally {
       setIsSubmitting(false);
@@ -654,9 +640,6 @@ export default function ImageToImageLeftPanel({
           >
             {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
-          {errorMessage ? (
-            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
           {statusMessage ? null : null}
         </div>
         <div className="mt-6 border-t border-white/10" />

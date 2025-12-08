@@ -26,6 +26,7 @@ import { useRepromptStore } from "@/stores/repromptStore";
 import { Coins, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 // Copied from TextToVideoLeftPanel and adapted for Text-to-Image
 export default function TextToImageLeftPanel({
@@ -46,7 +47,6 @@ export default function TextToImageLeftPanel({
   const [model, setModel] = useState(forcedModel ?? TEXT_TO_IMAGE_DEFAULT_MODEL);
   const [aspectRatio, setAspectRatio] = useState("1:1");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
   const t = useTranslations("CreationTools.TextToImage");
   const commonT = useTranslations("CreationTools.Common");
@@ -144,7 +144,6 @@ export default function TextToImageLeftPanel({
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
     const isImageToImageModel = modelConfig.defaultModality === "i2i";
@@ -285,7 +284,7 @@ export default function TextToImageLeftPanel({
     } catch (error) {
       removeHistoryItem(tempJobId);
       const message = error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
-      setErrorMessage(message);
+      toast.error(message);
       console.error("[text-to-image] submit error", error);
     } finally {
       setIsSubmitting(false);
@@ -409,9 +408,6 @@ export default function TextToImageLeftPanel({
           >
             {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
-          {errorMessage ? (
-            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>

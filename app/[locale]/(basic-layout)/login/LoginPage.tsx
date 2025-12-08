@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { event as trackAnalyticsEvent } from "@/gtag";
 import { GoogleIcon } from "@/components/icons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -216,6 +217,12 @@ export default function LoginPage({
       if (error) throw error;
 
       toast.success(t("messages.signupSuccess"));
+      trackAnalyticsEvent({
+        action: "sign_up",
+        category: "auth",
+        label: "email_code",
+        value: 1,
+      });
       router.replace(next || "/");
     } catch (error: any) {
       toast.error(t("messages.signupFailed"), { description: error?.message });

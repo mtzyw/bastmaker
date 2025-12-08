@@ -1,10 +1,11 @@
 "use client";
 
+import { event as trackAnalyticsEvent } from "@/gtag";
 import { normalizeEmail } from "@/lib/email";
 import { createClient } from "@/lib/supabase/client";
-import { type AuthError, type User } from "@supabase/supabase-js";
+import { type AuthError, type Session, type User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 type ExtendedUser = User & {
   role: "admin" | "user";
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [shareHandled, setShareHandled] = useState(false);
+  const lastSessionTokenRef = useRef<string | null>(null);
 
   const supabase = createClient();
 
@@ -80,6 +82,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const AUTH_TRACKED_SESSION_KEY = "auth:lastTrackedSessionToken";
+
+  const getTrackedSessionToken = () => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+    return window.localStorage.getItem(AUTH_TRACKED_SESSION_KEY);
+  };
+
+  const setTrackedSessionToken = (token: string | null) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (token) {
+      window.localStorage.setItem(AUTH_TRACKED_SESSION_KEY, token);
+    } else {
+      window.localStorage.removeItem(AUTH_TRACKED_SESSION_KEY);
+    }
+  };
+
+  const trackAuthEvent = (action: "sign_in" | "sign_up", label: string) => {
+    trackAnalyticsEvent({
+      action,
+      category: "auth",
+      label,
+      value: 1,
+    });
+  };
+
+  const normalizeProviderLabel = (provider?: string | null) => {
+    if (!provider) {
+      return "unknown";
+    }
+    if (provider === "email") {
+      return "password";
+    }
+    return provider;
+  };
+
+  const maybeTrackOAuthSignUp = (session: Session) => {
+    const provider = session.user?.app_metadata?.provider;
+    if (!provider || provider === "email") {
+      return;
+    }
+    const identities = session.user?.identities as
+      | Array<{
+          provider?: string | null;
+          created_at?: string | null;
+          last_sign_in_at?: string | null;
+        }>
+      | undefined;
+    if (!Array.isArray(identities)) {
+      return;
+    }
+    const identity = identities.find((item) => item?.provider === provider);
+    if (!identity) {
+      return;
+    }
+    if (
+      identity.created_at &&
+      identity.last_sign_in_at &&
+      identity.created_at === identity.last_sign_in_at
+    ) {
+      trackAuthEvent("sign_up", provider);
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       handleUser(user);
@@ -87,7 +156,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        lastSessionTokenRef.current = null;
+        setTrackedSessionToken(null);
+        handleUser(null);
+        return;
+      }
+
+      if (event === "SIGNED_IN" && session?.access_token) {
+        const storedToken = getTrackedSessionToken();
+        if (session.access_token === storedToken) {
+          lastSessionTokenRef.current = session.access_token;
+          handleUser(session.user);
+          return;
+        }
+
+        maybeTrackOAuthSignUp(session);
+        const providerLabel = normalizeProviderLabel(
+          session.user?.app_metadata?.provider
+        );
+        trackAuthEvent("sign_in", providerLabel);
+        lastSessionTokenRef.current = session.access_token;
+        setTrackedSessionToken(session.access_token);
+        handleUser(session.user);
+        return;
+      }
+
+      if (
+        (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") &&
+        session?.access_token
+      ) {
+        lastSessionTokenRef.current = session.access_token;
+        setTrackedSessionToken(session.access_token);
+      }
+
       handleUser(session?.user || null);
     });
 
@@ -188,6 +291,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setTrackedSessionToken(null);
+    lastSessionTokenRef.current = null;
     redirect("/");
   };
 

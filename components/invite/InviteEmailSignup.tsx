@@ -1,5 +1,6 @@
 "use client";
 
+import { event as trackAnalyticsEvent } from "@/gtag";
 import { InviteGoogleButton } from "@/components/invite/InviteGoogleButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,6 +123,12 @@ export function InviteEmailSignup({
       if (error) throw error;
 
       toast.success("注册成功");
+      trackAnalyticsEvent({
+        action: "sign_up",
+        category: "auth",
+        label: "email_code",
+        value: 1,
+      });
       router.replace(nextPath || "/");
     } catch (error: any) {
       toast.error(error?.message || "注册失败");

@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useAuthDialog } from "@/components/providers/AuthDialogProvider";
 import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
+import { toast } from "sonner";
 
 const MIN_DURATION = 0.5;
 const MAX_DURATION = 22;
@@ -51,7 +52,6 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
   const [loop, setLoop] = useState(false);
   const [promptInfluence, setPromptInfluence] = useState(modelConfig.defaultPromptInfluence);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
@@ -95,7 +95,6 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     const optimisticCreatedAt = new Date().toISOString();
     const normalizedDuration = Math.min(Math.max(durationSeconds, MIN_DURATION), MAX_DURATION);
@@ -238,7 +237,7 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
       removeHistoryItem(tempJobId);
       const message =
         error instanceof Error ? error.message : commonT("errors.submitFailedRetry");
-      setErrorMessage(message);
+      toast.error(message);
       console.error("[sound-generation] submit error", error);
     } finally {
       setIsSubmitting(false);
@@ -359,9 +358,6 @@ export default function SoundGenerationLeftPanel({ title }: SoundGenerationLeftP
           >
             {isSubmitting ? commonT("buttons.creating") : commonT("buttons.create")}
           </Button>
-          {errorMessage ? (
-            <p className="mt-3 text-sm text-red-400">{errorMessage}</p>
-          ) : null}
         </div>
         <div className="mt-6 border-t border-white/10" />
       </div>
