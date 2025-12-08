@@ -17,6 +17,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // '/about',
     '/privacy-policy',
     '/terms-of-service',
+    '/text-to-video',
+    '/image-to-video',
+    '/image-to-image',
+    '/text-to-image',
   ]
 
   const pages = LOCALES.flatMap(locale => {

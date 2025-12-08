@@ -58,7 +58,7 @@ export function AIModelDropdown({
   };
 
   const getTags = (option?: VideoModelSelectOption) => {
-    if (!option) return option?.tags;
+    if (!option) return undefined;
     if (option.i18nKey) {
       try {
         const raw = modelT.raw(`${option.i18nKey}.tags`);
