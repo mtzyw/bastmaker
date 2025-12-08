@@ -14,6 +14,8 @@ import { validateEmailServer } from "@/lib/email-server";
 import resend from "@/lib/resend";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
 
+const EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     if (existingProfile?.id) {
-      return NextResponse.json({ error: "该邮箱已注册，请直接登录" }, { status: 409 });
+      return NextResponse.json({ error: EMAIL_ALREADY_REGISTERED }, { status: 409 });
     }
 
     // Expire previous pending codes

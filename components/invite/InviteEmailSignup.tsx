@@ -8,8 +8,13 @@ import { useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Mail } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+const EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED";
+
+type RequestError = Error & { code?: string; status?: number };
 
 type Step = "email" | "verify" | "details";
 
@@ -29,6 +34,7 @@ export function InviteEmailSignup({
   loginUrl,
 }: Props) {
   const router = useRouter();
+  const t = useTranslations("Auth");
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -39,6 +45,31 @@ export function InviteEmailSignup({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
+
+  const buildRequestError = (message: string, code?: string, status?: number): RequestError => {
+    const error = new Error(message) as RequestError;
+    error.code = code;
+    error.status = status;
+    return error;
+  };
+
+  const showEmailRegisteredToast = () => {
+    toast.error(t("messages.emailAlreadyRegistered"), {
+      style: { background: "#ef4444", color: "#ffffff", border: "none" },
+      className: "text-white",
+      descriptionClassName: "text-white",
+    });
+  };
+
+  const handleAuthError = (error: unknown, fallbackMessage: string) => {
+    const requestError = error as RequestError | undefined;
+    if (requestError?.code === EMAIL_ALREADY_REGISTERED) {
+      showEmailRegisteredToast();
+      return;
+    }
+
+    toast.error(requestError?.message || fallbackMessage);
+  };
 
   useEffect(() => {
     onStepChange?.(step);
@@ -53,14 +84,20 @@ export function InviteEmailSignup({
         body: JSON.stringify({ email }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result?.error || "发送验证码失败");
+      if (!response.ok) {
+        throw buildRequestError(
+          typeof result?.error === "string" ? result.error : t("messages.sendCodeFailed"),
+          result?.error,
+          response.status
+        );
+      }
       setStep("verify");
       setVerificationToken(null);
       setCode("");
       setResendSeconds(30);
       toast.success("验证码已发送，请查收邮箱");
     } catch (error: any) {
-      toast.error(error?.message || "发送验证码失败");
+      handleAuthError(error, t("messages.sendCodeFailed"));
     } finally {
       setIsSending(false);
     }
@@ -113,7 +150,13 @@ export function InviteEmailSignup({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result?.error || "注册失败");
+      if (!response.ok) {
+        throw buildRequestError(
+          typeof result?.error === "string" ? result.error : t("messages.signupFailed"),
+          result?.error,
+          response.status
+        );
+      }
 
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({
@@ -131,7 +174,7 @@ export function InviteEmailSignup({
       });
       router.replace(nextPath || "/");
     } catch (error: any) {
-      toast.error(error?.message || "注册失败");
+      handleAuthError(error, t("messages.signupFailed"));
     } finally {
       setIsCompleting(false);
     }

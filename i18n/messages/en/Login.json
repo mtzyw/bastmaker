@@ -67,7 +67,8 @@
     "signupFailed": "Sign up failed",
     "signupSuccess": "Sign up successful",
     "enterEmail": "Please enter email address",
-    "captchaFailed": "Captcha verification failed, please try again."
+    "captchaFailed": "Captcha verification failed, please try again.",
+    "emailAlreadyRegistered": "This email is already registered. Please sign in directly."
   },
   "links": {
     "terms": "Terms of Service",

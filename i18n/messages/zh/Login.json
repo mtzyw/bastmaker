@@ -69,7 +69,8 @@
     "signupFailed": "注册失败",
     "signupSuccess": "注册成功",
     "enterEmail": "请输入邮箱地址",
-    "captchaFailed": "验证码校验失败，请重试。"
+    "captchaFailed": "验证码校验失败，请重试。",
+    "emailAlreadyRegistered": "该邮箱已注册，请直接登录"
   },
   "links": {
     "terms": "使用条款",

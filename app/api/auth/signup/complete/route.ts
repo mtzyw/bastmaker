@@ -4,6 +4,8 @@ import { normalizeEmail } from "@/lib/email";
 import { getServiceRoleClient } from "@/lib/supabase/admin";
 import { SIGNUP_OTP_PURPOSE } from "@/lib/auth/signup-otp";
 
+const EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED";
+
 const MIN_PASSWORD_LENGTH = 8;
 
 export async function POST(request: Request) {
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
 
     if (existingProfile?.id) {
       return NextResponse.json(
-        { error: "该邮箱已注册，请直接登录" },
+        { error: EMAIL_ALREADY_REGISTERED },
         { status: 409 },
       );
     }

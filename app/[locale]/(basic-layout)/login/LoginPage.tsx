@@ -16,6 +16,10 @@ import { useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
+const EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED";
+
+type RequestError = Error & { code?: string; status?: number };
+
 type SignupStep = "email" | "verify" | "details";
 type PendingAction = "send-code" | null;
 type LoginPageVariant = "page" | "dialog";
@@ -56,6 +60,33 @@ export default function LoginPage({
   const searchParams = useSearchParams();
   const next = redirectPath ?? searchParams.get("next") ?? undefined;
 
+  const buildRequestError = (message: string, code?: string, status?: number): RequestError => {
+    const error = new Error(message) as RequestError;
+    error.code = code;
+    error.status = status;
+    return error;
+  };
+
+  const showEmailRegisteredToast = () => {
+    toast.error(t("messages.emailAlreadyRegistered"), {
+      style: { background: "#ef4444", color: "#ffffff", border: "none" },
+      className: "text-white",
+      descriptionClassName: "text-white",
+    });
+  };
+
+  const handleAuthError = (error: unknown, fallbackMessage: string) => {
+    const requestError = error as RequestError | undefined;
+    if (requestError?.code === EMAIL_ALREADY_REGISTERED) {
+      showEmailRegisteredToast();
+      return;
+    }
+
+    toast.error(fallbackMessage, {
+      description: requestError?.message,
+    });
+  };
+
   useEffect(() => {
     if (user) {
       router.replace(next || "/");
@@ -81,7 +112,11 @@ export default function LoginPage({
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || t("messages.sendCodeFailed"));
+      throw buildRequestError(
+        typeof result?.error === "string" ? result.error : t("messages.sendCodeFailed"),
+        result?.error,
+        response.status
+      );
     }
 
     setStep("verify");
@@ -104,7 +139,7 @@ export default function LoginPage({
     try {
       await sendVerificationCode(token);
     } catch (error: any) {
-      toast.error(t("messages.sendCodeFailed"), { description: error?.message });
+      handleAuthError(error, t("messages.sendCodeFailed"));
     } finally {
       setIsSending(false);
       setShowTurnstile(false);
@@ -130,9 +165,12 @@ export default function LoginPage({
     try {
       await sendVerificationCode();
     } catch (error: any) {
-      if (error?.message === "Registration with this email domain is not supported.") {
+      const requestError = error as RequestError | undefined;
+      if (requestError?.code === EMAIL_ALREADY_REGISTERED) {
+        showEmailRegisteredToast();
+      } else if (requestError?.message === "Registration with this email domain is not supported.") {
         toast.error("Failed to send verification code", {
-          description: error.message,
+          description: requestError?.message,
           style: {
             background: "#ef4444", // red-500
             color: "white",
@@ -141,7 +179,7 @@ export default function LoginPage({
           descriptionClassName: "text-white",
         });
       } else {
-        toast.error(t("messages.sendCodeFailed"), { description: error?.message });
+        toast.error(t("messages.sendCodeFailed"), { description: requestError?.message });
       }
     } finally {
       setIsSending(false);
@@ -206,7 +244,11 @@ export default function LoginPage({
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result?.error || t("messages.signupFailed"));
+        throw buildRequestError(
+          typeof result?.error === "string" ? result.error : t("messages.signupFailed"),
+          result?.error,
+          response.status
+        );
       }
 
       const supabase = createClient();
@@ -225,7 +267,7 @@ export default function LoginPage({
       });
       router.replace(next || "/");
     } catch (error: any) {
-      toast.error(t("messages.signupFailed"), { description: error?.message });
+      handleAuthError(error, t("messages.signupFailed"));
     } finally {
       setIsCompleting(false);
     }

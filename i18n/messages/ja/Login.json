@@ -69,7 +69,8 @@
     "signupFailed": "登録失敗",
     "signupSuccess": "登録成功",
     "enterEmail": "メールアドレスを入力してください",
-    "captchaFailed": "キャプチャ認証に失敗しました。もう一度お試しください。"
+    "captchaFailed": "キャプチャ認証に失敗しました。もう一度お試しください。",
+    "emailAlreadyRegistered": "このメールアドレスは既に登録されています。ログインしてください。"
   },
   "links": {
     "terms": "利用規約",
