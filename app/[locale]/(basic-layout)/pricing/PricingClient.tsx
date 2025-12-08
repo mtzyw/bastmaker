@@ -2,6 +2,7 @@
 
 import { PricingCardDisplay } from "@/components/pricing/PricingCardDisplay";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { PricingPlan } from "@/types/pricing";
 import { Check } from "lucide-react";
@@ -24,9 +25,11 @@ export default function PricingClient({
 }: PricingClientProps) {
   const t = useTranslations("Pricing");
   const { user } = useAuth();
+  const { benefits } = useUserBenefits();
   const [billingCycle, setBillingCycle] = useState<"annual" | "monthly">(
     "annual"
   );
+  const activePlanId = benefits?.activePlanId ?? null;
 
   const renderPlans = (
     plans: PricingPlan[],
@@ -59,6 +62,7 @@ export default function PricingClient({
               key={plan.id}
               plan={plan}
               localizedPlan={localizedPlan}
+              currentPlanId={activePlanId}
             />
           );
         })}

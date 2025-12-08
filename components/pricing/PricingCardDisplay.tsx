@@ -11,12 +11,14 @@ interface PricingCardDisplayProps {
   id?: string;
   plan: PricingPlan;
   localizedPlan: PricingPlanTranslation;
+  currentPlanId?: string | null;
 }
 
 export function PricingCardDisplay({
   id,
   plan,
   localizedPlan,
+  currentPlanId,
 }: PricingCardDisplayProps) {
   const cardTitle =
     localizedPlan?.card_title || plan.card_title || "Unnamed Plan";
@@ -85,6 +87,7 @@ export function PricingCardDisplay({
               localizedPlan={localizedPlan}
               defaultCtaStyle={defaultCtaStyle}
               highlightedCtaStyle={highlightedCtaStyle}
+              currentPlanId={currentPlanId}
             />
           </div>
 
@@ -167,6 +170,7 @@ export function PricingCardDisplay({
           localizedPlan={localizedPlan}
           defaultCtaStyle={defaultCtaStyle}
           highlightedCtaStyle={highlightedCtaStyle}
+          currentPlanId={currentPlanId}
         />
       </div>
 

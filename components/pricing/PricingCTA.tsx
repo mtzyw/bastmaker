@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { PricingPlan } from "@/types/pricing";
 import { Loader2, MousePointerClick } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ type Params = {
   localizedPlan: any;
   defaultCtaStyle: string;
   highlightedCtaStyle: string;
+  currentPlanId?: string | null;
 };
 
 export default function PricingCTA({
@@ -22,10 +23,15 @@ export default function PricingCTA({
   localizedPlan,
   defaultCtaStyle,
   highlightedCtaStyle,
+  currentPlanId,
 }: Params) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("Pricing");
+  const isCurrentPlan =
+    Boolean(currentPlanId && currentPlanId === plan.id) &&
+    plan.payment_type === "recurring";
 
   const handleCheckout = async (applyCoupon = true) => {
     const stripePriceId = plan.stripe_price_id ?? null;
@@ -108,11 +114,22 @@ export default function PricingCTA({
     }
   };
 
+  const buttonLink = plan.button_link ?? "";
+  const buttonLabel =
+    isCurrentPlan && localizedPlan?.cta?.currentPlan
+      ? localizedPlan.cta.currentPlan
+      : isCurrentPlan
+        ? t("cta.currentPlan")
+        : localizedPlan.button_text || plan.button_text;
+
+  const shouldRenderLink = Boolean(buttonLink) && !isCurrentPlan;
+  const isButtonDisabled = isLoading || isCurrentPlan;
+
   return (
     <div>
       <Button
-        asChild={!!plan.button_link}
-        disabled={isLoading}
+        asChild={shouldRenderLink}
+        disabled={isButtonDisabled}
         className={`w-full flex items-center justify-center gap-2 text-white py-5 font-medium ${
           plan.is_highlighted ? highlightedCtaStyle : defaultCtaStyle
         } ${
@@ -120,19 +137,20 @@ export default function PricingCTA({
             ? "mb-2"
             : "mb-6"
         }`}
-        {...(!plan.button_link && {
-          onClick: () => handleCheckout(),
-        })}
+        {...(!shouldRenderLink &&
+          !isCurrentPlan && {
+            onClick: () => handleCheckout(),
+          })}
       >
-        {plan.button_link ? (
+        {shouldRenderLink ? (
           <Link
-            href={plan.button_link}
-            title={localizedPlan.button_text || plan.button_text}
+            href={buttonLink}
+            title={buttonLabel}
             rel="noopener noreferrer nofollow"
             target="_blank"
             prefetch={false}
           >
-            {localizedPlan.button_text || plan.button_text}
+            {buttonLabel}
             {plan.is_highlighted && <MousePointerClick className="w-5 h-5" />}
           </Link>
         ) : (
@@ -140,7 +158,7 @@ export default function PricingCTA({
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              localizedPlan.button_text || plan.button_text
+              buttonLabel
             )}
             {plan.is_highlighted && !isLoading && (
               <MousePointerClick className="w-5 h-5 ml-2" />
@@ -151,8 +169,12 @@ export default function PricingCTA({
       {plan.stripe_coupon_id && plan.enable_manual_input_coupon && (
         <div className="text-center mb-2">
           <button
-            onClick={() => handleCheckout(false)}
-            disabled={isLoading}
+            onClick={() => {
+              if (!isCurrentPlan) {
+                handleCheckout(false);
+              }
+            }}
+            disabled={isButtonDisabled}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 underline underline-offset-2"
           >
             I have a different coupon code

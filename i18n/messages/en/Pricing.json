@@ -107,5 +107,8 @@
     "terms": "By subscribing, you agree to our",
     "termsLink": "Terms of Service",
     "getItNow": "Get it now"
+  },
+  "cta": {
+    "currentPlan": "Current subscription"
   }
 }
