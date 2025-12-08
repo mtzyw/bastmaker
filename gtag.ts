@@ -1,6 +1,13 @@
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ID || null;
 
-export const pageview = (url) => {
+type GAEventPayload = {
+  action: string;
+  category: string;
+  label?: string;
+  value?: number;
+};
+
+export const pageview = (url: string) => {
   if (typeof window === "undefined" || !GA_TRACKING_ID) {
     return;
   }
@@ -9,7 +16,7 @@ export const pageview = (url) => {
   });
 };
 
-export const event = ({ action, category, label, value }) => {
+export const event = ({ action, category, label, value }: GAEventPayload) => {
   if (typeof window === "undefined" || !GA_TRACKING_ID) {
     return;
   }
