@@ -1,0 +1,73 @@
+{
+  "badges": {
+    "recommended": "Recommended"
+  },
+  "textImage": {
+    "NanoBananaFree": {
+      "description": "Free starter model ideal for quick experiments.",
+      "tags": ["Free", "Fast"]
+    },
+    "FluxDev": {
+      "description": "Flux developer build with balanced detail.",
+      "tags": ["HD", "Natural"]
+    },
+    "FluxPro11": {
+      "description": "Flux Pro 1.1 delivers higher realism and stability.",
+      "tags": ["Realistic", "Fine detail"]
+    },
+    "Hyperflux": {
+      "description": "High-performance Flux variant for dynamic scenes.",
+      "tags": ["Realistic", "Dynamic"]
+    },
+    "GoogleImagen4": {
+      "description": "Google Imagen4 with delicate colors and soft lighting.",
+      "tags": ["High fidelity", "Multi-style"]
+    },
+    "Seedream4": {
+      "description": "Seedream 4 excels at cinematic atmosphere.",
+      "tags": ["Atmospheric", "Dreamlike"]
+    },
+    "Seedream4Edit": {
+      "description": "Seedream 4 edit mode for precise adjustments.",
+      "tags": ["Editing", "Refinement"]
+    }
+  },
+  "video": {
+    "Seedance10Pro": {
+      "description": "High-quality portraits and scenescapes.",
+      "tags": ["Portrait", "Cinematic"]
+    },
+    "Seedance10Lite": {
+      "description": "Lightweight variant for faster portrait generation.",
+      "tags": ["Portrait", "Fast"]
+    },
+    "Wan22Plus": {
+      "description": "High-fidelity scene transformations.",
+      "tags": ["Scenes", "Realistic"]
+    },
+    "PixVerseV5": {
+      "description": "Premium cinematic motion shots.",
+      "tags": ["Dynamic", "4K feel"]
+    },
+    "PixVerseV5Transition": {
+      "description": "Create smooth transitions between intro and outro images.",
+      "tags": ["Transition", "Storytelling"]
+    },
+    "MinimaxHailuo20": {
+      "description": "ByteDance video generator tuned for expressive motion.",
+      "tags": ["Stylized", "Vivid"]
+    },
+    "KlingV21Master": {
+      "description": "High-precision scene reconstruction.",
+      "tags": ["Detail", "Precision"]
+    },
+    "KlingV25Pro": {
+      "description": "Next-gen Kling model for photoreal videos.",
+      "tags": ["Photoreal", "Premium"]
+    },
+    "KlingStdV21": {
+      "description": "Versatile Kling standard model.",
+      "tags": ["Balanced", "Versatile"]
+    }
+  }
+}

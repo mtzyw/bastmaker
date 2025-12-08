@@ -1,0 +1,73 @@
+{
+  "badges": {
+    "recommended": "おすすめ"
+  },
+  "textImage": {
+    "NanoBananaFree": {
+      "description": "無料で素早く試せるスターターモデル。",
+      "tags": ["無料", "高速"]
+    },
+    "FluxDev": {
+      "description": "Flux 開発版。ディテールと柔らかさのバランスが良い。",
+      "tags": ["高精細", "ナチュラル"]
+    },
+    "FluxPro11": {
+      "description": "Flux Pro 1.1。より写実的で安定した表現が可能。",
+      "tags": ["写実", "精密"]
+    },
+    "Hyperflux": {
+      "description": "Flux ハイパフォーマンス版。動きのあるシーンに強い。",
+      "tags": ["写実", "ダイナミック"]
+    },
+    "GoogleImagen4": {
+      "description": "Google Imagen4。柔らかな色彩と多彩なスタイル。",
+      "tags": ["高忠実度", "多スタイル"]
+    },
+    "Seedream4": {
+      "description": "Seedream 4。雰囲気作りが得意なシネマ風モデル。",
+      "tags": ["雰囲気", "ドリーミー"]
+    },
+    "Seedream4Edit": {
+      "description": "Seedream 4 編集モード。細かな調整に最適。",
+      "tags": ["編集", "リタッチ"]
+    }
+  },
+  "video": {
+    "Seedance10Pro": {
+      "description": "ハイクオリティなポートレートとシーン表現。",
+      "tags": ["ポートレート", "シネマ"]
+    },
+    "Seedance10Lite": {
+      "description": "軽量版。ポートレートを素早く生成。",
+      "tags": ["ポートレート", "高速"]
+    },
+    "Wan22Plus": {
+      "description": "高精細なシーン変換に対応。",
+      "tags": ["シーン", "写実"]
+    },
+    "PixVerseV5": {
+      "description": "映画のようなダイナミックショットを生成。",
+      "tags": ["ダイナミック", "高画質"]
+    },
+    "PixVerseV5Transition": {
+      "description": "イントロとアウトロ画像から滑らかな転換を作成。",
+      "tags": ["トランジション", "ストーリー"]
+    },
+    "MinimaxHailuo20": {
+      "description": "火山エンジンのビデオ生成モデル。",
+      "tags": ["スタイル", "ビビッド"]
+    },
+    "KlingV21Master": {
+      "description": "高精度なシーン再構築。",
+      "tags": ["細部", "高精度"]
+    },
+    "KlingV25Pro": {
+      "description": "最新の Kling Pro。フォトリアルな映像に最適。",
+      "tags": ["写実", "プレミアム"]
+    },
+    "KlingStdV21": {
+      "description": "汎用 Kling モデル。バランスの良い出力。",
+      "tags": ["バランス", "汎用"]
+    }
+  }
+}

@@ -34,6 +34,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       ImageEffects: (await import(`./messages/${locale}/ImageEffects.json`)).default,
       ImageEffectsEditor: (await import(`./messages/${locale}/ImageEffectsEditor.json`)).default,
       VideoEffectsEditor: (await import(`./messages/${locale}/VideoEffectsEditor.json`)).default,
+      ModelDescriptions: (await import(`./messages/${locale}/ModelDescriptions.json`)).default,
 
       // Dashboard - User
       CreditHistory: (await import(`./messages/${locale}/Dashboard/User/CreditHistory.json`)).default,

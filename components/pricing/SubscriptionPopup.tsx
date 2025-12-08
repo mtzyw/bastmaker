@@ -11,6 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useUserBenefits } from "@/hooks/useUserBenefits";
 
 interface SubscriptionPopupProps {
   open: boolean;
@@ -30,6 +31,8 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("Pricing");
+  const { benefits } = useUserBenefits();
+  const activePlanId = benefits?.activePlanId ?? null;
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -75,6 +78,10 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
   useEffect(() => {
     const currentPlansList = billingCycle === "monthly" ? plans.monthly : plans.annual;
     if (currentPlansList.length > 0) {
+      if (activePlanId && currentPlansList.some((p) => p.id === activePlanId)) {
+        setSelectedPlanId(activePlanId);
+        return;
+      }
       const highlighted = currentPlansList.find(p => p.is_highlighted);
       if (highlighted) {
         setSelectedPlanId(highlighted.id);
@@ -82,7 +89,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
         setSelectedPlanId(currentPlansList[0].id);
       }
     }
-  }, [billingCycle, plans]);
+  }, [billingCycle, plans, activePlanId]);
 
 
   const handleSubscribe = async () => {
@@ -91,9 +98,15 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
     }
 
     const plan = currentPlans.find(p => p.id === selectedPlanId);
-    if (plan) {
-      await handleCheckout(plan);
+    if (!plan) {
+      return;
     }
+
+    if (activePlanId && plan.id === activePlanId) {
+      return;
+    }
+
+    await handleCheckout(plan);
   };
 
   const handleCheckout = async (plan: PricingPlan) => {
@@ -173,15 +186,11 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
 
   // Determine which plan's benefits to show
   let displayFeatures: any[] = [];
-
-  // Use selected plan
-  const activePlanId = selectedPlanId;
-
-  if (activePlanId === "free") {
+  if (selectedPlanId === "free") {
     displayFeatures = freeFeatures;
   } else {
     const displayPlan =
-      currentPlans.find(p => p.id === activePlanId) ||
+      currentPlans.find(p => p.id === selectedPlanId) ||
       currentPlans.find(p => p.is_highlighted) ||
       currentPlans[0];
 
@@ -291,6 +300,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                     const credits = creditFeature ? creditFeature.description.replace(/[^0-9]/g, '') : "0";
 
                     const isSelected = selectedPlanId === plan.id;
+                    const isCurrentPlan = Boolean(activePlanId && activePlanId === plan.id);
 
                     return (
                       <div
@@ -303,10 +313,19 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
                             : "bg-[#27272a] border-transparent hover:border-white/10"
                         )}
                       >
-                        {plan.is_highlighted && (
+                        {(plan.is_highlighted || isCurrentPlan) && (
                           <div className="absolute -top-3 -left-3">
-                            <span className="bg-[#ef4444] text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-sm transform -rotate-12 origin-bottom-right block w-fit">
-                              {t("smartBanner.returning.badge")}
+                            {plan.is_highlighted ? (
+                              <span className="bg-[#ef4444] text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-sm transform -rotate-12 origin-bottom-right block w-fit">
+                                {t("smartBanner.returning.badge")}
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
+                        {isCurrentPlan && (
+                          <div className="absolute top-4 right-4">
+                            <span className="rounded-full bg-white/20 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                              {t("cta.currentPlan")}
                             </span>
                           </div>
                         )}
@@ -364,13 +383,19 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
             <div className="mt-6 shrink-0">
               <button
                 onClick={handleSubscribe}
-                disabled={!!processingPlanId}
+                disabled={
+                  !!processingPlanId ||
+                  selectedPlanId === "free" ||
+                  Boolean(activePlanId && activePlanId === selectedPlanId)
+                }
                 className="w-full rounded-xl bg-[#10b981] py-3 text-center text-base font-bold text-black shadow-lg transition-all hover:bg-[#059669] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processingPlanId ? (
                   <Loader2 className="h-5 w-5 animate-spin mx-auto" />
                 ) : (
-                  t("vipBenefits.getItNow")
+                  activePlanId && activePlanId === selectedPlanId
+                    ? t("cta.currentPlan")
+                    : t("vipBenefits.getItNow")
                 )}
               </button>
             </div>

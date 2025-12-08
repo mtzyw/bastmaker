@@ -1,6 +1,11 @@
 {
   "metaTitle": "AI Text to Video Generator",
   "metaDescription": "Transform any prompt into cinematic motion clips in seconds. bestmaker ai’s text to video workspace handles storyboards, pacing, and export-ready formats for every social network.",
+  "guestPreview": {
+    "promptLabel": "Prompt",
+    "videoLabel": "Video",
+    "samplePrompt": "In a softly lit dance studio, a dancer in a pale flowing dress turns gracefully. The camera glides from a wide shot to close-ups of her feet, with slow motion emphasizing leaps and spins. Mirrors capture layered silhouettes while gentle music keeps time with every movement, creating a serene and elegant mood."
+  },
   "sections": {
     "overview": {
       "title": "Turn scripts into cinematic shots",

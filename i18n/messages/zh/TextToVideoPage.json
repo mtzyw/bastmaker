@@ -1,6 +1,11 @@
 {
   "metaTitle": "AI文字转视频生成器",
   "metaDescription": "在 bestmaker ai 中只需输入提示词，即可在几秒内生成电影感的动态片段。文字转视频工作区会替你处理分镜、节奏与导出格式，适配每一个社交平台。",
+  "guestPreview": {
+    "promptLabel": "提示词",
+    "videoLabel": "示例视频",
+    "samplePrompt": "柔光舞室中，一位身着浅色飘逸舞裙的女子优雅起舞。镜头从全身到足部切换，慢动作突出跳跃与旋转。镜面映出层叠舞姿，音乐柔和、节奏与动作同步，整体氛围宁静唯美。"
+  },
   "sections": {
     "overview": {
       "title": "把脚本直接变成镜头",

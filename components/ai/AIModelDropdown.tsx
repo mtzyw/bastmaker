@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronDown, GraduationCap, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VideoModelSelectOption } from "./video-models";
+import { useTranslations } from "next-intl";
 
 type AIModelDropdownProps = {
   options: VideoModelSelectOption[];
@@ -25,6 +26,7 @@ export function AIModelDropdown({
   showSearchIcon = false,
   defaultOpen = false,
 }: AIModelDropdownProps) {
+  const modelT = useTranslations("ModelDescriptions");
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const selectedOption = useMemo(
@@ -42,6 +44,41 @@ export function AIModelDropdown({
         "h-10 w-10 rounded-full text-sm font-semibold",
         selectedIcon?.className ?? DEFAULT_ICON_CLASS,
       );
+
+  const getDescription = (option?: VideoModelSelectOption) => {
+    if (!option) return undefined;
+    if (option.i18nKey) {
+      try {
+        return modelT(`${option.i18nKey}.description`);
+      } catch {
+        // ignore missing translation
+      }
+    }
+    return option.description;
+  };
+
+  const getTags = (option?: VideoModelSelectOption) => {
+    if (!option) return option?.tags;
+    if (option.i18nKey) {
+      try {
+        const raw = modelT.raw(`${option.i18nKey}.tags`);
+        if (Array.isArray(raw)) {
+          return raw as string[];
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return option.tags;
+  };
+
+  const getRecommendedBadge = () => {
+    try {
+      return modelT("badges.recommended");
+    } catch {
+      return "Recommended";
+    }
+  };
 
   const handleSelect = (nextValue: string) => {
     onChange(nextValue);
@@ -77,6 +114,8 @@ export function AIModelDropdown({
     };
   }, [isOpen]);
 
+  const recommendedBadgeLabel = getRecommendedBadge();
+
   return (
     <div ref={rootRef} className={cn("relative w-full text-white", className)}>
       <button
@@ -107,12 +146,12 @@ export function AIModelDropdown({
               </span>
               {selectedOption?.recommended ? (
                 <span className="rounded-full bg-[#dc2e5a] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  推荐
+                  {recommendedBadgeLabel}
                 </span>
               ) : null}
             </div>
-            {selectedOption?.description ? (
-              <p className="text-[11px] leading-tight text-white/70">{selectedOption.description}</p>
+            {getDescription(selectedOption) ? (
+              <p className="text-[11px] leading-tight text-white/70">{getDescription(selectedOption)}</p>
             ) : null}
           </div>
         </div>
@@ -185,12 +224,12 @@ export function AIModelDropdown({
                         </span>
                       ) : null}
                     </div>
-                    {option.description ? (
-                      <p className="mt-1 text-[11px] leading-tight text-white/60">{option.description}</p>
+                    {getDescription(option) ? (
+                      <p className="mt-1 text-[11px] leading-tight text-white/60">{getDescription(option)}</p>
                     ) : null}
 
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      {option.tags?.map((tag) => (
+                      {getTags(option)?.map((tag) => (
                         <span
                           key={tag}
                           className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-white/70"

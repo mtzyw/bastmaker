@@ -107,5 +107,8 @@
     "terms": "订阅即表示您同意我们的",
     "termsLink": "服务条款",
     "getItNow": "立即获取"
+  },
+  "cta": {
+    "currentPlan": "当前订阅"
   }
 }

@@ -1,0 +1,73 @@
+{
+  "badges": {
+    "recommended": "推荐"
+  },
+  "textImage": {
+    "NanoBananaFree": {
+      "description": "免费入门模型，适合快速尝试。",
+      "tags": ["免费", "极速"]
+    },
+    "FluxDev": {
+      "description": "Flux 开发版，细节表现均衡。",
+      "tags": ["高清", "自然光"]
+    },
+    "FluxPro11": {
+      "description": "Flux 专业版 1.1，写实度与稳定性更高。",
+      "tags": ["写实", "精细"]
+    },
+    "Hyperflux": {
+      "description": "Flux 高性能版本，动态表现更强。",
+      "tags": ["写实", "动态"]
+    },
+    "GoogleImagen4": {
+      "description": "Google Imagen4，色彩柔和细腻。",
+      "tags": ["高保真", "多风格"]
+    },
+    "Seedream4": {
+      "description": "Seedream 4 擅长营造氛围与电影感。",
+      "tags": ["氛围", "写意"]
+    },
+    "Seedream4Edit": {
+      "description": "Seedream 4 编辑模式，适合精修调节。",
+      "tags": ["编辑", "精修"]
+    }
+  },
+  "video": {
+    "Seedance10Pro": {
+      "description": "高清人像与场景表现。",
+      "tags": ["人像", "电影感"]
+    },
+    "Seedance10Lite": {
+      "description": "轻量版，生成速度更快的人像模型。",
+      "tags": ["人像", "极速"]
+    },
+    "Wan22Plus": {
+      "description": "高保真场景转换模型。",
+      "tags": ["场景", "写实"]
+    },
+    "PixVerseV5": {
+      "description": "高质量动态镜头。",
+      "tags": ["动态", "高质感"]
+    },
+    "PixVerseV5Transition": {
+      "description": "支持首尾图的平滑转场。",
+      "tags": ["转场", "叙事"]
+    },
+    "MinimaxHailuo20": {
+      "description": "火山引擎视频生成模型。",
+      "tags": ["风格化", "鲜活"]
+    },
+    "KlingV21Master": {
+      "description": "高精度场景重建能力。",
+      "tags": ["细节", "精度"]
+    },
+    "KlingV25Pro": {
+      "description": "Kling 最新专业版，侧重照片级画面。",
+      "tags": ["写实", "高端"]
+    },
+    "KlingStdV21": {
+      "description": "通用型 Kling 标准模型。",
+      "tags": ["均衡", "多用途"]
+    }
+  }
+}

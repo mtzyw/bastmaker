@@ -25,6 +25,8 @@ export type VideoModelOption = {
   credits?: number;
   recommended?: boolean;
   description?: string;
+  i18nKey?: string;
+  tags?: string[];
 };
 
 export type VideoModelSelectOption = VideoModelOption & {
@@ -120,6 +122,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Seedance 1.0 Pro",
     label: "Seedance 1.0 Pro",
     icon: { label: "S", src: MODEL_ICON_PATHS.seedance },
+    i18nKey: "video.Seedance10Pro",
     fps: "24 FPS",
     credits: 10,
     recommended: true,
@@ -129,6 +132,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Seedance 1.0 Lite",
     label: "Seedance 1.0 Lite",
     icon: { label: "S", src: MODEL_ICON_PATHS.seedance },
+    i18nKey: "video.Seedance10Lite",
     fps: "24 FPS",
     credits: 10,
     description: "轻量人像生成",
@@ -137,6 +141,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "wan2.2 Plus",
     label: "wan2.2 Plus",
     icon: { label: "W", src: MODEL_ICON_PATHS.wan },
+    i18nKey: "video.Wan22Plus",
     fps: "24 FPS",
     credits: 12,
     description: "高保真场景转换",
@@ -145,6 +150,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "PixVerse V5",
     label: "PixVerse V5",
     icon: { label: "P", src: MODEL_ICON_PATHS.pixverse },
+    i18nKey: "video.PixVerseV5",
     fps: "24 FPS",
     credits: 25,
     recommended: true,
@@ -155,6 +161,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "PixVerse V5 Transition",
     label: "PixVerse V5 Transition",
     icon: { label: "P", src: MODEL_ICON_PATHS.pixverse },
+    i18nKey: "video.PixVerseV5Transition",
     fps: "24 FPS",
     credits: 25,
     description: "PixVerse 双图转场，上传首尾图生成平滑过渡。",
@@ -163,6 +170,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Minimax Hailuo 2.0",
     label: "Minimax Hailuo 2.0",
     icon: { label: "M", src: MODEL_ICON_PATHS.hailuo },
+    i18nKey: "video.MinimaxHailuo20",
     fps: "24 FPS",
     credits: 12,
     description: "火山引擎视频生成模型",
@@ -171,6 +179,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Kling v2.1 Master",
     label: "Kling v2.1 Master",
     icon: { label: "K", src: MODEL_ICON_PATHS.kling },
+    i18nKey: "video.KlingV21Master",
     fps: "24 FPS",
     credits: 100,
     description: "高精度场景重建",
@@ -179,6 +188,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Kling v2.5 Pro",
     label: "Kling v2.5 Pro",
     icon: { label: "K", src: MODEL_ICON_PATHS.kling },
+    i18nKey: "video.KlingV25Pro",
     fps: "24 FPS",
     credits: 100,
     description: "高精度场景重建",
@@ -187,6 +197,7 @@ export const VIDEO_MODEL_OPTIONS: VideoModelOption[] = [
     value: "Kling Std v2.1",
     label: "Kling Std v2.1",
     icon: { label: "K", src: MODEL_ICON_PATHS.kling },
+    i18nKey: "video.KlingStdV21",
     fps: "24 FPS",
     credits: 60,
   },
