@@ -26,3 +26,8 @@ export const event = ({ action, category, label, value }: GAEventPayload) => {
     value: value,
   });
 };
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
