@@ -11,6 +11,9 @@ export const pageview = (url: string) => {
   if (typeof window === "undefined" || !GA_TRACKING_ID) {
     return;
   }
+  if (typeof window.gtag !== "function") {
+    return;
+  }
   window.gtag("config", GA_TRACKING_ID, {
     page_path: url,
   });
@@ -18,6 +21,9 @@ export const pageview = (url: string) => {
 
 export const event = ({ action, category, label, value }: GAEventPayload) => {
   if (typeof window === "undefined" || !GA_TRACKING_ID) {
+    return;
+  }
+  if (typeof window.gtag !== "function") {
     return;
   }
   window.gtag("event", action, {
