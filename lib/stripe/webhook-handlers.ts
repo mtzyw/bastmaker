@@ -1,3 +1,4 @@
+import { trackPaymentSuccess } from '@/lib/analytics/server';
 import { sendInvoicePaymentFailedEmail, syncSubscriptionData } from '@/lib/stripe/actions';
 import stripe from '@/lib/stripe/stripe';
 
@@ -89,6 +90,17 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
     // --- [custom] Upgrade the user's benefits ---
     upgradeOneTimeCredits(userId, planId, paymentIntentId);
     // --- End: [custom] Upgrade the user's benefits ---
+
+    await trackPaymentSuccess({
+      userId,
+      clientId: `user-${userId}`,
+      planId,
+      priceId,
+      referenceId: paymentIntentId,
+      orderType: orderData.order_type ?? "one_time_purchase",
+      amountTotal: orderData.amount_total ?? undefined,
+      currency: orderData.currency ?? undefined,
+    });
   }
 }
 
@@ -238,6 +250,7 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
     }
 
     const orderType = invoice.billing_reason === 'subscription_create' ? 'subscription_initial' : 'subscription_renewal';
+    const analyticsEventName = orderType === 'subscription_renewal' ? 'renewal_payment_success' : undefined;
     const orderData: TablesInsert<'orders'> = {
       user_id: userId,
       provider: 'stripe',
@@ -278,6 +291,18 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
     } else {
       console.warn(`Cannot grant subscription credits for invoice ${invoiceId} because planId (${planId}) or userId (${userId}) is unknown.`);
     }
+
+    await trackPaymentSuccess({
+      userId,
+      clientId: `user-${userId}`,
+      planId,
+      priceId,
+      referenceId: invoiceId,
+      orderType,
+      amountTotal: orderData.amount_total ?? undefined,
+      currency: orderData.currency ?? undefined,
+      eventName: analyticsEventName,
+    });
   }
 
   try {

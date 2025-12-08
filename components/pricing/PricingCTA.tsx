@@ -1,5 +1,6 @@
 "use client";
 
+import { event as trackAnalyticsEvent } from "@/gtag";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
 import { PricingPlan } from "@/types/pricing";
@@ -88,6 +89,11 @@ export default function PricingCTA({
       const data = result.data;
 
       if (data.url) {
+        trackAnalyticsEvent({
+          action: "create_order_click",
+          category: "billing",
+          value: 1,
+        });
         router.push(data.url);
         setIsLoading(false);
       } else {

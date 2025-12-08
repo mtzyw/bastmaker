@@ -3,6 +3,7 @@
 import { getPublicPricingPlans } from "@/actions/prices/public";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { DEFAULT_LOCALE, useRouter } from "@/i18n/routing";
+import { event as trackAnalyticsEvent } from "@/gtag";
 import { cn } from "@/lib/utils";
 import { PricingPlan, PricingPlanFeature, PricingPlanTranslation } from "@/types/pricing";
 import { Check, Loader2, Sparkles } from "lucide-react";
@@ -134,6 +135,11 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
       }
 
       if (result.data?.url) {
+        trackAnalyticsEvent({
+          action: "create_order_click",
+          category: "billing",
+          value: 1,
+        });
         router.push(result.data.url);
       } else {
         throw new Error("Checkout URL not received.");
