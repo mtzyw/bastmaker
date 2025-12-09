@@ -9,7 +9,7 @@ import { Wand2, Trash2 } from "lucide-react"
 export default function TextToImageGenerator() {
   const [prompt, setPrompt] = useState("")
   const [outputFormat, setOutputFormat] = useState("png")
-  const [model, setModel] = useState("Nano Banana Free")
+  const [model, setModel] = useState("Nano Banana")
 
   const handleGenerate = () => {
     console.log("生成图片:", { prompt, outputFormat, model })
@@ -41,7 +41,7 @@ export default function TextToImageGenerator() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Nano Banana Free">Nano Banana Free</SelectItem>
+              <SelectItem value="Nano Banana">Nano Banana</SelectItem>
               <SelectItem value="Nano Banana Pro">Nano Banana Pro</SelectItem>
             </SelectContent>
           </Select>

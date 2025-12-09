@@ -3,9 +3,9 @@
     "recommended": "推荐"
   },
   "textImage": {
-    "NanoBananaFree": {
-      "description": "免费入门模型，适合快速尝试。",
-      "tags": ["免费", "极速"]
+    "NanoBanana": {
+      "description": "轻量入门模型，适合快速尝试。",
+      "tags": ["轻量", "极速"]
     },
     "FluxDev": {
       "description": "Flux 开发版，细节表现均衡。",

@@ -13,19 +13,19 @@ type TextToImageModelOption = VideoModelSelectOption & {
   storageValue?: string;
 };
 
-export const TEXT_TO_IMAGE_DEFAULT_MODEL = "Nano Banana Free";
+export const TEXT_TO_IMAGE_DEFAULT_MODEL = "Nano Banana";
 
 export const TEXT_TO_IMAGE_MODEL_OPTIONS: TextToImageModelOption[] = [
   {
-    value: "Nano Banana Free",
-    label: "Nano Banana Free",
+    value: "Nano Banana",
+    label: "Nano Banana",
     icon: { label: "N", src: MODEL_ICON_PATHS.nano },
-    i18nKey: "textImage.NanoBananaFree",
+    i18nKey: "textImage.NanoBanana",
     recommended: true,
     credits: 5,
-    description: "免费入门模型，适合快速尝试。",
-    tags: ["免费", "极速"],
-    apiValue: FREEPIK_MODEL_MAP["Nano Banana Free"],
+    description: "轻量入门模型，适合快速尝试。",
+    tags: ["轻量", "极速"],
+    apiValue: FREEPIK_MODEL_MAP["Nano Banana"],
     storageValue: "NanoBanana",
   },
   {

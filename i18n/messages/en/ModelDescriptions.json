@@ -3,9 +3,9 @@
     "recommended": "Recommended"
   },
   "textImage": {
-    "NanoBananaFree": {
-      "description": "Free starter model ideal for quick experiments.",
-      "tags": ["Free", "Fast"]
+    "NanoBanana": {
+      "description": "Starter model ideal for quick experiments.",
+      "tags": ["Lightweight", "Fast"]
     },
     "FluxDev": {
       "description": "Flux developer build with balanced detail.",

@@ -3,9 +3,9 @@
     "recommended": "おすすめ"
   },
   "textImage": {
-    "NanoBananaFree": {
-      "description": "無料で素早く試せるスターターモデル。",
-      "tags": ["無料", "高速"]
+    "NanoBanana": {
+      "description": "素早く試せる軽量スターターモデル。",
+      "tags": ["軽量", "高速"]
     },
     "FluxDev": {
       "description": "Flux 開発版。ディテールと柔らかさのバランスが良い。",

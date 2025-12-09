@@ -39,7 +39,7 @@ type ModelOption = {
 };
 
 const DETAIL_IMAGE_COUNT = 6;
-const ALLOWED_MODEL_VALUES = new Set(["Nano Banana Free", "Seedream 4", "Seedream 4 Edit"]);
+const ALLOWED_MODEL_VALUES = new Set(["Nano Banana", "Seedream 4", "Seedream 4 Edit"]);
 
 const BASE_MODEL_OPTIONS: ModelOption[] = TEXT_TO_IMAGE_MODEL_OPTIONS.filter((option) =>
   ALLOWED_MODEL_VALUES.has(option.value)
