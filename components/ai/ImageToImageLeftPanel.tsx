@@ -7,7 +7,7 @@ import { PromptEnhancer } from "@/components/ai/PromptEnhancer";
 import {
   TEXT_TO_IMAGE_DEFAULT_MODEL,
   TEXT_TO_IMAGE_MODEL_OPTIONS,
-  getTextToImageApiModel,
+  getImageToImageApiModel,
   getTextToImageOptionValue,
   getTextToImageStorageModel,
 } from "@/components/ai/text-image-models";
@@ -294,7 +294,7 @@ export default function ImageToImageLeftPanel({
     });
   }, [maxCount]);
 
-  const apiModel = useMemo(() => getTextToImageApiModel(model), [model]);
+  const apiModel = useMemo(() => getImageToImageApiModel(model), [model]);
   const storageModel = useMemo(() => getTextToImageStorageModel(model), [model]);
   const modelConfig = useMemo(
     () => getTextToImageModelConfig(storageModel),

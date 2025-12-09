@@ -108,6 +108,14 @@ export function getTextToImageApiModel(model: string): string {
   return findTextToImageOption(model)?.apiValue ?? model;
 }
 
+export function getImageToImageApiModel(model: string): string {
+  const storageModel = getTextToImageStorageModel(model);
+  if (storageModel === "NanoBanana") {
+    return "seedream-v4-edit";
+  }
+  return getTextToImageApiModel(model);
+}
+
 export function getTextToImageStorageModel(model: string): string {
   const option = findTextToImageOption(model);
   if (!option) {
