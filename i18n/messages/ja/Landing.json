@@ -12,60 +12,94 @@
   },
   "Hero": {
     "badge": "BestMaker AI",
-    "title": "Create stunning videos from text or <br></br>images with our free online AI video generator",
-    "description": "BestMaker AI is an AI-based video generation tool that helps users easily create high-quality AI videos through simple text descriptions or images.",
-    "textToVideoBtn": "AI Text to Video",
-    "imageToVideoBtn": "AI Image to Video"
+    "title": "AIイメージ & ビデオジェネレーター：テキストや写真から高品質なビジュアルを生成",
+    "description": "BestMaker AI は、テキストプロンプトやアップロードした画像から 4K 動画や AI 強化写真、カスタムビジュアルを生成できるプラットフォームです。複数の AI モデルをオンラインで扱え、編集スキルは不要です。",
+    "supporting": "数分で AI 画像と動画を制作。毎日無料クレジット付き。",
+    "textToVideoBtn": "テキストから動画を作成",
+    "imageToVideoBtn": "画像から動画を作成"
+  },
+  "KeywordHighlights": {
+    "items": [
+      "AI画像ジェネレーター",
+      "AI動画ジェネレーター",
+      "AIテキストから動画",
+      "AI画像から動画",
+      "AIフォトエディター",
+      "4K AIビデオ出力",
+      "オンラインAIクリエイター"
+    ]
   },
   "VideoGallery": {
-    "title": "Transform text and images into videos with these popular AI video effects",
-    "description": "BestMaker AI offers various AI video generation features, including text-to-video, image-to-video, and more. Browse the AI video examples below to see what types of content our AI video generator can create.",
+    "title": "テキストや写真、アイデアを映画のような AI 動画へ",
+    "description": "BestMaker AI はテキストから動画、画像から動画、ハイブリッドのワークフローを備え、数秒でプロンプトを映像化します。以下のサンプルで、脚本や静止画がどのように動き出すかをご確認ください。",
     "videoLabel": "Video Example",
     "aiGeneratedBadge": "AI Generated Video",
-    "startBtn": "Start AI Video Generation →"
+    "startBtn": "AI 動画の作成を始める →"
   },
   "WhyChoose": {
     "title": "Why Choose BestMaker AI Video Generator?",
-    "description": "BestMaker AI is a powerful and easy-to-use AI video generation platform. Whether you are a content creator, marketer, or casual user, BestMaker AI can help you quickly create professional-grade AI videos.",
+    "description": "BestMaker AI は AI 画像ジェネレーター、AI 動画メーカー、編集ツールを 1 つのワークスペースに統合。クリエイターやマーケター、スタジオでも、アプリを切り替えずにプロンプトから納品まで完結できます。",
     "items": [
       {
-        "title": "Free to Use",
-        "desc": "Get free credits daily to experience AI video generation without paying"
+        "title": "毎日の無料クレジット",
+        "desc": "AI 画像と AI 動画を毎日無料で生成できます"
       },
       {
-        "title": "Up to 4K Resolution",
-        "desc": "Generate high-definition 4K videos with clear and delicate picture quality"
+        "title": "最大 4K の AI 出力",
+        "desc": "マーケティングや納品に使える高解像度の AI 画像・動画を生成"
       },
       {
         "title": "Multiple AI Models",
-        "desc": "Supports various mainstream AI models to meet different creative needs"
+        "desc": "Kling、Hunyuan、Pika、Minimax など複数モデルを搭載し、表現を選べます"
       },
       {
-        "title": "Zero Learning Curve",
-        "desc": "Simple and easy-to-use interface, no professional skills required"
+        "title": "AI フォトエディット",
+        "desc": "オブジェクト除去や背景変更、商品写真のレタッチまでテキスト指示で完了"
       },
       {
         "title": "Any Style",
-        "desc": "Supports various video styles, from realistic to animated"
+        "desc": "シネマティック、リアル、アニメなど、画像も動画も思い通りのスタイルに"
       },
       {
-        "title": "Massive Templates",
-        "desc": "Rich video template library to quickly start your creation"
+        "title": "テンプレートライブラリ",
+        "desc": "シーン・ストーリーボード・プロンプトテンプレートですぐに制作開始"
       }
     ]
   },
   "Features": {
-    "badge": "AI Video Generator Features",
-    "title": "What features does BestMaker AI Video Generator have?",
-    "feature1": {
-      "title": "Free AI Text-to-Video Generator, Create Videos from Text",
-      "description": "BestMaker AI's text-to-video feature allows you to generate high-quality AI videos by simply entering a text description. Supports multiple AI models, including Minimax, Hunyuan, Kling, Pika, etc., providing you with diverse creative choices.",
-      "list": [
-        "Supports multiple mainstream AI video models",
-        "Up to 4K resolution output",
-        "Daily free credits, experience without paying"
-      ]
-    }
+    "badge": "AIイメージ & ビデオジェネレーターの機能",
+    "title": "1つのワークスペースで画像・動画・編集を完了",
+    "description": "BestMaker AI があれば、AI 画像生成、AI 動画制作、フォトエディット、映画級レンダリングまでブラウザだけで完結。ツールを切り替える必要はありません。",
+    "items": [
+      {
+        "title": "AI画像ジェネレーター",
+        "description": "テキストプロンプトや写真のアップロードから数秒で高品質な画像を生成。"
+      },
+      {
+        "title": "AI動画ジェネレーター",
+        "description": "高度なマルチモーダル AI モデルでテキストや画像を動画に変換。"
+      },
+      {
+        "title": "テキストから動画",
+        "description": "脚本や構想を入力するだけで、カメラワーク付きの映像クリップを即生成。"
+      },
+      {
+        "title": "画像から動画",
+        "description": "任意の写真に動き・ライティング・エフェクトを加えてシネマティックな動画に。"
+      },
+      {
+        "title": "AIフォトエディット",
+        "description": "オブジェクト除去、背景変更、写真補正、モックアップ生成を自然言語で実行。"
+      },
+      {
+        "title": "4K動画出力",
+        "description": "マーケティングやプロフェッショナル用途に対応する 4K AI 動画を出力。"
+      },
+      {
+        "title": "ゼロラーニングカーブ",
+        "description": "ブラウザベースの操作で完結。複雑なタイムラインやソフトの習得は不要。"
+      }
+    ]
   },
   "PrivacySecurity": {
     "title": "Privacy and Data Security of AI Video Generator",
@@ -86,8 +120,8 @@
     ]
   },
   "MoreTools": {
-    "title": "Explore More AI Video Tools to Unleash Your Creativity",
-    "description": "In addition to AI video generation, BestMaker AI also offers a variety of AI tools to help you complete more creative work.",
+    "title": "さらに AI クリエイティブツールをチェック",
+    "description": "テキスト/画像から動画にする機能に加え、AI 画像編集やオーディオ、テンプレートワークフローなど、あらゆるアセットを生成できます。",
     "items": [
       {
         "name": "Video Style",
@@ -136,44 +170,32 @@
     ]
   },
   "CTA": {
-    "title": "Want to create stunning videos with an AI video generator?",
-    "description": "Start using BestMaker AI now and experience the charm of AI video generation.",
-    "button": "Start Creating for Free"
+    "title": "AI 画像と動画を同じ場所で作り始めませんか？",
+    "description": "BestMaker AI ならテキストから動画、画像から動画、AI フォトエディットのワークフローをすぐに開始できます。",
+    "button": "無料で作成を始める"
   },
   "FAQ": {
-    "title": "Frequently Asked Questions",
+    "title": "よくある質問",
     "items": [
       {
-        "question": "Can I use one account for all three AI tools (Video, Music, Image)?",
-        "answer": "Absolutely! With just one account, you can fully access our AI Video Generator, AI Music Generator, and AI Image Editor. No need to switch platforms or pay repeatedly, you can easily complete all multimedia creation in one place."
+        "question": "BestMaker AI とは何ですか？",
+        "answer": "BestMaker AI は、テキストプロンプトやアップロードした写真から画像と動画を生成するオンラインプラットフォームです。テキストから動画、画像から動画、AI フォトエディットを 1 つのブラウザで利用できます。"
       },
       {
-        "question": "Can the generated content be freely used for commercial purposes?",
-        "answer": "Absolutely! All videos, music, and images generated by the platform are 100% original and grant full commercial usage rights. Whether for YouTube monetization, advertising, corporate projects, or client delivery, you can use them with confidence without paying extra copyright fees."
+        "question": "AI はテキストから動画を作れますか？",
+        "answer": "はい。BestMaker AI にはテキストから動画を生成する機能があり、簡単な説明や脚本からカメラワーク付きの映像クリップを作成できます。"
       },
       {
-        "question": "How fast is the content creation speed?",
-        "answer": "Extremely fast!\nAI Music: About 30 seconds\nImage Editing: About 3-5 seconds\nVideo Generation: Just a few minutes to output 4K quality\nOur self-developed high-performance AI engine ensures the shortest waiting time, making creation more efficient than ever."
+        "question": "画像を動画に変換できますか？",
+        "answer": "もちろんです。画像をアップロードすると、ライティングやエフェクト、モーションを加えたシネマティックな動画に変換します。"
       },
       {
-        "question": "Do I need professional skills to use it?",
-        "answer": "Not at all! Just describe the effect you want in simple language, and the system will automatically generate professional-level content. Anyone can easily get started, and create high-quality videos, music, and images with zero foundation."
+        "question": "BestMaker AI は画像編集に対応していますか？",
+        "answer": "対応しています。オブジェクト除去、背景差し替え、アップスケール、モックアップ作成などを自然言語で指示できます。"
       },
       {
-        "question": "What high-quality formats can be downloaded?",
-        "answer": "The platform provides professional-level output:\n4K Ultra HD Video\nStudio-grade lossless audio formats\nHigh-resolution images\nAll content is watermark-free and can be directly used for commercial and professional production scenarios."
-      },
-      {
-        "question": "Can content generated by different tools be combined?",
-        "answer": "Of course! You can:\nAdd generated music to your video\nConvert static images into animated videos\nEdit images first and then use them in video scenes\nThrough our all-in-one system, everything from assets to finished films can be seamlessly connected."
-      },
-      {
-        "question": "Is there a limit on the quantity of content creation?",
-        "answer": "The free plan provides a high daily quota to meet the needs of most users.\nIf you have higher production requirements, the Pro plan offers larger or even unlimited usage quotas, suitable for studios, creators, and enterprises."
-      },
-      {
-        "question": "How does the cost compare to using separate AI tools?",
-        "answer": "Our all-in-one platform saves more money than subscribing to multiple video, music, and image tools separately. You only need to pay a price close to a single tool to get premium access to three AI creation tools, completing the full content production process at a lower cost."
+        "question": "BestMaker AI は 4K 動画出力に対応していますか？",
+        "answer": "はい。最大 4K の AI 動画レンダリングに対応しており、追加ソフトなしで納品レベルの映像を作成できます。"
       }
     ]
   },

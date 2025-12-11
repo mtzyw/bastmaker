@@ -96,8 +96,8 @@
   },
   "Home": {
     "title": "BestMaker AI",
-    "tagLine": "BestMaker AI 搭載の次世代画像編集ツール",
-    "description": "BestMaker AI を使えば、テキスト指示だけでオブジェクト除去や背景変更、モックアップ生成まで完了。マスク作業は不要です。"
+    "tagLine": "AIイメージ & ビデオジェネレーター",
+    "description": "テキストや写真から高品質なAI画像と動画を生成。4K動画の作成、画像の強化、複数AIモデルによる即時ビジュアル制作がオンラインで完結します。"
   },
   "Login": {
     "title": "おかえりなさい",

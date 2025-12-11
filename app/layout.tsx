@@ -8,8 +8,8 @@ import "@/styles/globals.css"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "BestMaker AI – AI Image & Video Generator",
+  description: "Generate high-quality AI images and videos from text or photos with multiple AI models online.",
   generator: "v0.app",
 }
 

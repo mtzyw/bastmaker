@@ -2,6 +2,7 @@ import { CTASection } from "@/components/landing/cta-section"
 import { FAQSection } from "@/components/landing/faq-section"
 import { Features } from "@/components/landing/features"
 import { HeroSection } from "@/components/landing/hero-section"
+import { KeywordHighlights } from "@/components/landing/keyword-highlights"
 import { MoreTools } from "@/components/landing/more-tools"
 import { PrivacySecurity } from "@/components/landing/privacy-security"
 import { Testimonials } from "@/components/landing/testimonials"
@@ -12,6 +13,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <HeroSection />
+      <KeywordHighlights />
       <VideoGallery />
       <WhyChoose />
       <Features />

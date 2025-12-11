@@ -96,8 +96,8 @@
   },
   "Home": {
     "title": "BestMaker AI",
-    "tagLine": "BestMaker AI驱动的智能修图工具",
-    "description": "BestMaker AI 让你用文字完成PS级修图：去除元素、替换背景、快速生成样机，无需手动抠图。"
+    "tagLine": "AI图像与视频生成器",
+    "description": "通过文本或图片生成高质量的AI图像和视频。在线创建4K视频、智能修图并一键输出视觉作品，支持多种AI模型。"
   },
   "Login": {
     "title": "欢迎回来",

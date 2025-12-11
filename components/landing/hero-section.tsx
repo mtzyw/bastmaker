@@ -45,6 +45,9 @@ export function HeroSection() {
             </Button>
           </Link>
         </div>
+        <p className="text-sm md:text-base text-muted-foreground mt-6 max-w-2xl mx-auto">
+          {t("supporting")}
+        </p>
       </div>
     </section>
   )
