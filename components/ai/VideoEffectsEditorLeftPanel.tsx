@@ -327,7 +327,7 @@ export function VideoEffectsEditorLeftPanel({ effect }: { effect: VideoEffectTem
       });
       const json = await response.json().catch(() => ({}));
       if (!response.ok || !json?.success) {
-        if (response.status === 429) {
+        if (response.status === 402 || response.status === 429) {
           openSubscriptionPopup();
         }
         const message = json?.error ?? response.statusText ?? t("errors.submitFailed");

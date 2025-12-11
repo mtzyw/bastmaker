@@ -312,7 +312,7 @@ export function ImageEffectsEditorLeftPanel({ effect }: { effect: ImageEffectTem
       const result = await response.json().catch(() => ({}));
 
       if (!response.ok || !result?.success) {
-        if (response.status === 429) {
+        if (response.status === 402 || response.status === 429) {
           openSubscriptionPopup();
         }
         const message =

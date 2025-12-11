@@ -308,13 +308,13 @@ export default function TextToVideoLeftPanel() {
 
       const result = await response.json();
 
-      if (!response.ok || !result?.success) {
-        if (response.status === 429) {
-          openSubscriptionPopup();
+        if (!response.ok || !result?.success) {
+          if (response.status === 402 || response.status === 429) {
+            openSubscriptionPopup();
+          }
+          const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
+          throw new Error(message);
         }
-        const message = result?.error ?? response.statusText ?? commonT("errors.submitFailed");
-        throw new Error(message);
-      }
 
       const taskInfo = result.data as {
         jobId?: string;
