@@ -383,8 +383,8 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
             amount_total: orderData.amount_total,
             currency: orderData.currency,
             metadata: {
-              ...(pendingOrder.metadata || {}),
-              ...orderData.metadata,
+              ...(pendingOrder.metadata && typeof pendingOrder.metadata === 'object' ? pendingOrder.metadata : {}),
+              ...(orderData.metadata && typeof orderData.metadata === 'object' ? orderData.metadata : {}),
             },
           })
           .eq('id', pendingOrder.id)
