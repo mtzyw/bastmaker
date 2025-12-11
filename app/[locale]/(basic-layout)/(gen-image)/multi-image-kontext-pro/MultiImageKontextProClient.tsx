@@ -6,7 +6,6 @@ import ImageResultDisplay from "@/components/ai/ImageResultDisplay";
 import RecentImagesGallery from "@/components/ai/RecentImagesGallery";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
-import { useSubscriptionPopup } from "@/components/providers/SubscriptionPopupProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
