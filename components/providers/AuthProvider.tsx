@@ -126,24 +126,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!provider || provider === "email") {
       return;
     }
-    const identities = session.user?.identities as
-      | Array<{
-          provider?: string | null;
-          created_at?: string | null;
-          last_sign_in_at?: string | null;
-        }>
-      | undefined;
-    if (!Array.isArray(identities)) {
-      return;
-    }
-    const identity = identities.find((item) => item?.provider === provider);
-    if (!identity) {
-      return;
-    }
     if (
-      identity.created_at &&
-      identity.last_sign_in_at &&
-      identity.created_at === identity.last_sign_in_at
+      session.user?.created_at &&
+      session.user?.last_sign_in_at &&
+      session.user.created_at === session.user.last_sign_in_at
     ) {
       trackAuthEvent("sign_up", provider);
     }
