@@ -214,12 +214,12 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[520px] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[calc(100vh-2rem)] md:h-[520px] border border-white/10 bg-[#18181b] p-0 text-white shadow-2xl sm:rounded-[24px] flex flex-col overflow-y-auto md:overflow-hidden">
         <DialogTitle className="sr-only">{t("SubscriptionTitle")}</DialogTitle>
 
-        <div className="flex flex-col md:flex-row h-full overflow-hidden">
+        <div className="flex flex-col md:flex-row md:h-full md:overflow-hidden gap-4 md:gap-0">
           {/* Left Side - Plans */}
-          <div className="flex-1 p-6 md:p-8 space-y-6 bg-[#18181b] overflow-y-auto">
+          <div className="md:flex-1 p-6 md:p-8 space-y-6 bg-[#18181b] md:overflow-y-auto">
             {/* Toggle */}
             <div className="flex items-center gap-4 mb-6">
               <div className="inline-flex rounded-lg bg-[#27272a] p-1">
@@ -363,7 +363,7 @@ export function SubscriptionPopup({ open, onOpenChange }: SubscriptionPopupProps
           </div>
 
           {/* Right Side - Benefits */}
-          <div className="flex-1 bg-[#27272a] p-6 md:p-8 border-l border-white/5 flex flex-col overflow-hidden">
+          <div className="md:flex-1 bg-[#27272a] p-6 md:p-8 border-t md:border-t-0 md:border-l border-white/5 flex flex-col md:overflow-hidden">
             <h3 className="text-lg font-semibold mb-6 text-white shrink-0">
               {t("vipBenefits.title")}
             </h3>
