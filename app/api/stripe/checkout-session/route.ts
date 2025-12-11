@@ -5,12 +5,18 @@ import stripe from '@/lib/stripe/stripe';
 import { createClient } from '@/lib/supabase/server';
 import { getURL } from '@/lib/utils';
 import type { Stripe } from 'stripe';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 type RequestData = {
   priceId: string;
   couponCode?: string;
   referral?: string;
 };
+
+const supabaseAdmin = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -118,6 +124,40 @@ export async function POST(req: Request) {
       console.error('Stripe session creation failed: No URL or ID returned.');
       return apiResponse.serverError('Error creating checkout session');
     }
+
+    try {
+      const fallbackAmount = plan.price ?? 0;
+      const amountSubtotal = typeof session.amount_subtotal === 'number' ? session.amount_subtotal / 100 : fallbackAmount;
+      const amountDiscount = session.total_details?.amount_discount ? session.total_details.amount_discount / 100 : 0;
+      const amountTax = session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0;
+      const amountTotal = typeof session.amount_total === 'number' ? session.amount_total / 100 : fallbackAmount;
+      const currency = session.currency || plan.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'usd';
+
+      await supabaseAdmin
+        .from('orders')
+        .insert({
+          user_id: userId,
+          provider: 'stripe',
+          provider_order_id: session.id,
+          status: 'pending',
+          order_type: isSubscription ? 'subscription_initial' : 'one_time_purchase',
+          plan_id: plan.id,
+          price_id: priceId,
+          product_id: plan.stripe_product_id,
+          amount_subtotal: amountSubtotal,
+          amount_discount: amountDiscount,
+          amount_tax: amountTax,
+          amount_total: amountTotal,
+          currency,
+          metadata: {
+            stripeCheckoutSessionId: session.id,
+            ...session.metadata,
+          },
+        });
+    } catch (orderError) {
+      console.error('Error inserting pending order for checkout session:', orderError);
+    }
+
     return apiResponse.success({ sessionId: session.id, url: session.url });
 
   } catch (error) {

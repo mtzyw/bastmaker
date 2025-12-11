@@ -29,6 +29,53 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
     return;
   }
 
+  const metadataPayload = {
+    stripeCheckoutSessionId: session.id,
+    ...(session.metadata || {}),
+  };
+
+  if (session.mode === 'subscription') {
+    const subscriptionId = typeof session.subscription === 'string' ? session.subscription : null;
+    const { data: pendingOrder, error: pendingError } = await supabaseAdmin
+      .from('orders')
+      .select('id, metadata')
+      .eq('provider', 'stripe')
+      .eq('provider_order_id', session.id)
+      .maybeSingle();
+
+    if (pendingError) {
+      console.error('DB error fetching pending subscription order:', pendingError);
+      return;
+    }
+
+    if (!pendingOrder) {
+      console.warn(`No pending order found for subscription checkout session ${session.id}.`);
+      return;
+    }
+
+    const updatePayload = {
+      status: 'awaiting_invoice',
+      subscription_provider_id: subscriptionId,
+      metadata: {
+        ...(pendingOrder.metadata || {}),
+        ...metadataPayload,
+        ...(subscriptionId ? { stripeSubscriptionId: subscriptionId } : {}),
+        ...(typeof session.invoice === 'string' ? { stripeInvoiceId: session.invoice } : {}),
+      },
+    };
+
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update(updatePayload)
+      .eq('id', pendingOrder.id);
+
+    if (updateError) {
+      console.error(`Error updating pending subscription order for session ${session.id}:`, updateError);
+    }
+
+    return;
+  }
+
   if (session.mode === 'payment') {
     let paymentIntentId = session.payment_intent as string;
 
@@ -38,11 +85,6 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
       paymentIntentId = session.id;
     }
 
-    /**
-     * Idempotency Check
-     * 幂等性检查
-     * 冪等性チェック
-     */
     const { data: existingOrder, error: queryError } = await supabaseAdmin
       .from('orders')
       .select('id')
@@ -59,37 +101,76 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
       return;
     }
 
-    const orderData: Database['public']['Tables']['orders']['Insert'] = {
-      user_id: userId,
-      provider: 'stripe',
-      provider_order_id: paymentIntentId,
-      status: 'succeeded',
-      order_type: 'one_time_purchase',
-      plan_id: planId,
-      price_id: priceId,
-      amount_subtotal: session.amount_subtotal ? session.amount_subtotal / 100 : null,
-      amount_discount: session.total_details?.amount_discount ? session.total_details.amount_discount / 100 : 0,
-      amount_tax: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
-      amount_total: session.amount_total ? session.amount_total / 100 : 0,
-      currency: session.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'usd',
-      metadata: {
-        stripeCheckoutSessionId: session.id,
-        ...session.metadata
-      }
-    };
-
-    const { error: insertOrderError } = await supabaseAdmin
+    const { data: pendingOrder, error: pendingError } = await supabaseAdmin
       .from('orders')
-      .insert(orderData);
+      .select('id, metadata')
+      .eq('provider', 'stripe')
+      .eq('provider_order_id', session.id)
+      .maybeSingle();
 
-    if (insertOrderError) {
-      console.error('Error inserting one-time purchase order:', insertOrderError);
-      throw insertOrderError;
+    const amountSubtotal = typeof session.amount_subtotal === 'number' ? session.amount_subtotal / 100 : null;
+    const amountDiscount = session.total_details?.amount_discount ? session.total_details.amount_discount / 100 : 0;
+    const amountTax = session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0;
+    const amountTotal = typeof session.amount_total === 'number'
+      ? session.amount_total / 100
+      : amountSubtotal ?? 0;
+    const currency = session.currency || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'usd';
+
+    if (pendingError) {
+      console.error('DB error fetching pending checkout order:', pendingError);
     }
 
-    // --- [custom] Upgrade the user's benefits ---
+    if (pendingOrder) {
+      const { error: updateError } = await supabaseAdmin
+        .from('orders')
+        .update({
+          provider_order_id: paymentIntentId,
+          status: 'succeeded',
+          amount_subtotal: amountSubtotal,
+          amount_discount: amountDiscount,
+          amount_tax: amountTax,
+          amount_total: amountTotal,
+          currency,
+          metadata: {
+            ...(pendingOrder.metadata || {}),
+            ...metadataPayload,
+            stripePaymentIntentId: paymentIntentId,
+          },
+        })
+        .eq('id', pendingOrder.id);
+
+      if (updateError) {
+        console.error('Error updating pending order for payment checkout session:', updateError);
+        throw updateError;
+      }
+    } else {
+      const orderData: Database['public']['Tables']['orders']['Insert'] = {
+        user_id: userId,
+        provider: 'stripe',
+        provider_order_id: paymentIntentId,
+        status: 'succeeded',
+        order_type: 'one_time_purchase',
+        plan_id: planId,
+        price_id: priceId,
+        amount_subtotal: amountSubtotal,
+        amount_discount: amountDiscount,
+        amount_tax: amountTax,
+        amount_total: amountTotal,
+        currency,
+        metadata: metadataPayload,
+      };
+
+      const { error: insertOrderError } = await supabaseAdmin
+        .from('orders')
+        .insert(orderData);
+
+      if (insertOrderError) {
+        console.error('Error inserting one-time purchase order:', insertOrderError);
+        throw insertOrderError;
+      }
+    }
+
     upgradeOneTimeCredits(userId, planId, paymentIntentId);
-    // --- End: [custom] Upgrade the user's benefits ---
 
     await trackPaymentSuccess({
       userId,
@@ -97,9 +178,9 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
       planId,
       priceId,
       referenceId: paymentIntentId,
-      orderType: orderData.order_type ?? "one_time_purchase",
-      amountTotal: orderData.amount_total ?? undefined,
-      currency: orderData.currency ?? undefined,
+      orderType: 'one_time_purchase',
+      amountTotal: amountTotal ?? undefined,
+      currency: currency ?? undefined,
     });
   }
 }
@@ -193,9 +274,9 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
     throw queryError;
   }
 
-  if (existingOrder) {
-  } else {
+  const isInitialSubscriptionInvoice = invoice.billing_reason === 'subscription_create';
 
+  if (!existingOrder) {
     if (!stripe) {
       console.error('Stripe is not initialized. Please check your environment variables.');
       return;
@@ -249,7 +330,7 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
       console.warn(`Could not determine planId for subscription ${subscriptionId} from invoice ${invoiceId}. Order created, but credit grant may fail.`);
     }
 
-    const orderType = invoice.billing_reason === 'subscription_create' ? 'subscription_initial' : 'subscription_renewal';
+    const orderType = isInitialSubscriptionInvoice ? 'subscription_initial' : 'subscription_renewal';
     const analyticsEventName = orderType === 'subscription_renewal' ? 'renewal_payment_success' : undefined;
     const orderData: TablesInsert<'orders'> = {
       user_id: userId,
@@ -275,13 +356,63 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
       }
     };
 
-    const { error: insertOrderError } = await supabaseAdmin
-      .from('orders')
-      .insert(orderData);
+    let upsertedOrderId: string | null = null;
 
-    if (insertOrderError) {
-      console.error(`Error inserting order for invoice ${invoiceId}:`, insertOrderError);
-      throw insertOrderError;
+    if (isInitialSubscriptionInvoice) {
+      const { data: pendingOrder } = await supabaseAdmin
+        .from('orders')
+        .select('id, metadata')
+        .eq('provider', 'stripe')
+        .eq('subscription_provider_id', subscriptionId)
+        .eq('status', 'awaiting_invoice')
+        .maybeSingle();
+
+      if (pendingOrder) {
+        const { error: updateError, data: updated } = await supabaseAdmin
+          .from('orders')
+          .update({
+            provider_order_id: invoiceId,
+            status: 'succeeded',
+            order_type: orderType,
+            plan_id: planId,
+            price_id: priceId,
+            product_id: productId,
+            amount_subtotal: orderData.amount_subtotal,
+            amount_discount: orderData.amount_discount,
+            amount_tax: orderData.amount_tax,
+            amount_total: orderData.amount_total,
+            currency: orderData.currency,
+            metadata: {
+              ...(pendingOrder.metadata || {}),
+              ...orderData.metadata,
+            },
+          })
+          .eq('id', pendingOrder.id)
+          .select('id')
+          .single();
+
+        if (updateError) {
+          console.error(`Error updating pending subscription order for invoice ${invoiceId}:`, updateError);
+          throw updateError;
+        }
+
+        upsertedOrderId = updated.id;
+      }
+    }
+
+    if (!upsertedOrderId) {
+      const { error: insertOrderError, data: insertedOrder } = await supabaseAdmin
+        .from('orders')
+        .insert(orderData)
+        .select('id')
+        .single();
+
+      if (insertOrderError) {
+        console.error(`Error inserting order for invoice ${invoiceId}:`, insertOrderError);
+        throw insertOrderError;
+      }
+
+      upsertedOrderId = insertedOrder.id;
     }
 
     if (planId && userId && subscription) {
