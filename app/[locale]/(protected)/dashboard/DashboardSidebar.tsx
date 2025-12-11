@@ -51,8 +51,8 @@ export function DashboardSidebar() {
           className="flex items-center space-x-1 px-2 py-1"
         >
           <Image
-            src="/logo.png"
-            alt="Logo"
+            src="/favicon/favicon-96x96.png"
+            alt="BestMaker AI logo"
             width={24}
             height={24}
             className="rounded-md"
