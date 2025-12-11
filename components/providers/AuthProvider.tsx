@@ -126,11 +126,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!provider || provider === "email") {
       return;
     }
-    if (
-      session.user?.created_at &&
-      session.user?.last_sign_in_at &&
-      session.user.created_at === session.user.last_sign_in_at
-    ) {
+
+    const createdAt = session.user?.created_at
+      ? new Date(session.user.created_at).getTime()
+      : null;
+    const lastSignInAt = session.user?.last_sign_in_at
+      ? new Date(session.user.last_sign_in_at).getTime()
+      : null;
+
+    if (!createdAt) {
+      return;
+    }
+
+    const isFirstLogin =
+      !lastSignInAt || Math.abs(createdAt - lastSignInAt) < 1000;
+
+    if (isFirstLogin) {
       trackAuthEvent("sign_up", provider);
     }
   };

@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     const { data: plan, error: planError } = await supabase
       .from('pricing_plans')
-      .select('id, card_title, payment_type, trial_period_days, benefits_jsonb, stripe_product_id')
+      .select('id, card_title, payment_type, trial_period_days, benefits_jsonb, stripe_product_id, price, currency')
       .eq('stripe_price_id', priceId)
       .single();
 
