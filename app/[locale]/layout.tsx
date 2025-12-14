@@ -1,7 +1,6 @@
 import BaiDuAnalytics from "@/app/BaiDuAnalytics";
 import GoogleAdsense from "@/app/GoogleAdsense";
 import GoogleAnalytics from "@/app/GoogleAnalytics";
-import PlausibleAnalytics from "@/app/PlausibleAnalytics";
 import ToltScript from "@/app/ToltScript";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import { LanguageDetectionAlert } from "@/components/LanguageDetectionAlert";
@@ -120,7 +119,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             <BaiDuAnalytics />
             <GoogleAnalytics />
             <GoogleAdsense />
-            <PlausibleAnalytics />
           </>
         )}
       </body>
