@@ -11,7 +11,6 @@ import PlausibleAnalytics from "@/app/PlausibleAnalytics"
 export const metadata: Metadata = {
   title: "BestMaker AI – AI Image & Video Generator",
   description: "Generate high-quality AI images and videos from text or photos with multiple AI models online.",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
