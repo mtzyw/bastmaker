@@ -7,6 +7,7 @@ import { Suspense } from "react"
 import "@/styles/globals.css"
 import { cn } from "@/lib/utils"
 import PlausibleAnalytics from "@/app/PlausibleAnalytics"
+import ClarityAnalytics from "@/app/ClarityAnalytics"
 
 export const metadata: Metadata = {
   title: "BestMaker AI – AI Image & Video Generator",
@@ -22,7 +23,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background flex flex-col", GeistSans.variable, GeistMono.variable)}>
         <Suspense fallback={null}>{children}</Suspense>
-        {process.env.NODE_ENV === "development" ? null : <PlausibleAnalytics />}
+        {process.env.NODE_ENV === "development" ? null : (
+          <>
+            <PlausibleAnalytics />
+            <ClarityAnalytics />
+          </>
+        )}
         <Analytics />
       </body>
     </html>
