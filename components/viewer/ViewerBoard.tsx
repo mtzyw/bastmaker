@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link as I18nLink, useRouter } from "@/i18n/routing";
 import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import { useDownloadAccess } from "@/hooks/useDownloadAccess";
+import { useUserBenefits } from "@/hooks/useUserBenefits";
 import dayjs from "dayjs";
 import {
   Copy,
@@ -130,6 +132,11 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
   const setRepromptDraft = useRepromptStore((state) => state.setDraft);
   const [isLiked, setIsLiked] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const { benefits, isLoading: benefitsLoading } = useUserBenefits();
+  const { ensureDownloadAllowed } = useDownloadAccess({
+    benefits,
+    isLoading: benefitsLoading,
+  });
 
   const createdAtLabel = useMemo(() => dayjs(job.createdAt).format(DATE_FORMAT), [job.createdAt]);
   const initials = job.owner?.displayName?.slice(0, 1)?.toUpperCase() ?? "AI";
@@ -379,6 +386,9 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
 
   const handleDownloadOptionClick = useCallback(
     async (variant: "watermark" | "clean") => {
+      if (!ensureDownloadAllowed()) {
+        return;
+      }
       let urlToDownload = primaryAsset?.url;
       if (variant === "watermark") {
         urlToDownload = primaryAsset?.url;
@@ -405,7 +415,7 @@ export function ViewerBoard({ job, shareUrl }: ViewerBoardProps) {
         toast.error(t("downloadFailed", { default: "Download failed" }));
       }
     },
-    [job, primaryAsset, t]
+    [ensureDownloadAllowed, job, primaryAsset, t]
   );
 
   const tagCandidates = [job.modalityLabel, job.modelLabel]

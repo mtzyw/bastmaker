@@ -26,6 +26,8 @@ import { ViewerBoard } from "@/components/viewer/ViewerBoard";
 import { siteConfig } from "@/config/site";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import { useDownloadAccess } from "@/hooks/useDownloadAccess";
+import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { toast } from "sonner";
 
 type FilterKey = "all" | "video" | "image" | "sound";
@@ -251,6 +253,11 @@ export function MyCreationsContent({
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CreationItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { benefits, isLoading: benefitsLoading } = useUserBenefits();
+  const { ensureDownloadAllowed } = useDownloadAccess({
+    benefits,
+    isLoading: benefitsLoading,
+  });
 
   useEffect(() => {
     setFilterStates((prev) => ({
@@ -375,6 +382,9 @@ export function MyCreationsContent({
 
   const handleDownload = useCallback(
     async (item: CreationItem, targets: DownloadTargets, variant: DownloadVariant) => {
+      if (!ensureDownloadAllowed()) {
+        return;
+      }
       const targetUrl = variant === "watermark" ? targets.watermarkUrl : targets.originalUrl;
       if (!targetUrl) {
         toast.error(
@@ -400,7 +410,7 @@ export function MyCreationsContent({
         toast.error(historyT("messages.downloadFailed"));
       }
     },
-    [historyT]
+    [ensureDownloadAllowed, historyT]
   );
 
   const handleCopyLink = useCallback(

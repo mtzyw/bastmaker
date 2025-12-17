@@ -55,5 +55,7 @@
       "visitsLabel": "Total visits",
       "conversionsLabel": "Invited signups"
     }
-  }
+  },
+  "downloadRequiresSubscription": "Upgrade your plan to download this output.",
+  "downloadCheckingSubscription": "Checking subscription status. Please try again in a moment."
 }

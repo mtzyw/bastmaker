@@ -25,6 +25,7 @@ import {
 } from "@/config/common";
 import { featureList } from "@/config/featureList";
 import { siteConfig } from "@/config/site";
+import { useDownloadAccess } from "@/hooks/useDownloadAccess";
 import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { downloadFile } from "@/lib/downloadFile";
@@ -154,6 +155,7 @@ function MultiImageKontextProClientContent() {
   const locale = useLocale();
   const {
     benefits,
+    isLoading: benefitsLoading,
     optimisticDeduct,
     mutate: revalidateBenefits,
   } = useUserBenefits();
@@ -162,6 +164,10 @@ function MultiImageKontextProClientContent() {
   const router = useRouter();
   const galleryRef = useRef<any>(null);
   const t = useTranslations("MultiImageKontextPro.client");
+  const { ensureDownloadAllowed } = useDownloadAccess({
+    benefits,
+    isLoading: benefitsLoading,
+  });
 
   const [sourceImage1, setSourceImage1] = useState<string | null>(null);
   const [sourceImageUrl1, setSourceImageUrl1] = useState<string | null>(null);
@@ -638,12 +644,16 @@ function MultiImageKontextProClientContent() {
   };
 
   const handleDownload = () => {
-    if (resultImage) {
-      void downloadFile(
-        resultImage,
-        `${siteConfig.name}-${selectedModel}.${outputFormat}`
-      );
+    if (!resultImage) {
+      return;
     }
+    if (!ensureDownloadAllowed()) {
+      return;
+    }
+    void downloadFile(
+      resultImage,
+      `${siteConfig.name}-${selectedModel}.${outputFormat}`
+    );
   };
 
   const removeImage = (imageIndex: 1 | 2) => {

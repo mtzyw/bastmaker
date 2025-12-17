@@ -43,6 +43,8 @@ import { getSoundEffectModelConfig } from "@/lib/ai/sound-effect-config";
 import { getTextToImageModelConfig } from "@/lib/ai/text-to-image-config";
 import { getVideoModelConfig } from "@/lib/ai/video-config";
 import { downloadBase64File, downloadViaProxy } from "@/lib/downloadFile";
+import { useDownloadAccess } from "@/hooks/useDownloadAccess";
+import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
@@ -495,6 +497,11 @@ export default function TextToImageRecentTasks({
   const router = useRouter();
   const historyT = useTranslations("CreationHistory");
   const { openSubscriptionPopup } = useSubscriptionPopup();
+  const { benefits, isLoading: benefitsLoading } = useUserBenefits();
+  const { ensureDownloadAllowed } = useDownloadAccess({
+    benefits,
+    isLoading: benefitsLoading,
+  });
   const promptLabel = historyT("labels.prompt");
   const negativeLabel = historyT("labels.negative");
   const categoryFilterLabel = historyT("labels.categoryFilter");
@@ -847,6 +854,9 @@ export default function TextToImageRecentTasks({
 
   const handleDownloadOptionClick = useCallback(
     async (task: DisplayTask, variant: "watermark" | "clean") => {
+      if (!ensureDownloadAllowed()) {
+        return;
+      }
       const targets = resolveDownloadTargets(task);
       const targetUrl = variant === "watermark" ? targets.watermarkUrl : targets.originalUrl;
       if (!targetUrl) {
@@ -881,7 +891,7 @@ export default function TextToImageRecentTasks({
         toast.error(historyT("messages.downloadFailed"));
       }
     },
-    [closeDownloadMenu, resolveDownloadTargets, downloadViaProxy]
+    [closeDownloadMenu, downloadViaProxy, ensureDownloadAllowed, historyT, resolveDownloadTargets]
   );
 
   const handleRegenerate = useCallback(

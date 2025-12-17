@@ -25,6 +25,7 @@ import {
 } from "@/config/common";
 import { featureList } from "@/config/featureList";
 import { siteConfig } from "@/config/site";
+import { useDownloadAccess } from "@/hooks/useDownloadAccess";
 import { useUserBenefits } from "@/hooks/useUserBenefits";
 import { DEFAULT_LOCALE } from "@/i18n/routing";
 import { downloadFile } from "@/lib/downloadFile";
@@ -68,12 +69,17 @@ function FluxKontextProClientContent() {
   const { openSubscriptionPopup } = useSubscriptionPopup();
   const {
     benefits,
+    isLoading: benefitsLoading,
     optimisticDeduct,
     mutate: revalidateBenefits,
   } = useUserBenefits();
   const router = useRouter();
   const galleryRef = useRef<any>(null);
   const t = useTranslations("FluxKontextPro.client");
+  const { ensureDownloadAllowed } = useDownloadAccess({
+    benefits,
+    isLoading: benefitsLoading,
+  });
 
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
@@ -479,12 +485,16 @@ function FluxKontextProClientContent() {
   };
 
   const handleDownload = () => {
-    if (resultImage) {
-      void downloadFile(
-        resultImage,
-        `${siteConfig.name}-${selectedModel}.${outputFormat}`
-      );
+    if (!resultImage) {
+      return;
     }
+    if (!ensureDownloadAllowed()) {
+      return;
+    }
+    void downloadFile(
+      resultImage,
+      `${siteConfig.name}-${selectedModel}.${outputFormat}`
+    );
   };
 
   const removeImage = () => {

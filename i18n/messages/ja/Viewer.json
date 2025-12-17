@@ -55,5 +55,7 @@
     "downloadWatermark": "透かし付きでダウンロード",
     "downloadClean": "透かしなしでダウンロード",
     "downloadFailed": "ダウンロードに失敗しました"
-  }
+  },
+  "downloadRequiresSubscription": "ダウンロードするには有料プランにアップグレードしてください。",
+  "downloadCheckingSubscription": "購読状況を確認しています。少し待ってからもう一度お試しください。"
 }
