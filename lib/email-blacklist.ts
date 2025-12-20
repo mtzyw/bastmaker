@@ -2,6 +2,9 @@
 // Base known temporary / throwaway domains
 export const EMAIL_DOMAIN_BLACKLIST = new Set([
   // Imported domains
+  "mekuron.com",
+  "kudimi.com",
+  "lawior.com",
   "062e.com",
   "10mail.org",
   "10mail.xyz",
