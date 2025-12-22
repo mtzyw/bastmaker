@@ -12,10 +12,6 @@ const videos = [
   "https://cdn.bestmaker.ai/tasks/d102f9f6-7f72-4c04-bb1f-14b32c276799/dfc452c511aa4800a6194ef84da6c3a2.mp4",
   "https://cdn.bestmaker.ai/tasks/230db99f-218e-444e-b68f-efc1041ee5c3/fb92412e930e4280b103625ffe06e0d9.mp4",
   "https://cdn.bestmaker.ai/tasks/03b82069-e12e-40c4-9838-a4db084df815/fa157934635543b9885ac86ab73b579a.mp4",
-  "https://cdn.bestmaker.ai/tasks/c7a012a6-a557-45e4-af3a-ddc69f7f6b6d/b6c6025f82ad4e1d9c908be29fd82007.mp4",
-  "https://cdn.bestmaker.ai/tasks/544ca1c8-6e3b-42ce-bb27-4c02dcfdc1d3/3a0035a91af844008ce1c60e17977106.mp4",
-  "https://cdn.bestmaker.ai/tasks/436bd64c-1c9e-4376-833d-dfe7411f5071/2cc1878eedc848d3847959b2979c3065.mp4",
-  "https://cdn.bestmaker.ai/tasks/a6b2238c-f36a-4cbd-99e7-33142187f37f/d49a85182db2438096206c3da3486996.mp4",
 ]
 
 type VideoCardProps = {
@@ -71,9 +67,13 @@ function VideoCard({ src, index, label, badge }: VideoCardProps) {
 
 export function VideoGallery() {
   const t = useTranslations("Landing.VideoGallery")
+  const { ref: sectionRef, inView: sectionInView } = useInView({
+    rootMargin: "200px",
+    triggerOnce: true,
+  })
 
   return (
-    <section className="py-20 bg-background">
+    <section ref={sectionRef} className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
@@ -84,15 +84,22 @@ export function VideoGallery() {
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {videos.map((src, i) => (
-            <VideoCard
-              key={src}
-              src={src}
-              index={i}
-              label={t("videoLabel")}
-              badge={t("aiGeneratedBadge")}
-            />
-          ))}
+          {sectionInView
+            ? videos.map((src, i) => (
+                <VideoCard
+                  key={src}
+                  src={src}
+                  index={i}
+                  label={t("videoLabel")}
+                  badge={t("aiGeneratedBadge")}
+                />
+              ))
+            : Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-square rounded-xl bg-muted/70 animate-pulse"
+                />
+              ))}
         </div>
         <div className="text-center mt-12">
           <Link href="/text-to-video">

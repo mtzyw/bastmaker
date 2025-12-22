@@ -29,7 +29,7 @@ export function FAQSection() {
                 <AccordionTrigger className="text-left text-foreground hover:text-amber-400 hover:no-underline py-6">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-6 whitespace-pre-line">
+                <AccordionContent className="text-muted-foreground pb-6 whitespace-pre-line transition-opacity duration-150 ease-out data-[state=closed]:opacity-0 data-[state=open]:opacity-100 motion-reduce:transition-none">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>

@@ -70,6 +70,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   return (
     <html lang={locale || DEFAULT_LOCALE} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://cdn.bestmaker.ai" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          as="image"
+          href="/astronaut-floating-in-space-with-earth-in-backgrou.jpg"
+        />
         {process.env.NODE_ENV === "development" ? (
           <></>
         ) : (
