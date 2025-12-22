@@ -1,11 +1,19 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { isMarketingRoute } from "@/lib/route-utils";
 
 const PLAUSIBLE_DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 const PLAUSIBLE_SRC = process.env.NEXT_PUBLIC_PLAUSIBLE_SRC;
 
 const PlausibleAnalytics = () => {
+  const pathname = usePathname();
+
+  if (!isMarketingRoute(pathname)) {
+    return null;
+  }
+
   if (!PLAUSIBLE_SRC) {
     return null;
   }
@@ -16,13 +24,13 @@ const PlausibleAnalytics = () => {
     <>
       <Script
         id="plausible-script"
-        strategy="beforeInteractive"
+        strategy="lazyOnload"
         src={PLAUSIBLE_SRC}
         {...domainAttribute}
       />
       <Script
         id="plausible-init"
-        strategy="beforeInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{
           __html: `
             window.plausible = window.plausible || function () {

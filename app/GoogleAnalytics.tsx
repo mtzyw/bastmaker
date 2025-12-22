@@ -2,19 +2,27 @@
 
 import Script from "next/script";
 import * as gtag from "../gtag";
+import { isMarketingRoute } from "@/lib/route-utils";
+import { usePathname } from "next/navigation";
 
 const GoogleAnalytics = () => {
+  const pathname = usePathname();
+
+  if (!isMarketingRoute(pathname)) {
+    return null;
+  }
+
   return (
     <>
       {gtag.GA_TRACKING_ID ? (
         <>
           <Script
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             src={`https://www.googletagmanager.com/gtag/js?id=${gtag.GA_TRACKING_ID}`}
           />
           <Script
             id="gtag-init"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];

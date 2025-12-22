@@ -52,6 +52,7 @@ export function Features() {
                 alt="AI Video and Image Creation Interface"
                 width={800}
                 height={600}
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="w-full h-auto"
               />
             </div>

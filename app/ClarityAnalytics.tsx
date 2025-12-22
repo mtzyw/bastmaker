@@ -1,10 +1,18 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { isMarketingRoute } from "@/lib/route-utils";
 
 const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
 
 const ClarityAnalytics = () => {
+  const pathname = usePathname();
+
+  if (!isMarketingRoute(pathname)) {
+    return null;
+  }
+
   if (!CLARITY_ID) {
     return null;
   }
@@ -12,7 +20,7 @@ const ClarityAnalytics = () => {
   return (
     <Script
       id="ms-clarity"
-      strategy="beforeInteractive"
+      strategy="lazyOnload"
       dangerouslySetInnerHTML={{
         __html: `
           (function(c,l,a,r,i,t,y){

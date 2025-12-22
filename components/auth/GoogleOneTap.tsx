@@ -1,7 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { stripLocalePrefix } from "@/lib/route-utils";
+import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
 import { useEffect } from "react";
 
@@ -12,6 +13,15 @@ interface CredentialResponse {
 const GoogleOneTap = () => {
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
+  const oneTapRoutes = new Set([
+    "/login",
+    "/sign-up",
+    "/sign-in",
+    "/invitation-landing",
+  ]);
+
+  const normalizedPathname = stripLocalePrefix(pathname);
 
   const generateNonce = async (): Promise<string[]> => {
     const nonce = btoa(
@@ -86,10 +96,14 @@ const GoogleOneTap = () => {
     return null;
   }
 
+  if (!oneTapRoutes.has(normalizedPathname)) {
+    return null;
+  }
+
   return (
     <Script
       src="https://accounts.google.com/gsi/client"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
     />
   );
 };

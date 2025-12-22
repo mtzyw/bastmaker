@@ -1,15 +1,23 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { isMarketingRoute } from "@/lib/route-utils";
 
 const BaiDuAnalytics = () => {
+  const pathname = usePathname();
+
+  if (!isMarketingRoute(pathname)) {
+    return null;
+  }
+
   return (
     <>
       {process.env.NEXT_PUBLIC_BAIDU_TONGJI ? (
         <>
           <Script
             id="baidu-tongji"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
               __html: `
               var _hmt = _hmt || [];
