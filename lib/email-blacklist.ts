@@ -2,6 +2,19 @@
 // Base known temporary / throwaway domains
 export const EMAIL_DOMAIN_BLACKLIST = new Set([
   // Imported domains
+  "drmail.in",
+  "protectsmail.net",
+  "123mails.org",
+  "deepmails.org",
+  "gongjua.com",
+  "justdefinition.com",
+  "mediaholy.com",
+  "rulersonline.com",
+  "pdf-cutter.com",
+  "swagpapa.com",
+  "mediaeast.uk",
+  "airsworld.net",
+  "suiyongsuiqi.com",
   "mucate.com",
   "mekuron.com",
   "kudimi.com",
