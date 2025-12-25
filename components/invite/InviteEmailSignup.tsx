@@ -5,6 +5,8 @@ import { InviteGoogleButton } from "@/components/invite/InviteGoogleButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/routing";
+import { normalizeEmail } from "@/lib/email";
+import { EMAIL_DOMAIN_ALLOWLIST } from "@/lib/email-allowlist";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Mail } from "lucide-react";
 import Link from "next/link";
@@ -76,6 +78,16 @@ export function InviteEmailSignup({
   }, [step, onStepChange]);
 
   const sendCode = async () => {
+    if (!email) {
+      toast.error("请输入邮箱");
+      return;
+    }
+    const normalizedEmail = normalizeEmail(email);
+    const domain = normalizedEmail.split("@")[1]?.toLowerCase();
+    if (!domain || !EMAIL_DOMAIN_ALLOWLIST.has(domain)) {
+      toast.error("Registration with this email domain is not supported.");
+      return;
+    }
     setIsSending(true);
     try {
       const response = await fetch("/api/auth/signup/send-code", {

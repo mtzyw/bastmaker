@@ -13,6 +13,8 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/routing";
+import { normalizeEmail } from "@/lib/email";
+import { EMAIL_DOMAIN_ALLOWLIST } from "@/lib/email-allowlist";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -150,6 +152,12 @@ export default function LoginPage({
   const handleSendCode = async () => {
     if (!email) {
       toast.error(t("messages.enterEmail"));
+      return;
+    }
+    const normalizedEmail = normalizeEmail(email);
+    const domain = normalizedEmail.split("@")[1]?.toLowerCase();
+    if (!domain || !EMAIL_DOMAIN_ALLOWLIST.has(domain)) {
+      toast.error("Registration with this email domain is not supported.");
       return;
     }
 

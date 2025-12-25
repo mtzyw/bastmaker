@@ -28,8 +28,14 @@ export async function POST(request: Request) {
     const normalizedEmail = normalizeEmail(email);
     const { isValid, error } = validateEmailServer(normalizedEmail);
     if (!isValid) {
+      const isDomainNotAllowed =
+        error === "disposable_email_not_allowed" || error === "domain_not_allowed";
       return NextResponse.json(
-        { error: error === "disposable_email_not_allowed" ? "Registration with this email domain is not supported." : "Invalid email address." },
+        {
+          error: isDomainNotAllowed
+            ? "Registration with this email domain is not supported."
+            : "Invalid email address.",
+        },
         { status: 400 }
       );
     }

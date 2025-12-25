@@ -1,12 +1,12 @@
 import { validateEmail as validateEmailFormat } from "@/lib/email";
-import { EMAIL_DOMAIN_BLACKLIST } from "@/lib/email-blacklist";
+import { EMAIL_DOMAIN_ALLOWLIST } from "@/lib/email-allowlist";
 
 export type EmailValidationError =
   | "invalid_email_format"
   | "email_part_too_long"
-  | "disposable_email_not_allowed"
   | "invalid_characters"
-  | "blacklisted_domain";
+  | "disposable_email_not_allowed"
+  | "domain_not_allowed";
 
 export function validateEmailServer(email: string): {
   isValid: boolean;
@@ -18,12 +18,12 @@ export function validateEmailServer(email: string): {
     return formatResult;
   }
 
-  // 2. Blacklist check (server-only)
+  // 2. Allowlist check (server-only)
   const domain = email.split("@")[1]?.toLowerCase();
-  if (domain && EMAIL_DOMAIN_BLACKLIST.has(domain)) {
+  if (domain && !EMAIL_DOMAIN_ALLOWLIST.has(domain)) {
     return {
       isValid: false,
-      error: "disposable_email_not_allowed", // Re-use this error code for consistent UI message
+      error: "domain_not_allowed",
     };
   }
 
