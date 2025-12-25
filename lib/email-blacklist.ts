@@ -1,7 +1,16 @@
 // Auto-generated full email domain blacklist
 // Base known temporary / throwaway domains
 export const EMAIL_DOMAIN_BLACKLIST = new Set([
-  // Imported domains
+  // Imported domains"
+  "screwingpuzzle.com",
+  "uselesswebsites.net",
+  "pinkgreengenerator.me",
+  "ovecalculatorname.org",
+  "whitehousecalculator.com",
+  "cropimage.me",
+  "whitehousecalculator.com",
+  "cropimage.me",
+  "suiyongsuiqi.com",
   "drmail.in",
   "protectsmail.net",
   "123mails.org",
